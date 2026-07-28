@@ -53,7 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ruff black mypy pytest pytest-django
-          pip install -r backend/requirements/local.txt
+          pip install -r backend/requirements/development.txt
 
       - name: Code Formatting Check (Black)
         run: |
