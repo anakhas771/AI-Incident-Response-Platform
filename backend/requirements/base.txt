@@ -1,0 +1,23 @@
+# Base Backend Dependencies
+
+# Core Django & REST Framework
+Django>=5.0,<5.1
+djangorestframework>=3.15.0
+django-cors-headers>=4.3.1
+django-filter>=24.2
+drf-spectacular>=0.27.2
+
+# Database & Cache
+psycopg2-binary>=2.9.9
+redis>=5.0.4
+django-redis>=5.4.0
+
+# Asynchronous Task Engine
+celery>=5.4.0
+
+# Environment & Utilities
+python-dotenv>=1.0.1
+structlog>=24.1.0
+python-json-logger>=2.0.7
+requests>=2.32.2
+pydantic>=2.7.1
