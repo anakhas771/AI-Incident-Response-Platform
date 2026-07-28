@@ -1,0 +1,1 @@
+# Monitoring domain stub app
