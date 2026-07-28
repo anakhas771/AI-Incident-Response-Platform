@@ -1,0 +1,75 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# ==========================
+# Django
+# ==========================
+media/
+staticfiles/
+
+# ==========================
+# Environment Variables
+# ==========================
+.env
+.env.*
+
+# ==========================
+# Node
+# ==========================
+node_modules/
+dist/
+build/
+
+# ==========================
+# IDE
+# ==========================
+.vscode/
+.idea/
+
+# ==========================
+# OS
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Coverage
+# ==========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+
+# Celery
+celerybeat-schedule
+backend/celerybeat-schedule
+
+# Django
+*.pyc
+__pycache__/
+*.sqlite3
+
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+dist/

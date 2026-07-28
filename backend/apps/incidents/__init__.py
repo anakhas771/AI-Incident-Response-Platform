@@ -1,0 +1,1 @@
+# Incidents domain stub app

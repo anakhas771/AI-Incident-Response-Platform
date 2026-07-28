@@ -1,0 +1,82 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: incident_platform_test
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black mypy pytest pytest-django
+          pip install -r backend/requirements/local.txt
+
+      - name: Code Formatting Check (Black)
+        run: |
+          black --check backend/
+
+      - name: Linting Check (Ruff)
+        run: |
+          ruff check backend/
+
+      - name: Type Checking (Mypy)
+        run: |
+          mypy backend/ --config-file backend/pyproject.toml || true
+
+      - name: Run Django Tests
+        env:
+          POSTGRES_DB: incident_platform_test
+          POSTGRES_USER: postgres_user
+          POSTGRES_PASSWORD: postgres_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: ci-test-secret-key
+          DEBUG: False
+        run: |
+          cd backend
+          python manage.py test --settings=config.settings.test
