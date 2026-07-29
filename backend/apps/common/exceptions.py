@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def custom_exception_handler(exc, context):
     """
     Custom DRF Exception Handler providing standardized error response schema.
@@ -23,8 +24,16 @@ def custom_exception_handler(exc, context):
         custom_data = {
             "error": {
                 "code": exc.__class__.__name__,
-                "message": str(exc.detail) if hasattr(exc, 'detail') and isinstance(exc.detail, str) else "An API request error occurred.",
-                "details": response.data if isinstance(response.data, (dict, list)) else {"detail": str(response.data)},
+                "message": (
+                    str(exc.detail)
+                    if hasattr(exc, "detail") and isinstance(exc.detail, str)
+                    else "An API request error occurred."
+                ),
+                "details": (
+                    response.data
+                    if isinstance(response.data, (dict, list))
+                    else {"detail": str(response.data)}
+                ),
             }
         }
         response.data = custom_data

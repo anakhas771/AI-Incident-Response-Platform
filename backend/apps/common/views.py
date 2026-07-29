@@ -5,14 +5,16 @@ from django.db import connection
 from django.core.cache import cache
 from drf_spectacular.utils import extend_schema
 
+
 class HealthCheckView(APIView):
     """
     Production health check view verifying Database, Cache (Redis), and System operational readiness.
     """
+
     @extend_schema(
         summary="System Health Check",
         description="Returns operational status of API, Database, and Redis Cache.",
-        responses={200: dict}
+        responses={200: dict},
     )
     def get(self, request, *args, **kwargs):
         health_status = {
@@ -42,5 +44,9 @@ class HealthCheckView(APIView):
             health_status["redis"] = f"unhealthy: {str(e)}"
             health_status["status"] = "unhealthy"
 
-        http_status = status.HTTP_200_OK if health_status["status"] == "healthy" else status.HTTP_503_SERVICE_UNAVAILABLE
+        http_status = (
+            status.HTTP_200_OK
+            if health_status["status"] == "healthy"
+            else status.HTTP_503_SERVICE_UNAVAILABLE
+        )
         return Response(health_status, status=http_status)
