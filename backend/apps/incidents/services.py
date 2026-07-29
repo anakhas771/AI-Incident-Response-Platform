@@ -52,9 +52,7 @@ class IncidentService:
         incident.assigned_to = assigned_to_user
         incident.save(update_fields=["assigned_to", "updated_at"])
 
-        assignee_name = (
-            assigned_to_user.full_name if assigned_to_user else "Unassigned"
-        )
+        assignee_name = assigned_to_user.full_name if assigned_to_user else "Unassigned"
         old_assignee_name = old_assigned.full_name if old_assigned else "Unassigned"
 
         IncidentEvent.objects.create(

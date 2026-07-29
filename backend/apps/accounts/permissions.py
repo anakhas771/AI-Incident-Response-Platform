@@ -57,16 +57,18 @@ class IsSameOrganization(BasePermission):
     Object-level permission allowing access only to users belonging to the same organization.
     """
 
-    def has_object_permission(
-        self, request: Request, view: APIView, obj: Any
-    ) -> bool:
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
         if request.user.is_superuser:
             return True
 
-        target_org = getattr(obj, "organization", obj if hasattr(obj, "users") else None)
-        return bool(request.user.organization and request.user.organization == target_org)
+        target_org = getattr(
+            obj, "organization", obj if hasattr(obj, "users") else None
+        )
+        return bool(
+            request.user.organization and request.user.organization == target_org
+        )
 
 
 def HasRole(allowed_roles: Sequence[str]):
@@ -79,10 +81,7 @@ def HasRole(allowed_roles: Sequence[str]):
             return bool(
                 request.user
                 and request.user.is_authenticated
-                and (
-                    request.user.role in allowed_roles
-                    or request.user.is_superuser
-                )
+                and (request.user.role in allowed_roles or request.user.is_superuser)
             )
 
     return DynamicRolePermission

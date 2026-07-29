@@ -51,7 +51,14 @@ class IncidentEventAdmin(admin.ModelAdmin):
     list_display = ("incident", "event_type", "user", "created_at")
     list_filter = ("event_type", "created_at")
     search_fields = ("incident__title", "message")
-    readonly_fields = ("incident", "user", "event_type", "message", "metadata", "created_at")
+    readonly_fields = (
+        "incident",
+        "user",
+        "event_type",
+        "message",
+        "metadata",
+        "created_at",
+    )
 
 
 @admin.register(Comment)

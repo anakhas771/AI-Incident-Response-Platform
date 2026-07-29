@@ -46,9 +46,7 @@ class IsIncidentOrganizationMember(BasePermission):
     Ensures that users can only access incidents belonging to their own organization.
     """
 
-    def has_object_permission(
-        self, request: Request, view: APIView, obj: Any
-    ) -> bool:
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
         if request.user.is_superuser:

@@ -115,7 +115,14 @@ class IncidentDetailSerializer(serializers.ModelSerializer):
             "attachments",
             "events",
         ]
-        read_only_fields = ["id", "created_by", "resolved_at", "closed_at", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "created_by",
+            "resolved_at",
+            "closed_at",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class IncidentCreateUpdateSerializer(serializers.ModelSerializer):
@@ -159,7 +166,9 @@ class IncidentCreateUpdateSerializer(serializers.ModelSerializer):
                         "Cannot assign incident to user from another organization."
                     )
             except User.DoesNotExist as err:
-                raise serializers.ValidationError("Assigned user does not exist.") from err
+                raise serializers.ValidationError(
+                    "Assigned user does not exist."
+                ) from err
         return value
 
 
@@ -176,7 +185,9 @@ class IncidentAssignSerializer(serializers.Serializer):
                         "Cannot assign incident to a user outside your organization."
                     )
             except User.DoesNotExist as err:
-                raise serializers.ValidationError("Assigned user does not exist.") from err
+                raise serializers.ValidationError(
+                    "Assigned user does not exist."
+                ) from err
         return value
 
 
