@@ -54,10 +54,3 @@
 🚧 Planning & System Design Complete
 
 Currently building the MVP.
-
-📖 Project Documentation
-
-Complete design documents, architecture decisions, and system diagrams are available in Notion.
-
-View Documentation:
-https://app.notion.com/p/Project-Overview-db6fa2e5b0954513901e2fa7c3701456?source=copy_link

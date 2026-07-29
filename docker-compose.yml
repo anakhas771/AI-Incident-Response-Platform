@@ -1,0 +1,153 @@
+
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: incident_platform_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-incident_platform_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_secure_password_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres_user} -d ${POSTGRES_DB:-incident_platform_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: incident_platform_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: incident_platform_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - ENVIRONMENT=development
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
+      - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres_secure_password_dev}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: incident_platform_celery_worker
+    command: celery -A config worker -l info --concurrency=4
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=True
+      - ENVIRONMENT=development
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
+      - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres_secure_password_dev}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: incident_platform_celery_beat
+    command: celery -A config beat -l info
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=True
+      - ENVIRONMENT=development
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
+      - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres_secure_password_dev}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: incident_platform_frontend
+    command: npm run dev -- --host 0.0.0.0
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
