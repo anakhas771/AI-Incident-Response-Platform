@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const status = error.response.status;
       const apiError = error.response.data?.error;
-      
+
       console.error(`[API Error ${status}]:`, apiError?.message || error.message);
     } else if (error.request) {
       console.error('[API Network Error]: No response received from server.');
