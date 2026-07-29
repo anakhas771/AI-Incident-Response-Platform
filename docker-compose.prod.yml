@@ -90,8 +90,9 @@ services:
 
   nginx:
     build:
-      context: ./infrastructure/nginx
+      context: ./frontend
       dockerfile: Dockerfile
+      target: production
     container_name: incident_platform_nginx_prod
     restart: always
     ports:

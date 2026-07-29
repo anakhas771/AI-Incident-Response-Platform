@@ -17,6 +17,16 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Local Application Packages
+LOCAL_APPS = [
+    "apps.common",
+    "apps.accounts",
+    "apps.incidents",
+    "apps.logs",
+    "apps.monitoring",
+    "apps.ai_engine",
+]
+
 # Installed Applications
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -29,7 +39,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
-]
+] + LOCAL_APPS
+
+AUTH_USER_MODEL = "accounts.User"
+
 
 # Middleware Pipeline
 MIDDLEWARE = [

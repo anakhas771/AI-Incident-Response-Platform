@@ -9,9 +9,13 @@ class TimeStampedUUIDModel(models.Model):
     and `updated_at` fields, alongside a primary key `id` as a UUID4.
     """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id: models.UUIDField = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
+    created_at: models.DateTimeField = models.DateTimeField(
+        auto_now_add=True, db_index=True
+    )
+    updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
