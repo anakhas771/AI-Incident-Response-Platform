@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.db import connection
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,6 +11,8 @@ class HealthCheckView(APIView):
     """
     Production health check view verifying Database, Cache (Redis), and System operational readiness.
     """
+
+    permission_classes = [AllowAny]
 
     @extend_schema(
         summary="System Health Check",
@@ -49,4 +52,5 @@ class HealthCheckView(APIView):
             if health_status["status"] == "healthy"
             else status.HTTP_503_SERVICE_UNAVAILABLE
         )
+
         return Response(health_status, status=http_status)
