@@ -14,6 +14,14 @@ urlpatterns = [
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="auth-login"),
     path("auth/refresh/", CustomTokenRefreshView.as_view(), name="auth-refresh"),
     path("auth/me/", UserProfileView.as_view(), name="auth-me"),
-    path("auth/change-password/", ChangePasswordView.as_view(), name="auth-change-password"),
-    path("auth/organization/", OrganizationDetailView.as_view(), name="organization-detail"),
+    path(
+        "auth/change-password/",
+        ChangePasswordView.as_view(),
+        name="auth-change-password",
+    ),
+    path(
+        "auth/organization/",
+        OrganizationDetailView.as_view(),
+        name="organization-detail",
+    ),
 ]

@@ -63,8 +63,16 @@ class IncidentViewSet(viewsets.ModelViewSet):
     ViewSet for managing enterprise incidents, custom status/assignment transitions, comments, and timeline events.
     """
 
-    permission_classes = [IsAuthenticated, IncidentPermission, IsIncidentOrganizationMember]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    permission_classes = [
+        IsAuthenticated,
+        IncidentPermission,
+        IsIncidentOrganizationMember,
+    ]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
     filterset_class = IncidentFilter
     search_fields = ["title", "description"]
     ordering_fields = ["created_at", "updated_at", "severity", "status"]
@@ -127,12 +135,17 @@ class IncidentViewSet(viewsets.ModelViewSet):
         summary="Assign incident to a team member",
         description="Assigns or reassigns an incident to an organization user.",
         request=IncidentAssignSerializer,
-        responses={200: IncidentDetailSerializer, 400: OpenApiResponse(description="Invalid user ID")},
+        responses={
+            200: IncidentDetailSerializer,
+            400: OpenApiResponse(description="Invalid user ID"),
+        },
     )
     @action(detail=True, methods=["post"], url_path="assign")
     def assign(self, request: Request, pk: str = None) -> Response:
         incident = self.get_object()
-        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer = self.get_serializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         assigned_to_id = serializer.validated_data.get("assigned_to_id")
 
@@ -154,7 +167,10 @@ class IncidentViewSet(viewsets.ModelViewSet):
         summary="Change incident status",
         description="Transitions an incident to a new status (e.g. OPEN -> INVESTIGATING -> RESOLVED -> CLOSED).",
         request=IncidentStatusSerializer,
-        responses={200: IncidentDetailSerializer, 400: OpenApiResponse(description="Invalid status transition")},
+        responses={
+            200: IncidentDetailSerializer,
+            400: OpenApiResponse(description="Invalid status transition"),
+        },
     )
     @action(detail=True, methods=["post"], url_path="status")
     def change_status(self, request: Request, pk: str = None) -> Response:
