@@ -2,9 +2,9 @@ name: Docker Build & Verification CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   docker-build:
@@ -28,7 +28,7 @@ jobs:
       - name: Build Frontend Container
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: .
           file: ./frontend/Dockerfile
           target: production
           push: false
