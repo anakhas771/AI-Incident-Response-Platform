@@ -10,6 +10,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # API v1 Endpoint Routing
     path("api/v1/", include("apps.common.urls")),
+    path("api/v1/", include("apps.accounts.urls")),
+    path("api/v1/", include("apps.incidents.urls")),
     # OpenAPI 3 Schema & Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
