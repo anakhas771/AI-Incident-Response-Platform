@@ -4,7 +4,7 @@ Serializers for AI Engine REST API endpoints and models.
 
 from rest_framework import serializers
 
-from apps.ai_engine.models import AIIncidentAnalysis
+from apps.ai_engine.models import AIIncidentAnalysis, IncidentAnalysis
 
 
 class IncidentAnalyzeRequestSerializer(serializers.Serializer):
@@ -113,3 +113,44 @@ class AIIncidentAnalysisSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = fields
+
+
+class IncidentAnalysisSerializer(serializers.ModelSerializer):
+    """
+    Serializer for IncidentAnalysis model returning standardized Phase 5 schema.
+    """
+
+    incident_id = serializers.UUIDField(source="incident.id", read_only=True)
+    category = serializers.CharField(source="incident_category", read_only=True)
+    root_cause = serializers.CharField(source="root_cause_analysis", read_only=True)
+    impact = serializers.CharField(source="impact_analysis", read_only=True)
+    recommendations = serializers.JSONField(
+        source="recommended_actions", read_only=True
+    )
+
+    class Meta:
+        model = IncidentAnalysis
+        fields = [
+            "incident_id",
+            "status",
+            "severity_prediction",
+            "risk_score",
+            "category",
+            "root_cause",
+            "impact",
+            "recommendations",
+            "confidence_score",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class IncidentAIAnalyzeTriggerSerializer(serializers.Serializer):
+    """
+    Serializer for manual AI analysis trigger response payload.
+    """
+
+    message = serializers.CharField()
+    incident_id = serializers.UUIDField()
+    status = serializers.CharField()
