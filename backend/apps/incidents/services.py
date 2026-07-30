@@ -1,11 +1,15 @@
+import logging
 from typing import Any, Dict, Optional
 
-from django.db import transaction
+from django.conf import settings
+from django.db import connection, transaction
 from django.utils import timezone
 
 from apps.accounts.models import Organization, User
 
 from .models import Comment, EventType, Incident, IncidentEvent, Status
+
+logger = logging.getLogger(__name__)
 
 
 class IncidentService:
@@ -19,7 +23,8 @@ class IncidentService:
         user: User, organization: Organization, data: Dict[str, Any]
     ) -> Incident:
         """
-        Creates a new incident and logs a CREATED event.
+        Creates a new incident, logs a CREATED event, and asynchronously triggers
+        AI triage analysis via Celery without blocking the response.
         """
         incident = Incident.objects.create(
             organization=organization, created_by=user, **data
@@ -36,6 +41,27 @@ class IncidentService:
                 "category": incident.category,
             },
         )
+
+        try:
+            from apps.ai_engine.tasks import analyze_incident_task
+
+            if (
+                connection.in_atomic_block
+                and not getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False)
+                and not getattr(settings, "TESTING", False)
+            ):
+                transaction.on_commit(
+                    lambda: analyze_incident_task.delay(str(incident.id))
+                )
+            else:
+                analyze_incident_task.delay(str(incident.id))
+        except Exception as exc:
+            logger.warning(
+                "Failed to enqueue AI analysis task for incident_id=%s: %s",
+                incident.id,
+                str(exc),
+            )
+
         return incident
 
     @staticmethod
