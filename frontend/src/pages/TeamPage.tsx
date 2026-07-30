@@ -3,7 +3,7 @@ import { Users, UserPlus, MoreVertical } from 'lucide-react';
 import { mockUsers } from '../services/mockData';
 import { RoleBadge } from '../components/ui/Badge';
 import { Role } from '../types';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import toast from 'react-hot-toast';
 

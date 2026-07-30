@@ -13,7 +13,7 @@ import {
 import { useIncidentStore } from '../store/useIncidentStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import { AISummaryCard } from '../components/ai/AISummaryCard';
 import { Status } from '../types';
 import { mockUsers } from '../services/mockData';

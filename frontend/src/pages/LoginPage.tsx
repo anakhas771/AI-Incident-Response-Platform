@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Lock, Mail, CheckCircle2 } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
-import { Button } from '../import Button from "../components/ui/button";';
-import { mockUsers } from '../services/mockData';
 
+import { useAuthStore } from '../store/useAuthStore';
+import { Button } from '../components/ui/Button';
+import { mockUsers } from '../services/mockData';
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('alex.chen@acme-security.io');
   const [password, setPassword] = useState('SuperSecretPassword123!');

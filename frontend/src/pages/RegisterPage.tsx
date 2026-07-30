@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Mail, Lock, Building } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Role } from '../types';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 
 export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');

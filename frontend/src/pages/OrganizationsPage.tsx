@@ -3,7 +3,7 @@ import { Building2, Plus } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { mockOrganization } from '../services/mockData';
 import { Card, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 
 export const OrganizationsPage: React.FC = () => {
   const { organization } = useAuthStore();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, Radio } from 'lucide-react';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 
 interface AlertItem {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bot, Sparkles, Send, Terminal, FileText, Copy, Check } from 'lucide-react';
 import { useIncidentStore } from '../store/useIncidentStore';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import { AITypingText } from '../components/ai/AITypingText';
 import toast from 'react-hot-toast';
 

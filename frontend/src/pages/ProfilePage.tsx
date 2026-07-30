@@ -3,7 +3,7 @@ import { User as UserIcon, Save } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { RoleBadge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 
 export const ProfilePage: React.FC = () => {

@@ -5,7 +5,7 @@ import { useIncidentStore } from '../store/useIncidentStore';
 import { useCommandStore } from '../store/useCommandStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import { Category, Severity, Status } from '../types';
 
 export const IncidentsPage: React.FC = () => {

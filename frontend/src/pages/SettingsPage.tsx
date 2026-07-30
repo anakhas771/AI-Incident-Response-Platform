@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, Key, Webhook, Check, Copy } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 
 export const SettingsPage: React.FC = () => {

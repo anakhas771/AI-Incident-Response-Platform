@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Sparkles } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
-import { Button } from '../../import Button from "../components/ui/button";';
+import { Button } from '../../components/ui/Button';
 import { useCommandStore } from '../../store/useCommandStore';
 import { useIncidentStore } from '../../store/useIncidentStore';
 import { useAuthStore } from '../../store/useAuthStore';

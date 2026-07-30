@@ -30,7 +30,7 @@ import { useCommandStore } from '../store/useCommandStore';
 import { mockSystemMetrics, mockActivityLogs } from '../services/mockData';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import { Button } from '../import Button from "../components/ui/button";';
+import { Button } from '../components/ui/Button';
 
 export const DashboardPage: React.FC = () => {
   const { incidents, setSelectedIncident } = useIncidentStore();
