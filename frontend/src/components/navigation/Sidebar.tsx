@@ -61,9 +61,14 @@ export const Sidebar: React.FC = () => {
               className="flex flex-col truncate"
             >
               <span className="font-bold text-sm text-zinc-100 tracking-tight flex items-center gap-1.5">
-                ANTIGRAVITY <span className="text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800/60 px-1 rounded font-mono">SOC</span>
+                ANTIGRAVITY{' '}
+                <span className="text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800/60 px-1 rounded font-mono">
+                  SOC
+                </span>
               </span>
-              <span className="text-[11px] text-zinc-400 truncate">{organization?.name || 'Cyber Platform'}</span>
+              <span className="text-[11px] text-zinc-400 truncate">
+                {organization?.name || 'Cyber Platform'}
+              </span>
             </motion.div>
           )}
         </NavLink>
@@ -72,7 +77,11 @@ export const Sidebar: React.FC = () => {
           className="p-1 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
           title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {isSidebarCollapsed ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <ChevronLeft className="w-4 h-4" />
+          )}
         </button>
       </div>
 
@@ -169,7 +178,9 @@ export const Sidebar: React.FC = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
-                <Icon className={cn('w-4 h-4 shrink-0', isActive ? 'text-zinc-100' : 'text-zinc-400')} />
+                <Icon
+                  className={cn('w-4 h-4 shrink-0', isActive ? 'text-zinc-100' : 'text-zinc-400')}
+                />
                 {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
               </NavLink>
             );
@@ -183,14 +194,21 @@ export const Sidebar: React.FC = () => {
           className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-zinc-800/60 transition-colors"
         >
           <img
-            src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+            src={
+              user?.avatar ||
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            }
             alt={user?.full_name || 'User'}
             className="w-7 h-7 rounded-full border border-zinc-700 object-cover shrink-0"
           />
           {!isSidebarCollapsed && (
             <div className="flex flex-col truncate">
-              <span className="text-xs font-medium text-zinc-200 truncate">{user?.full_name || 'Operator'}</span>
-              <span className="text-[10px] text-indigo-400 font-mono">{user?.role || 'RESPONDER'}</span>
+              <span className="text-xs font-medium text-zinc-200 truncate">
+                {user?.full_name || 'Operator'}
+              </span>
+              <span className="text-[10px] text-indigo-400 font-mono">
+                {user?.role || 'RESPONDER'}
+              </span>
             </div>
           )}
         </NavLink>

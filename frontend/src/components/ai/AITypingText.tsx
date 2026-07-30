@@ -7,7 +7,12 @@ interface AITypingTextProps {
   className?: string;
 }
 
-export const AITypingText: React.FC<AITypingTextProps> = ({ text, speed = 15, onComplete, className }) => {
+export const AITypingText: React.FC<AITypingTextProps> = ({
+  text,
+  speed = 15,
+  onComplete,
+  className,
+}) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
@@ -33,7 +38,9 @@ export const AITypingText: React.FC<AITypingTextProps> = ({ text, speed = 15, on
   return (
     <span className={className}>
       {displayedText}
-      {isTyping && <span className="inline-block w-1.5 h-4 ml-0.5 bg-indigo-400 animate-pulse align-middle" />}
+      {isTyping && (
+        <span className="inline-block w-1.5 h-4 ml-0.5 bg-indigo-400 animate-pulse align-middle" />
+      )}
     </span>
   );
 };

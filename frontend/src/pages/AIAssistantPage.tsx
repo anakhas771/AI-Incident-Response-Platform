@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bot, Sparkles, Send, Terminal, FileText, Copy, Check } from 'lucide-react';
 import { useIncidentStore } from '../store/useIncidentStore';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import { AITypingText } from '../components/ai/AITypingText';
 import toast from 'react-hot-toast';
 
@@ -127,7 +127,11 @@ export const AIAssistantPage: React.FC = () => {
                     : 'bg-indigo-950 border border-indigo-700 text-indigo-400'
                 }`}
               >
-                {msg.sender === 'user' ? <FileText className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                {msg.sender === 'user' ? (
+                  <FileText className="w-4 h-4" />
+                ) : (
+                  <Sparkles className="w-4 h-4" />
+                )}
               </div>
 
               <div
@@ -138,7 +142,9 @@ export const AIAssistantPage: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center justify-between gap-4 text-[10px] font-mono opacity-75 pb-1 border-b border-white/10">
-                  <span className="font-semibold">{msg.sender === 'user' ? 'Security Operator' : 'AI Copilot Subagent'}</span>
+                  <span className="font-semibold">
+                    {msg.sender === 'user' ? 'Security Operator' : 'AI Copilot Subagent'}
+                  </span>
                   <span>{msg.timestamp}</span>
                 </div>
 
@@ -156,7 +162,11 @@ export const AIAssistantPage: React.FC = () => {
                         onClick={() => handleCopyCode(msg.id, msg.codeSnippet!)}
                         className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200"
                       >
-                        {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedId === msg.id ? (
+                          <Check className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
                         {copiedId === msg.id ? 'Copied' : 'Copy'}
                       </button>
                     </div>

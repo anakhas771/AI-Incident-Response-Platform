@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Lock, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import { mockUsers } from '../services/mockData';
 
 export const LoginPage: React.FC = () => {
@@ -42,9 +42,14 @@ export const LoginPage: React.FC = () => {
             <ShieldAlert className="w-6 h-6" />
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            Enterprise SOC Login <span className="text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800 px-1.5 py-0.5 rounded">v2.4</span>
+            Enterprise SOC Login{' '}
+            <span className="text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800 px-1.5 py-0.5 rounded">
+              v2.4
+            </span>
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">AI Incident Response & Automated Security Command</p>
+          <p className="text-xs text-zinc-400 mt-1">
+            AI Incident Response & Automated Security Command
+          </p>
         </div>
 
         <div className="mb-6 p-3 rounded-xl bg-surface-elevated border border-zinc-800/80">
@@ -90,8 +95,13 @@ export const LoginPage: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Password</label>
-              <Link to="/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+              <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
                 Forgot?
               </Link>
             </div>

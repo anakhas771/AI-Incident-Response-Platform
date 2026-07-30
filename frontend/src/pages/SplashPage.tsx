@@ -34,7 +34,10 @@ export const SplashPage: React.FC = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="text-2xl font-bold tracking-tight text-white flex items-center gap-2"
         >
-          ANTIGRAVITY <span className="text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800 px-1.5 py-0.5 rounded">AI SOC</span>
+          ANTIGRAVITY{' '}
+          <span className="text-xs font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800 px-1.5 py-0.5 rounded">
+            AI SOC
+          </span>
         </motion.h1>
 
         <motion.p

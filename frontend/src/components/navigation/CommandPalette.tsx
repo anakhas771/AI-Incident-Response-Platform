@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, LayoutDashboard, AlertTriangle, BarChart3, Users, Settings, Plus, Sparkles, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  LayoutDashboard,
+  AlertTriangle,
+  BarChart3,
+  Users,
+  Settings,
+  Plus,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
 import { useCommandStore } from '../../store/useCommandStore';
 import { useIncidentStore } from '../../store/useIncidentStore';
 import { Modal } from '../ui/Modal';
@@ -29,8 +39,10 @@ export const CommandPalette: React.FC = () => {
     action();
   };
 
-  const filteredIncidents = incidents.filter((inc) =>
-    inc.title.toLowerCase().includes(query.toLowerCase()) || inc.id.toLowerCase().includes(query.toLowerCase())
+  const filteredIncidents = incidents.filter(
+    (inc) =>
+      inc.title.toLowerCase().includes(query.toLowerCase()) ||
+      inc.id.toLowerCase().includes(query.toLowerCase())
   );
 
   return (

@@ -26,13 +26,21 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = 'Card';
 
-export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  className,
+  children,
+  ...props
+}) => (
   <div className={cn('flex flex-col space-y-1.5 mb-4', className)} {...props}>
     {children}
   </div>
 );
 
-export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ className, children, ...props }) => (
+export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
+  className,
+  children,
+  ...props
+}) => (
   <h3 className={cn('text-base font-semibold text-zinc-100 tracking-tight', className)} {...props}>
     {children}
   </h3>
@@ -48,7 +56,11 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
   </p>
 );
 
-export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
+export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  className,
+  children,
+  ...props
+}) => (
   <div className={cn('space-y-3', className)} {...props}>
     {children}
   </div>

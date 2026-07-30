@@ -130,9 +130,10 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
         }
         return inc;
       });
-      const updatedSelected = state.selectedIncident?.id === id
-        ? updatedList.find((i) => i.id === id) || null
-        : state.selectedIncident;
+      const updatedSelected =
+        state.selectedIncident?.id === id
+          ? updatedList.find((i) => i.id === id) || null
+          : state.selectedIncident;
       return { incidents: updatedList, selectedIncident: updatedSelected };
     });
 
@@ -144,11 +145,14 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
   assignUser: (id, assignee, _user) => {
     set((state) => {
       const updatedList = state.incidents.map((inc) =>
-        inc.id === id ? { ...inc, assigned_to: assignee, updated_at: new Date().toISOString() } : inc
+        inc.id === id
+          ? { ...inc, assigned_to: assignee, updated_at: new Date().toISOString() }
+          : inc
       );
-      const updatedSelected = state.selectedIncident?.id === id
-        ? updatedList.find((i) => i.id === id) || null
-        : state.selectedIncident;
+      const updatedSelected =
+        state.selectedIncident?.id === id
+          ? updatedList.find((i) => i.id === id) || null
+          : state.selectedIncident;
       return { incidents: updatedList, selectedIncident: updatedSelected };
     });
 
@@ -174,12 +178,17 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
       };
       const updatedIncidents = state.incidents.map((inc) =>
         inc.id === incidentId
-          ? { ...inc, comments_count: (inc.comments_count || 0) + 1, updated_at: new Date().toISOString() }
+          ? {
+              ...inc,
+              comments_count: (inc.comments_count || 0) + 1,
+              updated_at: new Date().toISOString(),
+            }
           : inc
       );
-      const updatedSelected = state.selectedIncident?.id === incidentId
-        ? updatedIncidents.find((i) => i.id === incidentId) || null
-        : state.selectedIncident;
+      const updatedSelected =
+        state.selectedIncident?.id === incidentId
+          ? updatedIncidents.find((i) => i.id === incidentId) || null
+          : state.selectedIncident;
 
       return {
         commentsMap: updatedCommentsMap,

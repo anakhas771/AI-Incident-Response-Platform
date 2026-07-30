@@ -13,7 +13,7 @@ import {
 import { useIncidentStore } from '../store/useIncidentStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import { AISummaryCard } from '../components/ai/AISummaryCard';
 import { Status } from '../types';
 import { mockUsers } from '../services/mockData';
@@ -88,7 +88,9 @@ export const IncidentDetailPage: React.FC = () => {
         </h1>
 
         <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-400 pt-1">
-          <span>Reported by: <strong className="text-zinc-200">{incident.created_by.full_name}</strong></span>
+          <span>
+            Reported by: <strong className="text-zinc-200">{incident.created_by.full_name}</strong>
+          </span>
           <span>•</span>
           <span>Created: {new Date(incident.created_at).toLocaleString()}</span>
         </div>
@@ -100,7 +102,9 @@ export const IncidentDetailPage: React.FC = () => {
             <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-400" /> Technical Problem Description
             </h2>
-            <p className="text-sm text-zinc-200 leading-relaxed font-normal">{incident.description}</p>
+            <p className="text-sm text-zinc-200 leading-relaxed font-normal">
+              {incident.description}
+            </p>
 
             <div className="rounded-lg bg-zinc-950 border border-zinc-800 p-3 text-xs font-mono text-red-300/90 leading-relaxed overflow-x-auto">
               <div className="text-[10px] text-zinc-500 mb-1 flex items-center gap-1.5 border-b border-zinc-900 pb-1">
@@ -114,22 +118,33 @@ export const IncidentDetailPage: React.FC = () => {
 
           <div className="bg-surface border border-subtle rounded-xl p-5 space-y-4">
             <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-cyan-400" /> Team Discussion ({comments.length})
+              <MessageSquare className="w-4 h-4 text-cyan-400" /> Team Discussion ({comments.length}
+              )
             </h2>
 
             <div className="space-y-3">
               {comments.length === 0 ? (
-                <p className="text-xs text-zinc-500 italic py-3 font-mono">No comments posted yet.</p>
+                <p className="text-xs text-zinc-500 italic py-3 font-mono">
+                  No comments posted yet.
+                </p>
               ) : (
                 comments.map((c) => (
-                  <div key={c.id} className="p-3 rounded-lg bg-surface-elevated border border-subtle space-y-1.5">
+                  <div
+                    key={c.id}
+                    className="p-3 rounded-lg bg-surface-elevated border border-subtle space-y-1.5"
+                  >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-zinc-200">{c.author.full_name}</span>
-                        <span className="text-[10px] font-mono text-indigo-400">{c.author.role}</span>
+                        <span className="text-[10px] font-mono text-indigo-400">
+                          {c.author.role}
+                        </span>
                       </div>
                       <span className="text-[10px] font-mono text-zinc-500">
-                        {new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(c.created_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-300 leading-relaxed">{c.message}</p>
@@ -166,8 +181,12 @@ export const IncidentDetailPage: React.FC = () => {
             </h2>
             <div className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-center cursor-pointer transition-colors bg-zinc-950/40">
               <UploadCloud className="w-6 h-6 text-zinc-500 mx-auto mb-2" />
-              <p className="text-xs font-medium text-zinc-300">Drag & drop log files or pcap dumps</p>
-              <p className="text-[11px] text-zinc-500 font-mono mt-0.5">Supports .log, .json, .pcap, .png up to 50MB</p>
+              <p className="text-xs font-medium text-zinc-300">
+                Drag & drop log files or pcap dumps
+              </p>
+              <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                Supports .log, .json, .pcap, .png up to 50MB
+              </p>
             </div>
           </div>
         </div>

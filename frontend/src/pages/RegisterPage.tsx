@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Mail, Lock, Building } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Role } from '../types';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 
 export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,7 +46,9 @@ export const RegisterPage: React.FC = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white shadow-xl shadow-indigo-500/25 mb-3">
             <ShieldAlert className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Create Enterprise Workspace</h1>
+          <h1 className="text-xl font-bold text-white tracking-tight">
+            Create Enterprise Workspace
+          </h1>
           <p className="text-xs text-zinc-400 mt-1">Deploy Multi-Tenant AI Security Command</p>
         </div>
 

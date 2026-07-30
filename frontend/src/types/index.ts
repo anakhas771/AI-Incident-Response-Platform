@@ -4,7 +4,8 @@ export type Severity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 export type Status = 'OPEN' | 'INVESTIGATING' | 'IDENTIFIED' | 'MITIGATING' | 'RESOLVED' | 'CLOSED';
 
-export type Category = 'Infrastructure' | 'Security' | 'Application' | 'Database' | 'Network' | 'Other';
+export type Category =
+  'Infrastructure' | 'Security' | 'Application' | 'Database' | 'Network' | 'Other';
 
 export interface User {
   id: string;
@@ -114,7 +115,13 @@ export interface SystemMetrics {
   sla_compliance_pct: number;
   health_status: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
   severity_distribution: Array<{ name: string; value: number; fill: string }>;
-  incident_trends: Array<{ timestamp: string; critical: number; high: number; medium: number; low: number }>;
+  incident_trends: Array<{
+    timestamp: string;
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  }>;
   response_times: Array<{ day: string; mttr: number; mttd: number }>;
   mini_heatmap: Array<{ day: string; hour: number; value: number }>;
 }

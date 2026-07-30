@@ -30,7 +30,7 @@ import { useCommandStore } from '../store/useCommandStore';
 import { mockSystemMetrics, mockActivityLogs } from '../services/mockData';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 
 export const DashboardPage: React.FC = () => {
   const { incidents, setSelectedIncident } = useIncidentStore();
@@ -38,7 +38,8 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
 
   const activeIncidents = incidents.filter((i) => i.status !== 'CLOSED' && i.status !== 'RESOLVED');
-  const criticalIncident = activeIncidents.find((i) => i.severity === 'CRITICAL') || activeIncidents[0];
+  const criticalIncident =
+    activeIncidents.find((i) => i.severity === 'CRITICAL') || activeIncidents[0];
 
   return (
     <div className="space-y-6">
@@ -87,8 +88,12 @@ export const DashboardPage: React.FC = () => {
                   </span>
                   <span className="text-xs text-zinc-400 font-mono">• {criticalIncident.id}</span>
                 </div>
-                <h2 className="text-sm font-semibold text-zinc-100 mt-0.5">{criticalIncident.title}</h2>
-                <p className="text-xs text-zinc-400 line-clamp-1 mt-1">{criticalIncident.description}</p>
+                <h2 className="text-sm font-semibold text-zinc-100 mt-0.5">
+                  {criticalIncident.title}
+                </h2>
+                <p className="text-xs text-zinc-400 line-clamp-1 mt-1">
+                  {criticalIncident.description}
+                </p>
               </div>
             </div>
 
@@ -112,13 +117,17 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card hoverEffect className="relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Incidents</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Active Incidents
+            </span>
             <div className="p-2 rounded-lg bg-red-950/50 text-red-400 border border-red-800/40">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">{activeIncidents.length}</span>
+            <span className="text-2xl font-bold font-mono text-zinc-100">
+              {activeIncidents.length}
+            </span>
             <span className="text-xs font-mono text-red-400 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> +1 new
             </span>
@@ -128,29 +137,39 @@ export const DashboardPage: React.FC = () => {
 
         <Card hoverEffect className="relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">MTTR (Mean Time)</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              MTTR (Mean Time)
+            </span>
             <div className="p-2 rounded-lg bg-indigo-950/50 text-indigo-400 border border-indigo-800/40">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">{mockSystemMetrics.mttr_minutes}m</span>
+            <span className="text-2xl font-bold font-mono text-zinc-100">
+              {mockSystemMetrics.mttr_minutes}m
+            </span>
             <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
               -14% vs last week
             </span>
           </div>
-          <p className="text-[11px] text-zinc-400 mt-1">MTTD: {mockSystemMetrics.mttd_minutes}m (Detection Time)</p>
+          <p className="text-[11px] text-zinc-400 mt-1">
+            MTTD: {mockSystemMetrics.mttd_minutes}m (Detection Time)
+          </p>
         </Card>
 
         <Card hoverEffect className="relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">SLA Compliance</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              SLA Compliance
+            </span>
             <div className="p-2 rounded-lg bg-emerald-950/50 text-emerald-400 border border-emerald-800/40">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">{mockSystemMetrics.sla_compliance_pct}%</span>
+            <span className="text-2xl font-bold font-mono text-zinc-100">
+              {mockSystemMetrics.sla_compliance_pct}%
+            </span>
             <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
               Target: 99.0%
             </span>
@@ -180,7 +199,9 @@ export const DashboardPage: React.FC = () => {
           <Card hoverEffect={false}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100">Incident Volume & Severity Trends</CardTitle>
+                <CardTitle className="text-sm font-semibold text-zinc-100">
+                  Incident Volume & Severity Trends
+                </CardTitle>
                 <CardDescription>24-hour continuous monitoring telemetry</CardDescription>
               </div>
               <span className="text-xs font-mono text-zinc-400">UTC Timeline</span>
@@ -201,10 +222,29 @@ export const DashboardPage: React.FC = () => {
                   <XAxis dataKey="timestamp" stroke="#52525b" fontSize={11} tickLine={false} />
                   <YAxis stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{
+                      backgroundColor: '#18181b',
+                      borderColor: '#27272a',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
                   />
-                  <Area type="monotone" dataKey="critical" stroke="#ef4444" fillOpacity={1} fill="url(#colorCritical)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="high" stroke="#f97316" fillOpacity={1} fill="url(#colorHigh)" strokeWidth={2} />
+                  <Area
+                    type="monotone"
+                    dataKey="critical"
+                    stroke="#ef4444"
+                    fillOpacity={1}
+                    fill="url(#colorCritical)"
+                    strokeWidth={2}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="high"
+                    stroke="#f97316"
+                    fillOpacity={1}
+                    fill="url(#colorHigh)"
+                    strokeWidth={2}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -213,10 +253,15 @@ export const DashboardPage: React.FC = () => {
           <Card hoverEffect={false}>
             <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-subtle">
               <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100">Live Active Incidents Queue</CardTitle>
+                <CardTitle className="text-sm font-semibold text-zinc-100">
+                  Live Active Incidents Queue
+                </CardTitle>
                 <CardDescription>Prioritized by severity & response SLA</CardDescription>
               </div>
-              <Link to="/incidents" className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1">
+              <Link
+                to="/incidents"
+                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
+              >
                 View All <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </CardHeader>
@@ -241,7 +286,9 @@ export const DashboardPage: React.FC = () => {
                         <span>•</span>
                         <span>{inc.category}</span>
                         <span>•</span>
-                        <span>Assignee: {inc.assigned_to ? inc.assigned_to.full_name : 'Unassigned'}</span>
+                        <span>
+                          Assignee: {inc.assigned_to ? inc.assigned_to.full_name : 'Unassigned'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -259,14 +306,21 @@ export const DashboardPage: React.FC = () => {
         <div className="space-y-6">
           <Card hoverEffect={false}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-zinc-100">Severity Distribution</CardTitle>
+              <CardTitle className="text-sm font-semibold text-zinc-100">
+                Severity Distribution
+              </CardTitle>
               <CardDescription>Breakdown across active platform queue</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <div className="w-36 h-36">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={mockSystemMetrics.severity_distribution} innerRadius={40} outerRadius={60} dataKey="value">
+                    <Pie
+                      data={mockSystemMetrics.severity_distribution}
+                      innerRadius={40}
+                      outerRadius={60}
+                      dataKey="value"
+                    >
                       {mockSystemMetrics.severity_distribution.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
@@ -279,7 +333,10 @@ export const DashboardPage: React.FC = () => {
                 {mockSystemMetrics.severity_distribution.map((item) => (
                   <div key={item.name} className="flex items-center justify-between gap-4">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.fill }} />
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: item.fill }}
+                      />
                       <span className="text-zinc-300">{item.name}</span>
                     </span>
                     <span className="font-bold text-zinc-100">{item.value}</span>
@@ -332,7 +389,12 @@ export const DashboardPage: React.FC = () => {
                 <div key={log.id} className="text-xs space-y-1">
                   <div className="flex items-center justify-between text-[11px] font-mono">
                     <span className="text-zinc-300 font-semibold">{log.user.full_name}</span>
-                    <span className="text-zinc-400">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="text-zinc-400">
+                      {new Date(log.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
                   <p className="text-zinc-400 truncate">{log.action}</p>
                 </div>

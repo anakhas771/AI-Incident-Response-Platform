@@ -3,7 +3,7 @@ import { Users, UserPlus, MoreVertical } from 'lucide-react';
 import { mockUsers } from '../services/mockData';
 import { RoleBadge } from '../components/ui/Badge';
 import { Role } from '../types';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import { Modal } from '../components/ui/Modal';
 import toast from 'react-hot-toast';
 
@@ -24,7 +24,8 @@ export const TeamPage: React.FC = () => {
       full_name: email.split('@')[0],
       role,
       is_active: true,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      avatar:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     };
     setTeam((prev) => [...prev, newUser]);
     setIsInviteOpen(false);
@@ -41,7 +42,9 @@ export const TeamPage: React.FC = () => {
           <h1 className="text-xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-400" /> Team & RBAC Management
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">Manage organization members, roles, and access control permissions</p>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Manage organization members, roles, and access control permissions
+          </p>
         </div>
 
         <Button variant="default" size="sm" onClick={() => setIsInviteOpen(true)}>
@@ -65,7 +68,11 @@ export const TeamPage: React.FC = () => {
               <tr key={m.id} className="hover:bg-surface-elevated/50 transition-colors">
                 <td className="py-3.5 px-4">
                   <div className="flex items-center gap-3">
-                    <img src={m.avatar} alt={m.full_name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                    <img
+                      src={m.avatar}
+                      alt={m.full_name}
+                      className="w-8 h-8 rounded-full object-cover shrink-0"
+                    />
                     <div>
                       <h4 className="font-semibold text-zinc-100">{m.full_name}</h4>
                       <p className="text-[11px] font-mono text-zinc-400">{m.email}</p>
@@ -94,10 +101,17 @@ export const TeamPage: React.FC = () => {
         </table>
       </div>
 
-      <Modal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} title="Invite Team Member" maxWidth="md">
+      <Modal
+        isOpen={isInviteOpen}
+        onClose={() => setIsInviteOpen(false)}
+        title="Invite Team Member"
+        maxWidth="md"
+      >
         <form onSubmit={handleInvite} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">Work Email</label>
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+              Work Email
+            </label>
             <input
               type="email"
               value={email}
@@ -109,7 +123,9 @@ export const TeamPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">Assigned Role</label>
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+              Assigned Role
+            </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}

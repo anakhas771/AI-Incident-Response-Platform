@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Search,
-  Plus,
-  MoreVertical,
-  MessageSquare,
-  Paperclip,
-} from 'lucide-react';
+import { Search, Plus, MoreVertical, MessageSquare, Paperclip } from 'lucide-react';
 import { useIncidentStore } from '../store/useIncidentStore';
 import { useCommandStore } from '../store/useCommandStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import { Category, Severity, Status } from '../types';
 
 export const IncidentsPage: React.FC = () => {
-  const { incidents, filters, setFilters, setSelectedIncident, updateStatus } =
-    useIncidentStore();
+  const { incidents, filters, setFilters, setSelectedIncident, updateStatus } = useIncidentStore();
   const { setCreateModalOpen } = useCommandStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -74,7 +67,9 @@ export const IncidentsPage: React.FC = () => {
               {sorted.length} Incidents
             </span>
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">Enterprise triage table with real-time status transitions</p>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Enterprise triage table with real-time status transitions
+          </p>
         </div>
 
         <Button variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
@@ -146,10 +141,18 @@ export const IncidentsPage: React.FC = () => {
           <div className="flex items-center justify-between p-2.5 rounded-lg bg-indigo-950/60 border border-indigo-800/60 text-xs text-indigo-200">
             <span className="font-semibold">{selectedIds.length} incidents selected</span>
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('INVESTIGATING')}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleBulkStatusChange('INVESTIGATING')}
+              >
                 Mark Investigating
               </Button>
-              <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('RESOLVED')}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleBulkStatusChange('RESOLVED')}
+              >
                 Mark Resolved
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
@@ -216,14 +219,20 @@ export const IncidentsPage: React.FC = () => {
                     <td className="py-3.5 px-4 max-w-md">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] text-zinc-500 font-bold">{inc.id}</span>
+                          <span className="font-mono text-[10px] text-zinc-500 font-bold">
+                            {inc.id}
+                          </span>
                           <h3 className="font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors truncate">
                             {inc.title}
                           </h3>
                         </div>
-                        <p className="text-zinc-400 line-clamp-1 text-[11px] font-normal">{inc.description}</p>
+                        <p className="text-zinc-400 line-clamp-1 text-[11px] font-normal">
+                          {inc.description}
+                        </p>
                         <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono pt-0.5">
-                          <span className="bg-zinc-800/60 px-1.5 py-0.5 rounded">{inc.category}</span>
+                          <span className="bg-zinc-800/60 px-1.5 py-0.5 rounded">
+                            {inc.category}
+                          </span>
                           {inc.comments_count ? (
                             <span className="flex items-center gap-1">
                               <MessageSquare className="w-3 h-3" /> {inc.comments_count}
@@ -246,20 +255,34 @@ export const IncidentsPage: React.FC = () => {
                       {inc.assigned_to ? (
                         <div className="flex items-center gap-2">
                           <img
-                            src={inc.assigned_to.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                            src={
+                              inc.assigned_to.avatar ||
+                              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+                            }
                             alt={inc.assigned_to.full_name}
                             className="w-5 h-5 rounded-full object-cover shrink-0"
                           />
-                          <span className="text-zinc-300 font-medium truncate">{inc.assigned_to.full_name}</span>
+                          <span className="text-zinc-300 font-medium truncate">
+                            {inc.assigned_to.full_name}
+                          </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-500 italic font-mono text-[11px]">Unassigned</span>
+                        <span className="text-zinc-500 italic font-mono text-[11px]">
+                          Unassigned
+                        </span>
                       )}
                     </td>
 
                     <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-400">
-                      {new Date(inc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })},{' '}
-                      {new Date(inc.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      {new Date(inc.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                      ,{' '}
+                      {new Date(inc.created_at).toLocaleDateString([], {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                     </td>
 
                     <td className="py-3.5 px-4 text-right">

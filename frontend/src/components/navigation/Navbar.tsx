@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Search, Command, Bell, Keyboard, ChevronRight, LogOut, User as UserIcon, Shield, Sparkles } from 'lucide-react';
+import {
+  Search,
+  Command,
+  Bell,
+  Keyboard,
+  ChevronRight,
+  LogOut,
+  User as UserIcon,
+  Shield,
+  Sparkles,
+} from 'lucide-react';
 import { useCommandStore } from '../../store/useCommandStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { RoleBadge } from '../ui/Badge';
@@ -102,7 +112,10 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-zinc-800/60 transition-colors"
           >
             <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+              src={
+                user?.avatar ||
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+              }
               alt={user?.full_name || 'User'}
               className="w-7 h-7 rounded-full border border-zinc-700 object-cover"
             />

@@ -3,7 +3,7 @@ import { User as UserIcon, Save } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { RoleBadge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import toast from 'react-hot-toast';
 
 export const ProfilePage: React.FC = () => {
@@ -25,13 +25,18 @@ export const ProfilePage: React.FC = () => {
         <h1 className="text-xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
           <UserIcon className="w-5 h-5 text-indigo-400" /> User Profile & Security Credentials
         </h1>
-        <p className="text-xs text-zinc-400 mt-0.5">Manage personal account details and multi-factor authentication</p>
+        <p className="text-xs text-zinc-400 mt-0.5">
+          Manage personal account details and multi-factor authentication
+        </p>
       </div>
 
       <Card hoverEffect={false}>
         <div className="flex items-center gap-4 pb-6 border-b border-subtle">
           <img
-            src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+            src={
+              user?.avatar ||
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+            }
             alt={user?.full_name}
             className="w-16 h-16 rounded-full border-2 border-indigo-500/40 object-cover"
           />
@@ -48,7 +53,9 @@ export const ProfilePage: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4 pt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">First Name</label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+                First Name
+              </label>
               <input
                 type="text"
                 value={firstName}
@@ -57,7 +64,9 @@ export const ProfilePage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">Last Name</label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+                Last Name
+              </label>
               <input
                 type="text"
                 value={lastName}
@@ -68,7 +77,9 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">Phone Number</label>
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+              Phone Number
+            </label>
             <input
               type="text"
               value={phone}

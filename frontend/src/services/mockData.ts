@@ -21,7 +21,8 @@ export const mockUsers: User[] = [
     organization: mockOrganization,
     phone_number: '+1 (555) 234-5678',
     is_active: true,
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    avatar:
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     date_joined: '2025-02-01T10:00:00Z',
   },
   {
@@ -34,7 +35,8 @@ export const mockUsers: User[] = [
     organization: mockOrganization,
     phone_number: '+1 (555) 876-5432',
     is_active: true,
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    avatar:
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     date_joined: '2025-03-10T14:30:00Z',
   },
   {
@@ -47,7 +49,8 @@ export const mockUsers: User[] = [
     organization: mockOrganization,
     phone_number: '+1 (555) 345-6789',
     is_active: true,
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    avatar:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     date_joined: '2025-04-12T09:15:00Z',
   },
   {
@@ -60,7 +63,8 @@ export const mockUsers: User[] = [
     organization: mockOrganization,
     phone_number: '+1 (555) 987-6543',
     is_active: true,
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    avatar:
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     date_joined: '2025-05-01T11:00:00Z',
   },
 ];
@@ -193,8 +197,10 @@ connPool.SetConnMaxLifetime(5 * time.Minute)`,
       risk_score: 62,
       confidence: 88,
       predicted_severity: 'MEDIUM',
-      summary: 'Unindexed query on incident_events created_at column causing full table scans during analytics rollup.',
-      root_cause_hypothesis: 'Missing composite index on (organization_id, created_at) causing row lock accumulation.',
+      summary:
+        'Unindexed query on incident_events created_at column causing full table scans during analytics rollup.',
+      root_cause_hypothesis:
+        'Missing composite index on (organization_id, created_at) causing row lock accumulation.',
       recommended_actions: [
         'Terminate long-running PID 84920 via pg_cancel_backend()',
         'Execute concurrent index creation on incident_events table',
@@ -225,7 +231,8 @@ ON apps_incidents_event (organization_id, created_at DESC);`,
       risk_score: 35,
       confidence: 97,
       predicted_severity: 'LOW',
-      summary: 'Transient hardware fault handled automatically by AWS Elasticache cluster failover.',
+      summary:
+        'Transient hardware fault handled automatically by AWS Elasticache cluster failover.',
       root_cause_hypothesis: 'ECC RAM single-bit error triggered cluster node reboot.',
       recommended_actions: ['Monitor cache hit ratio for next 2 hours'],
       similar_incidents: [],

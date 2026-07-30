@@ -29,7 +29,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: true,
 
   login: async (email, _pass) => {
-    const found = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase()) || mockUsers[0];
+    const found =
+      mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase()) || mockUsers[0];
     set({
       user: found,
       organization: found.organization || mockOrganization,
@@ -49,7 +50,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       role: data.role || 'ANALYST',
       organization: mockOrganization,
       is_active: true,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      avatar:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
     };
     set({
       user: newUser,

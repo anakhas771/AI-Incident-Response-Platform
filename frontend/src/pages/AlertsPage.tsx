@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, Radio } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 import toast from 'react-hot-toast';
 
 interface AlertItem {
@@ -64,14 +64,19 @@ export const AlertsPage: React.FC = () => {
           <h1 className="text-xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
             <Bell className="w-5 h-5 text-indigo-400" /> Real-time Alerts & Telemetry Queue
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">Ingested signals from GuardDuty, Datadog, Cloudflare, and K8s API</p>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Ingested signals from GuardDuty, Datadog, Cloudflare, and K8s API
+          </p>
         </div>
       </div>
 
       <div className="bg-surface border border-subtle rounded-xl overflow-hidden shadow-xl">
         <div className="divide-y divide-subtle">
           {alerts.map((alert) => (
-            <div key={alert.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface-elevated/50 transition-colors">
+            <div
+              key={alert.id}
+              className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface-elevated/50 transition-colors"
+            >
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-red-950/40 border border-red-800/40 text-red-400 shrink-0">
                   <Radio className="w-4 h-4" />
@@ -83,14 +88,20 @@ export const AlertsPage: React.FC = () => {
                     <span className="text-zinc-400">{alert.id}</span>
                   </div>
                   <h3 className="text-xs font-semibold text-zinc-100 mt-1">{alert.signal}</h3>
-                  <p className="text-[11px] font-mono text-zinc-500 mt-0.5">{new Date(alert.timestamp).toLocaleString()}</p>
+                  <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
+                    {new Date(alert.timestamp).toLocaleString()}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                  alert.status === 'UNHANDLED' ? 'bg-red-950 text-red-400 border border-red-800' : 'bg-zinc-800 text-zinc-300'
-                }`}>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                    alert.status === 'UNHANDLED'
+                      ? 'bg-red-950 text-red-400 border border-red-800'
+                      : 'bg-zinc-800 text-zinc-300'
+                  }`}
+                >
                   {alert.status}
                 </span>
                 {alert.status === 'UNHANDLED' && (

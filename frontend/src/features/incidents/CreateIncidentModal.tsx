@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Sparkles } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../import Button from "../components/ui/button";';
 import { useCommandStore } from '../../store/useCommandStore';
 import { useIncidentStore } from '../../store/useIncidentStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -141,7 +141,9 @@ export const CreateIncidentModal: React.FC = () => {
             placeholder="Include observed behavior, stack traces, cloud provider region, and log snippets..."
             className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 font-mono text-xs"
           />
-          {errors.description && <p className="text-xs text-red-400 mt-1">{errors.description.message}</p>}
+          {errors.description && (
+            <p className="text-xs text-red-400 mt-1">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-zinc-800">

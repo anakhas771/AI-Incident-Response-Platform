@@ -8,7 +8,11 @@ interface SeverityBadgeProps {
   showDot?: boolean;
 }
 
-export const SeverityBadge: React.FC<SeverityBadgeProps> = ({ severity, className, showDot = true }) => {
+export const SeverityBadge: React.FC<SeverityBadgeProps> = ({
+  severity,
+  className,
+  showDot = true,
+}) => {
   const styles = {
     CRITICAL: 'bg-red-950/80 text-red-400 border-red-800/60 font-semibold',
     HIGH: 'bg-orange-950/80 text-orange-400 border-orange-800/60 font-medium',

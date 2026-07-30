@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Button } from '../import Button from "../components/ui/button";';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -38,9 +38,13 @@ export const ForgotPasswordPage: React.FC = () => {
             </div>
             <p className="text-sm text-zinc-200 font-medium">Recovery Link Dispatched</p>
             <p className="text-xs text-zinc-400">
-              We sent a secure password reset link to <span className="text-zinc-200 font-mono">{email}</span>.
+              We sent a secure password reset link to{' '}
+              <span className="text-zinc-200 font-mono">{email}</span>.
             </p>
-            <Link to="/login" className="inline-flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium pt-2">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium pt-2"
+            >
               <ArrowLeft className="w-3.5 h-3.5" /> Return to Login
             </Link>
           </div>
@@ -68,7 +72,10 @@ export const ForgotPasswordPage: React.FC = () => {
             </Button>
 
             <div className="pt-2 text-center">
-              <Link to="/login" className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+              >
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
               </Link>
             </div>
