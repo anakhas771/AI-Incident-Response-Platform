@@ -15,6 +15,8 @@ from rest_framework.views import APIView
 
 from apps.ai_engine.api.serializers import (
     AIIncidentAnalysisSerializer,
+    IncidentAIAnalyzeTriggerSerializer,
+    IncidentAnalysisSerializer,
     IncidentAnalyzeRequestSerializer,
     IncidentAnalyzeResponseSerializer,
     RecommendationRequestSerializer,
@@ -28,6 +30,7 @@ from apps.ai_engine.services import (
     RecommendationEngine,
     SeverityPredictor,
 )
+from apps.ai_engine.tasks import analyze_incident_task
 from apps.incidents.models import Incident
 
 logger = logging.getLogger(__name__)
@@ -205,5 +208,90 @@ class RecommendationView(APIView):
             logger.exception("Error generating AI recommendations: %s", str(exc))
             return Response(
                 {"error": "Failed to generate recommendations.", "detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class IncidentAIAnalysisRetrieveView(APIView):
+    """
+    GET /api/ai/incidents/<id>/analysis/
+    Retrieve structured Phase 5 AI Analysis for an incident.
+    """
+
+    permission_classes = [IsAuthenticated, IsAIIncidentOrganizationMember]
+    serializer_class = IncidentAnalysisSerializer
+
+    @extend_schema(
+        responses={200: IncidentAnalysisSerializer},
+        summary="Retrieve Phase 5 Incident AI analysis",
+        description="Returns the OneToOne IncidentAnalysis tracking asynchronous AI triage status and outputs.",
+    )
+    def get(
+        self,
+        request: Request,
+        id: Any = None,
+        incident_id: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        target_id = id or incident_id
+        incident = get_object_or_404(Incident, id=target_id)
+        self.check_object_permissions(request, incident)
+
+        analysis = getattr(incident, "ai_analysis", None)
+        if not analysis:
+            return Response(
+                {"error": "No AI analysis found for this incident."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            self.serializer_class(analysis).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class IncidentAIAnalyzeTriggerView(APIView):
+    """
+    POST /api/ai/incidents/<id>/analyze/
+    Manually trigger asynchronous AI analysis for an incident using Celery.
+    """
+
+    permission_classes = [IsAuthenticated, IsAIIncidentOrganizationMember]
+    serializer_class = IncidentAIAnalyzeTriggerSerializer
+
+    @extend_schema(
+        responses={202: IncidentAIAnalyzeTriggerSerializer},
+        summary="Trigger asynchronous AI analysis",
+        description="Dispatches analyze_incident_task to Celery for an incident without blocking.",
+    )
+    def post(
+        self,
+        request: Request,
+        id: Any = None,
+        incident_id: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        target_id = id or incident_id
+        incident = get_object_or_404(Incident, id=target_id)
+        self.check_object_permissions(request, incident)
+
+        try:
+            analyze_incident_task.delay(str(incident.id))
+            payload = {
+                "message": "AI analysis triggered.",
+                "incident_id": str(incident.id),
+                "status": "pending",
+            }
+            return Response(payload, status=status.HTTP_202_ACCEPTED)
+        except Exception as exc:
+            logger.exception(
+                "Failed to dispatch AI analysis task for incident_id=%s: %s",
+                incident.id,
+                str(exc),
+            )
+            return Response(
+                {"error": "Failed to trigger AI analysis.", "detail": str(exc)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
