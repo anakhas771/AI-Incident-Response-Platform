@@ -48,7 +48,9 @@ class TestIncidentModels:
         assert incident.category == Category.OTHER
         assert incident.is_resolved is False
         assert incident.is_closed is False
-        assert str(incident) == f"[{Severity.HIGH}] Database Latency Spike ({Status.OPEN})"
+        assert (
+            str(incident) == f"[{Severity.HIGH}] Database Latency Spike ({Status.OPEN})"
+        )
 
     def test_incident_status_properties(self, sample_org, sample_user):
         incident = Incident.objects.create(
@@ -97,7 +99,9 @@ class TestIncidentModels:
         assert isinstance(comment.id, uuid.UUID)
         assert comment.incident == incident
         assert comment.author == sample_user
-        assert str(comment) == f"Comment by {sample_user.email} on Network Switch Failure"
+        assert (
+            str(comment) == f"Comment by {sample_user.email} on Network Switch Failure"
+        )
 
     def test_attachment_creation(self, sample_org, sample_user):
         incident = Incident.objects.create(

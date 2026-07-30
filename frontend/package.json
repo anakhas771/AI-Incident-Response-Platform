@@ -20,9 +20,14 @@
     "lucide-react": "^0.379.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.83.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.23.1",
+    "react-virtuoso": "^4.18.11",
     "recharts": "^2.12.7",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

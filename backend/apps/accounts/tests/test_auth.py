@@ -148,7 +148,9 @@ class TestAuthenticationAPI:
         sample_user.refresh_from_db()
         assert sample_user.check_password("BrandNewPassword123!")
 
-    def test_organization_detail_view(self, api_client, sample_user, sample_organization):
+    def test_organization_detail_view(
+        self, api_client, sample_user, sample_organization
+    ):
         api_client.force_authenticate(user=sample_user)
         url = reverse("organization-detail")
 

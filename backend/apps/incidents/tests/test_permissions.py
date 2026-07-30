@@ -24,28 +24,40 @@ def org(db):
 @pytest.fixture
 def admin_user(db, org):
     return User.objects.create_user(
-        email="admin@security.com", password="Password123!", role=Role.ADMIN, organization=org
+        email="admin@security.com",
+        password="Password123!",
+        role=Role.ADMIN,
+        organization=org,
     )
 
 
 @pytest.fixture
 def analyst_user(db, org):
     return User.objects.create_user(
-        email="analyst@security.com", password="Password123!", role=Role.ANALYST, organization=org
+        email="analyst@security.com",
+        password="Password123!",
+        role=Role.ANALYST,
+        organization=org,
     )
 
 
 @pytest.fixture
 def responder_user(db, org):
     return User.objects.create_user(
-        email="responder@security.com", password="Password123!", role=Role.RESPONDER, organization=org
+        email="responder@security.com",
+        password="Password123!",
+        role=Role.RESPONDER,
+        organization=org,
     )
 
 
 @pytest.fixture
 def viewer_user(db, org):
     return User.objects.create_user(
-        email="viewer@security.com", password="Password123!", role=Role.VIEWER, organization=org
+        email="viewer@security.com",
+        password="Password123!",
+        role=Role.VIEWER,
+        organization=org,
     )
 
 
@@ -72,7 +84,9 @@ class TestRBACPermissions:
         assert res_create.status_code == status.HTTP_201_CREATED
 
         # Delete
-        res_del = api_client.delete(reverse("incident-detail", kwargs={"pk": incident.id}))
+        res_del = api_client.delete(
+            reverse("incident-detail", kwargs={"pk": incident.id})
+        )
         assert res_del.status_code == status.HTTP_204_NO_CONTENT
 
     def test_analyst_can_create_update_assign_status_comment_but_not_delete(
@@ -97,7 +111,9 @@ class TestRBACPermissions:
         assert res_assign.status_code == status.HTTP_200_OK
 
         # Delete rejected (403)
-        res_del = api_client.delete(reverse("incident-detail", kwargs={"pk": incident.id}))
+        res_del = api_client.delete(
+            reverse("incident-detail", kwargs={"pk": incident.id})
+        )
         assert res_del.status_code == status.HTTP_403_FORBIDDEN
 
     def test_responder_can_update_status_and_comment_but_not_create_or_delete(
@@ -137,7 +153,9 @@ class TestRBACPermissions:
         assert res_list.status_code == status.HTTP_200_OK
 
         # Retrieve allowed
-        res_detail = api_client.get(reverse("incident-detail", kwargs={"pk": incident.id}))
+        res_detail = api_client.get(
+            reverse("incident-detail", kwargs={"pk": incident.id})
+        )
         assert res_detail.status_code == status.HTTP_200_OK
 
         # Create rejected (403)

@@ -82,7 +82,9 @@ class TestIncidentAPI:
         assert response.data["title"] == "Ransomware Suspected"
         assert response.data["severity"] == "CRITICAL"
 
-    def test_retrieve_incident_detail_api(self, api_client, analyst_user, sample_incident):
+    def test_retrieve_incident_detail_api(
+        self, api_client, analyst_user, sample_incident
+    ):
         api_client.force_authenticate(user=analyst_user)
         url = reverse("incident-detail", kwargs={"pk": sample_incident.id})
         response = api_client.get(url)
@@ -110,7 +112,9 @@ class TestIncidentAPI:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert Incident.objects.filter(id=sample_incident.id).exists() is False
 
-    def test_assign_incident_custom_action(self, api_client, analyst_user, admin_user, sample_incident):
+    def test_assign_incident_custom_action(
+        self, api_client, analyst_user, admin_user, sample_incident
+    ):
         api_client.force_authenticate(user=analyst_user)
         url = reverse("incident-assign", kwargs={"pk": sample_incident.id})
         payload = {"assigned_to_id": str(admin_user.id)}
@@ -119,7 +123,9 @@ class TestIncidentAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["assigned_to"]["id"] == str(admin_user.id)
 
-    def test_change_status_custom_action(self, api_client, analyst_user, sample_incident):
+    def test_change_status_custom_action(
+        self, api_client, analyst_user, sample_incident
+    ):
         api_client.force_authenticate(user=analyst_user)
         url = reverse("incident-change-status", kwargs={"pk": sample_incident.id})
         payload = {"status": "INVESTIGATING"}
@@ -128,12 +134,16 @@ class TestIncidentAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "INVESTIGATING"
 
-    def test_add_and_list_comments_custom_action(self, api_client, analyst_user, sample_incident):
+    def test_add_and_list_comments_custom_action(
+        self, api_client, analyst_user, sample_incident
+    ):
         api_client.force_authenticate(user=analyst_user)
         url = reverse("incident-comments", kwargs={"pk": sample_incident.id})
 
         # POST comment
-        post_res = api_client.post(url, {"message": "Investigating logs now."}, format="json")
+        post_res = api_client.post(
+            url, {"message": "Investigating logs now."}, format="json"
+        )
         assert post_res.status_code == status.HTTP_201_CREATED
         assert post_res.data["message"] == "Investigating logs now."
 
@@ -151,16 +161,26 @@ class TestIncidentAPI:
         assert len(response.data) >= 1
         assert response.data[0]["event_type"] == "CREATED"
 
-    def test_incident_filtering_by_severity_and_status(self, api_client, analyst_user, org):
+    def test_incident_filtering_by_severity_and_status(
+        self, api_client, analyst_user, org
+    ):
         IncidentService.create_incident(
             user=analyst_user,
             organization=org,
-            data={"title": "High Sev", "severity": Severity.HIGH, "status": Status.OPEN},
+            data={
+                "title": "High Sev",
+                "severity": Severity.HIGH,
+                "status": Status.OPEN,
+            },
         )
         IncidentService.create_incident(
             user=analyst_user,
             organization=org,
-            data={"title": "Low Sev", "severity": Severity.LOW, "status": Status.CLOSED},
+            data={
+                "title": "Low Sev",
+                "severity": Severity.LOW,
+                "status": Status.CLOSED,
+            },
         )
 
         api_client.force_authenticate(user=analyst_user)
@@ -175,7 +195,10 @@ class TestIncidentAPI:
         IncidentService.create_incident(
             user=analyst_user,
             organization=org,
-            data={"title": "Database Outage", "description": "Postgres service stopped."},
+            data={
+                "title": "Database Outage",
+                "description": "Postgres service stopped.",
+            },
         )
         IncidentService.create_incident(
             user=analyst_user,

@@ -57,7 +57,9 @@ def incident_alpha(db, org_alpha, user_alpha):
 
 @pytest.mark.django_db
 class TestOrganizationIsolation:
-    def test_user_cannot_list_incidents_from_another_org(self, api_client, user_beta, incident_alpha):
+    def test_user_cannot_list_incidents_from_another_org(
+        self, api_client, user_beta, incident_alpha
+    ):
         api_client.force_authenticate(user=user_beta)
         url = reverse("incident-list")
         response = api_client.get(url)
@@ -66,14 +68,18 @@ class TestOrganizationIsolation:
         assert response.data["count"] == 0
         assert len(response.data["results"]) == 0
 
-    def test_user_cannot_retrieve_incident_from_another_org(self, api_client, user_beta, incident_alpha):
+    def test_user_cannot_retrieve_incident_from_another_org(
+        self, api_client, user_beta, incident_alpha
+    ):
         api_client.force_authenticate(user=user_beta)
         url = reverse("incident-detail", kwargs={"pk": incident_alpha.id})
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_user_cannot_update_or_delete_incident_from_another_org(self, api_client, user_beta, incident_alpha):
+    def test_user_cannot_update_or_delete_incident_from_another_org(
+        self, api_client, user_beta, incident_alpha
+    ):
         api_client.force_authenticate(user=user_beta)
         url = reverse("incident-detail", kwargs={"pk": incident_alpha.id})
 
@@ -83,9 +89,14 @@ class TestOrganizationIsolation:
 
         # Delete attempt
         res_del = api_client.delete(url)
-        assert res_del.status_code in [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND]
+        assert res_del.status_code in [
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_404_NOT_FOUND,
+        ]
 
-    def test_user_cannot_assign_incident_to_user_from_another_org(self, api_client, user_alpha, user_beta, incident_alpha):
+    def test_user_cannot_assign_incident_to_user_from_another_org(
+        self, api_client, user_alpha, user_beta, incident_alpha
+    ):
         api_client.force_authenticate(user=user_alpha)
         url = reverse("incident-assign", kwargs={"pk": incident_alpha.id})
         payload = {"assigned_to_id": str(user_beta.id)}
@@ -93,7 +104,9 @@ class TestOrganizationIsolation:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_user_cannot_comment_on_incident_from_another_org(self, api_client, user_beta, incident_alpha):
+    def test_user_cannot_comment_on_incident_from_another_org(
+        self, api_client, user_beta, incident_alpha
+    ):
         api_client.force_authenticate(user=user_beta)
         url = reverse("incident-comments", kwargs={"pk": incident_alpha.id})
         payload = {"message": "Cross-org comment attempt"}

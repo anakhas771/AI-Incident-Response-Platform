@@ -90,7 +90,9 @@ class TestRBACPermissions:
         request.user = viewer_user
         assert perm.has_permission(request, None) is False
 
-    def test_is_analyst_permission(self, admin_user, analyst_user, responder_user, viewer_user):
+    def test_is_analyst_permission(
+        self, admin_user, analyst_user, responder_user, viewer_user
+    ):
         factory = APIRequestFactory()
         request = factory.get("/")
         perm = IsAnalyst()
@@ -107,7 +109,9 @@ class TestRBACPermissions:
         request.user = viewer_user
         assert perm.has_permission(request, None) is False
 
-    def test_is_responder_permission(self, admin_user, analyst_user, responder_user, viewer_user):
+    def test_is_responder_permission(
+        self, admin_user, analyst_user, responder_user, viewer_user
+    ):
         factory = APIRequestFactory()
         request = factory.get("/")
         perm = IsResponder()
@@ -137,7 +141,9 @@ class TestRBACPermissions:
         request.user = viewer_user
         assert perm.has_permission(request, None) is False
 
-    def test_is_same_organization_permission(self, analyst_user, user_org_b, org_a, org_b):
+    def test_is_same_organization_permission(
+        self, analyst_user, user_org_b, org_a, org_b
+    ):
         factory = APIRequestFactory()
         request = factory.get("/")
         perm = IsSameOrganization()

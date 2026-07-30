@@ -2,15 +2,15 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
 
 jobs:
   lint-and-test:
@@ -46,8 +46,8 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |

@@ -52,7 +52,9 @@ class TestIncidentService:
         assert event.event_type == EventType.CREATED
         assert event.user == creator
 
-    def test_assign_incident_service_updates_and_logs(self, creator, assignee, sample_org):
+    def test_assign_incident_service_updates_and_logs(
+        self, creator, assignee, sample_org
+    ):
         incident = IncidentService.create_incident(
             user=creator,
             organization=sample_org,
@@ -69,7 +71,9 @@ class TestIncidentService:
         assert latest_event.event_type == EventType.ASSIGNED
         assert latest_event.metadata["assigned_to_id"] == str(assignee.id)
 
-    def test_change_status_service_sets_resolved_at_timestamp(self, creator, sample_org):
+    def test_change_status_service_sets_resolved_at_timestamp(
+        self, creator, sample_org
+    ):
         incident = IncidentService.create_incident(
             user=creator,
             organization=sample_org,
