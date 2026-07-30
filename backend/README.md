@@ -68,3 +68,15 @@ python manage.py migrate
 # 4. Run development server
 python manage.py runserver
 ```
+
+# AI Incident Intelligence Engine
+
+Phase 4 introduces AI-powered incident analysis capabilities.
+
+## Features
+
+- Incident summarization
+- Severity prediction
+- Root cause analysis
+- AI recommendations
+- Knowledge retrieval
