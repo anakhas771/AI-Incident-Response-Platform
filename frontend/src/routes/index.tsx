@@ -9,6 +9,8 @@ import DashboardPage from '../pages/DashboardPage';
 import IncidentsPage from '../pages/IncidentsPage';
 import IncidentDetailPage from '../pages/IncidentDetailPage';
 import AIAssistantPage from '../pages/AIAssistantPage';
+import { KnowledgeBasePage } from '../pages/KnowledgeBasePage';
+import { KnowledgeDetailPage } from '../pages/KnowledgeDetailPage';
 import AnalyticsPage from '../pages/AnalyticsPage';
 import TimelinePage from '../pages/TimelinePage';
 import AlertsPage from '../pages/AlertsPage';
@@ -55,6 +57,14 @@ const router = createBrowserRouter([
       {
         path: 'ai-assistant',
         element: <AIAssistantPage />,
+      },
+      {
+        path: 'knowledge',
+        element: <KnowledgeBasePage />,
+      },
+      {
+        path: 'knowledge/:id',
+        element: <KnowledgeDetailPage />,
       },
       {
         path: 'analytics',

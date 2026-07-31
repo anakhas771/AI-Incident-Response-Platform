@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
+  BookOpen,
 } from 'lucide-react';
 import { useCommandStore } from '../../store/useCommandStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -30,6 +31,7 @@ export const Sidebar: React.FC = () => {
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Incidents', path: '/incidents', icon: AlertTriangle, badge: '3' },
     { label: 'AI Copilot', path: '/ai-assistant', icon: Bot, isAi: true },
+    { label: 'Knowledge Base', path: '/knowledge', icon: BookOpen, isAi: true },
     { label: 'Analytics', path: '/analytics', icon: BarChart3 },
     { label: 'Timeline', path: '/timeline', icon: GitCommit },
     { label: 'Alerts Queue', path: '/alerts', icon: Bell, badge: '5' },

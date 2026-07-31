@@ -15,8 +15,8 @@ CACHES = {
     }
 }
 
-# Use SQLite in-memory database when POSTGRES_HOST is not explicitly specified
-if "POSTGRES_HOST" not in os.environ:
+# Use SQLite in-memory database when POSTGRES_HOST is not explicitly specified or is 'db'
+if "POSTGRES_HOST" not in os.environ or os.environ.get("POSTGRES_HOST") == "db":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

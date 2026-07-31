@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ShieldAlert, CheckCircle2, Copy, Check, Terminal, Cpu } from 'lucide-react';
+import {
+  Sparkles,
+  ShieldAlert,
+  CheckCircle2,
+  Copy,
+  Check,
+  Terminal,
+  Cpu,
+  BookOpen,
+  FileText,
+} from 'lucide-react';
 import { AISummary } from '../../types';
 import { Card, CardHeader, CardTitle } from '../ui/Card';
+import { SimilarityCard } from '../knowledge/SimilarityCard';
 import toast from 'react-hot-toast';
 
 interface AISummaryCardProps {
@@ -168,6 +179,38 @@ export const AISummaryCard: React.FC<AISummaryCardProps> = ({ summary }) => {
                       {sim.resolved_in_mins}m resolution
                     </span>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {summary.rag_citations && summary.rag_citations.length > 0 && (
+          <div className="pt-2 border-t border-indigo-900/40">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Grounded RAG Knowledge Base Citations</span>
+              </p>
+              <span className="text-[10px] text-emerald-400 font-mono">1536-dim pgvector</span>
+            </div>
+            <div className="space-y-2">
+              {summary.rag_citations.map((cite, idx) => (
+                <div
+                  key={`${cite.document_id}-${idx}`}
+                  className="rounded-lg bg-zinc-900/70 border border-zinc-800/80 p-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-200">
+                      <FileText className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                      <span className="truncate">{cite.document_title}</span>
+                      <span className="text-zinc-500 font-normal">(p. {cite.page})</span>
+                    </div>
+                    <SimilarityCard score={cite.similarity} size="sm" />
+                  </div>
+                  <p className="mt-1.5 font-mono text-[11px] text-zinc-400 leading-relaxed border-l-2 border-cyan-500/50 pl-2">
+                    &ldquo;{cite.snippet}&rdquo;
+                  </p>
                 </div>
               ))}
             </div>
