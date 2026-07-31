@@ -7,674 +7,688 @@ paths:
   /api/ai/analysis/{incident_id}/:
     get:
       operationId: ai_analysis_retrieve
-      description: Returns the most recent stored AI analysis for a given incident
+      description:
+        Returns the most recent stored AI analysis for a given incident
         ID.
       summary: Retrieve AI analysis for an incident
       parameters:
-      - in: path
-        name: incident_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: incident_id
+          schema:
+            type: string
+          required: true
       tags:
-      - ai
+        - ai
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIIncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/AIIncidentAnalysis"
+          description: ""
   /api/ai/analyze/:
     post:
       operationId: ai_analyze_create
-      description: Uses AI Engine to evaluate incident details and generate triage
+      description:
+        Uses AI Engine to evaluate incident details and generate triage
         summary.
       summary: Analyze incident root cause and impact
       tags:
-      - ai
+        - ai
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAnalyzeResponse'
-          description: ''
+                $ref: "#/components/schemas/IncidentAnalyzeResponse"
+          description: ""
   /api/ai/analyze/{incident_id}/:
     post:
       operationId: ai_analyze_create_2
       description: Triggers AI analysis for a database incident and stores results.
       summary: Analyze persistent incident by ID
       parameters:
-      - in: path
-        name: incident_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: incident_id
+          schema:
+            type: string
+          required: true
       tags:
-      - ai
+        - ai
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIIncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/AIIncidentAnalysis"
+          description: ""
   /api/ai/incidents/{id}/analysis/:
     get:
       operationId: ai_incidents_analysis_retrieve
-      description: Returns the OneToOne IncidentAnalysis tracking asynchronous AI
+      description:
+        Returns the OneToOne IncidentAnalysis tracking asynchronous AI
         triage status and outputs.
       summary: Retrieve Phase 5 Incident AI analysis
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - ai
+        - ai
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/IncidentAnalysis"
+          description: ""
   /api/ai/incidents/{id}/analyze/:
     post:
       operationId: ai_incidents_analyze_create
-      description: Dispatches analyze_incident_task to Celery for an incident without
+      description:
+        Dispatches analyze_incident_task to Celery for an incident without
         blocking.
       summary: Trigger asynchronous AI analysis
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - ai
+        - ai
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
-          description: ''
+                $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
+          description: ""
   /api/ai/predict-severity/:
     post:
       operationId: ai_predict_severity_create
-      description: Uses AI Engine to predict severity level and return a confidence
+      description:
+        Uses AI Engine to predict severity level and return a confidence
         score.
       summary: Predict incident severity classification
       tags:
-      - ai
+        - ai
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SeverityPredictResponse'
-          description: ''
+                $ref: "#/components/schemas/SeverityPredictResponse"
+          description: ""
   /api/ai/recommendations/:
     post:
       operationId: ai_recommendations_create
-      description: Uses AI Engine to synthesize mitigation steps and investigation
+      description:
+        Uses AI Engine to synthesize mitigation steps and investigation
         checklist.
       summary: Generate AI response recommendations
       tags:
-      - ai
+        - ai
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RecommendationResponse'
-          description: ''
+                $ref: "#/components/schemas/RecommendationResponse"
+          description: ""
   /api/v1/ai/analysis/{incident_id}/:
     get:
       operationId: v1_ai_analysis_retrieve
-      description: Returns the most recent stored AI analysis for a given incident
+      description:
+        Returns the most recent stored AI analysis for a given incident
         ID.
       summary: Retrieve AI analysis for an incident
       parameters:
-      - in: path
-        name: incident_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: incident_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIIncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/AIIncidentAnalysis"
+          description: ""
   /api/v1/ai/analyze/:
     post:
       operationId: v1_ai_analyze_create
-      description: Uses AI Engine to evaluate incident details and generate triage
+      description:
+        Uses AI Engine to evaluate incident details and generate triage
         summary.
       summary: Analyze incident root cause and impact
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentAnalyzeRequest'
+              $ref: "#/components/schemas/IncidentAnalyzeRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAnalyzeResponse'
-          description: ''
+                $ref: "#/components/schemas/IncidentAnalyzeResponse"
+          description: ""
   /api/v1/ai/analyze/{incident_id}/:
     post:
       operationId: v1_ai_analyze_create_2
       description: Triggers AI analysis for a database incident and stores results.
       summary: Analyze persistent incident by ID
       parameters:
-      - in: path
-        name: incident_id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: incident_id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AIIncidentAnalysis'
+              $ref: "#/components/schemas/AIIncidentAnalysis"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIIncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/AIIncidentAnalysis"
+          description: ""
   /api/v1/ai/incidents/{id}/analysis/:
     get:
       operationId: v1_ai_incidents_analysis_retrieve
-      description: Returns the OneToOne IncidentAnalysis tracking asynchronous AI
+      description:
+        Returns the OneToOne IncidentAnalysis tracking asynchronous AI
         triage status and outputs.
       summary: Retrieve Phase 5 Incident AI analysis
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAnalysis'
-          description: ''
+                $ref: "#/components/schemas/IncidentAnalysis"
+          description: ""
   /api/v1/ai/incidents/{id}/analyze/:
     post:
       operationId: v1_ai_incidents_analyze_create
-      description: Dispatches analyze_incident_task to Celery for an incident without
+      description:
+        Dispatches analyze_incident_task to Celery for an incident without
         blocking.
       summary: Trigger asynchronous AI analysis
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
+              $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '202':
+        "202":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentAIAnalyzeTrigger'
-          description: ''
+                $ref: "#/components/schemas/IncidentAIAnalyzeTrigger"
+          description: ""
   /api/v1/ai/predict-severity/:
     post:
       operationId: v1_ai_predict_severity_create
-      description: Uses AI Engine to predict severity level and return a confidence
+      description:
+        Uses AI Engine to predict severity level and return a confidence
         score.
       summary: Predict incident severity classification
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/SeverityPredictRequest'
+              $ref: "#/components/schemas/SeverityPredictRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SeverityPredictResponse'
-          description: ''
+                $ref: "#/components/schemas/SeverityPredictResponse"
+          description: ""
   /api/v1/ai/recommendations/:
     post:
       operationId: v1_ai_recommendations_create
-      description: Uses AI Engine to synthesize mitigation steps and investigation
+      description:
+        Uses AI Engine to synthesize mitigation steps and investigation
         checklist.
       summary: Generate AI response recommendations
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/RecommendationRequest'
+              $ref: "#/components/schemas/RecommendationRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RecommendationResponse'
-          description: ''
+                $ref: "#/components/schemas/RecommendationResponse"
+          description: ""
   /api/v1/auth/change-password/:
     post:
       operationId: v1_auth_change_password_create
       description: Allows authenticated user to update their account password.
       summary: Change user password
       tags:
-      - Users
+        - Users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: "#/components/schemas/ChangePassword"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: "#/components/schemas/ChangePassword"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ChangePassword'
+              $ref: "#/components/schemas/ChangePassword"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           description: Password changed successfully.
-        '400':
+        "400":
           description: Invalid password input.
   /api/v1/auth/login/:
     post:
       operationId: v1_auth_login_create
-      description: Authenticates user using email and password, returning JWT access
+      description:
+        Authenticates user using email and password, returning JWT access
         & refresh tokens alongside user info.
       summary: User Login (Obtain JWT token pair)
       tags:
-      - Authentication
+        - Authentication
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomTokenObtainPair'
+              $ref: "#/components/schemas/CustomTokenObtainPair"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CustomTokenObtainPair'
+              $ref: "#/components/schemas/CustomTokenObtainPair"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CustomTokenObtainPair'
+              $ref: "#/components/schemas/CustomTokenObtainPair"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomTokenObtainPair'
-          description: ''
+                $ref: "#/components/schemas/CustomTokenObtainPair"
+          description: ""
   /api/v1/auth/me/:
     get:
       operationId: v1_auth_me_retrieve
       description: Returns profile information for the currently authenticated user.
       summary: Retrieve or update user profile
       tags:
-      - Users
+        - Users
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetail'
-          description: ''
+                $ref: "#/components/schemas/UserDetail"
+          description: ""
     put:
       operationId: v1_auth_me_update
       description: Returns profile information for the currently authenticated user.
       summary: Retrieve or update user profile
       tags:
-      - Users
+        - Users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserDetail'
+              $ref: "#/components/schemas/UserDetail"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserDetail'
+              $ref: "#/components/schemas/UserDetail"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserDetail'
+              $ref: "#/components/schemas/UserDetail"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetail'
-          description: ''
+                $ref: "#/components/schemas/UserDetail"
+          description: ""
     patch:
       operationId: v1_auth_me_partial_update
       description: Returns profile information for the currently authenticated user.
       summary: Retrieve or update user profile
       tags:
-      - Users
+        - Users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedUserDetail'
+              $ref: "#/components/schemas/PatchedUserDetail"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedUserDetail'
+              $ref: "#/components/schemas/PatchedUserDetail"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedUserDetail'
+              $ref: "#/components/schemas/PatchedUserDetail"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetail'
-          description: ''
+                $ref: "#/components/schemas/UserDetail"
+          description: ""
   /api/v1/auth/organization/:
     get:
       operationId: v1_auth_organization_retrieve
       description: Returns organization details for the authenticated user's organization.
       summary: Retrieve or update current organization
       tags:
-      - Organizations
+        - Organizations
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
+                $ref: "#/components/schemas/Organization"
+          description: ""
     put:
       operationId: v1_auth_organization_update
       description: Returns organization details for the authenticated user's organization.
       summary: Retrieve or update current organization
       tags:
-      - Organizations
+        - Organizations
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: "#/components/schemas/Organization"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: "#/components/schemas/Organization"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: "#/components/schemas/Organization"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
+                $ref: "#/components/schemas/Organization"
+          description: ""
     patch:
       operationId: v1_auth_organization_partial_update
       description: Returns organization details for the authenticated user's organization.
       summary: Retrieve or update current organization
       tags:
-      - Organizations
+        - Organizations
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: "#/components/schemas/PatchedOrganization"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: "#/components/schemas/PatchedOrganization"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedOrganization'
+              $ref: "#/components/schemas/PatchedOrganization"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
+                $ref: "#/components/schemas/Organization"
+          description: ""
   /api/v1/auth/refresh/:
     post:
       operationId: v1_auth_refresh_create
       description: Takes a valid refresh token and returns a new access token.
       summary: Refresh JWT access token
       tags:
-      - Authentication
+        - Authentication
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: "#/components/schemas/TokenRefresh"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: "#/components/schemas/TokenRefresh"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: "#/components/schemas/TokenRefresh"
         required: true
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRefresh'
-          description: ''
+                $ref: "#/components/schemas/TokenRefresh"
+          description: ""
   /api/v1/auth/register/:
     post:
       operationId: v1_auth_register_create
-      description: Registers a new enterprise user with email, password, role, and
+      description:
+        Registers a new enterprise user with email, password, role, and
         optional organization.
       summary: Register a new user account
       tags:
-      - Authentication
+        - Authentication
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: "#/components/schemas/UserRegistration"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: "#/components/schemas/UserRegistration"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: "#/components/schemas/UserRegistration"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
+        - jwtAuth: []
+        - cookieAuth: []
+        - {}
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetail'
-          description: ''
-        '400':
+                $ref: "#/components/schemas/UserDetail"
+          description: ""
+        "400":
           description: Validation error
   /api/v1/health/:
     get:
@@ -682,271 +696,274 @@ paths:
       description: Returns operational status of API, Database, and Redis Cache.
       summary: System Health Check
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - {}
+        - jwtAuth: []
+        - cookieAuth: []
+        - {}
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: object
                 additionalProperties: {}
-          description: ''
+          description: ""
   /api/v1/incidents/:
     get:
       operationId: v1_incidents_list
-      description: Retrieves a paginated list of incidents belonging exclusively to
+      description:
+        Retrieves a paginated list of incidents belonging exclusively to
         the authenticated user's organization.
       summary: List organization incidents
       parameters:
-      - in: query
-        name: assigned_to
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: category
-        schema:
-          type: string
-          enum:
-          - Application
-          - Database
-          - Infrastructure
-          - Network
-          - Other
-          - Security
-        description: |-
-          * `Infrastructure` - Infrastructure
-          * `Security` - Security
-          * `Application` - Application
-          * `Database` - Database
-          * `Network` - Network
-          * `Other` - Other
-      - in: query
-        name: created_at_after
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_before
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_by
-        schema:
-          type: string
-          format: uuid
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      - in: query
-        name: severity
-        schema:
-          type: string
-          enum:
-          - CRITICAL
-          - HIGH
-          - LOW
-          - MEDIUM
-        description: |-
-          * `CRITICAL` - Critical
-          * `HIGH` - High
-          * `MEDIUM` - Medium
-          * `LOW` - Low
-      - in: query
-        name: status
-        schema:
-          type: string
-          enum:
-          - CLOSED
-          - IDENTIFIED
-          - INVESTIGATING
-          - MITIGATING
-          - OPEN
-          - RESOLVED
-        description: |-
-          * `OPEN` - Open
-          * `INVESTIGATING` - Investigating
-          * `IDENTIFIED` - Identified
-          * `MITIGATING` - Mitigating
-          * `RESOLVED` - Resolved
-          * `CLOSED` - Closed
+        - in: query
+          name: assigned_to
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - Application
+              - Database
+              - Infrastructure
+              - Network
+              - Other
+              - Security
+          description: |-
+            * `Infrastructure` - Infrastructure
+            * `Security` - Security
+            * `Application` - Application
+            * `Database` - Database
+            * `Network` - Network
+            * `Other` - Other
+        - in: query
+          name: created_at_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_at_before
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_by
+          schema:
+            type: string
+            format: uuid
+        - name: ordering
+          required: false
+          in: query
+          description: Which field to use when ordering the results.
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: search
+          required: false
+          in: query
+          description: A search term.
+          schema:
+            type: string
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum:
+              - CRITICAL
+              - HIGH
+              - LOW
+              - MEDIUM
+          description: |-
+            * `CRITICAL` - Critical
+            * `HIGH` - High
+            * `MEDIUM` - Medium
+            * `LOW` - Low
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - CLOSED
+              - IDENTIFIED
+              - INVESTIGATING
+              - MITIGATING
+              - OPEN
+              - RESOLVED
+          description: |-
+            * `OPEN` - Open
+            * `INVESTIGATING` - Investigating
+            * `IDENTIFIED` - Identified
+            * `MITIGATING` - Mitigating
+            * `RESOLVED` - Resolved
+            * `CLOSED` - Closed
       tags:
-      - Incidents
+        - Incidents
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedIncidentListList'
-          description: ''
+                $ref: "#/components/schemas/PaginatedIncidentListList"
+          description: ""
     post:
       operationId: v1_incidents_create
-      description: Creates an incident within the authenticated user's organization
+      description:
+        Creates an incident within the authenticated user's organization
         and logs a timeline creation event.
       summary: Create a new incident
       tags:
-      - Incidents
+        - Incidents
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentCreateUpdate'
-          description: ''
+                $ref: "#/components/schemas/IncidentCreateUpdate"
+          description: ""
   /api/v1/incidents/{id}/:
     get:
       operationId: v1_incidents_retrieve
-      description: Retrieves comprehensive details of a specific incident including
+      description:
+        Retrieves comprehensive details of a specific incident including
         comments and event history.
       summary: Retrieve incident details
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentDetail'
-          description: ''
+                $ref: "#/components/schemas/IncidentDetail"
+          description: ""
     put:
       operationId: v1_incidents_update
       description: Updates an existing incident.
       summary: Update incident
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentCreateUpdate'
+              $ref: "#/components/schemas/IncidentCreateUpdate"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentCreateUpdate'
-          description: ''
+                $ref: "#/components/schemas/IncidentCreateUpdate"
+          description: ""
     patch:
       operationId: v1_incidents_partial_update
       description: Partially updates an existing incident.
       summary: Partially update incident
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedIncidentCreateUpdate'
+              $ref: "#/components/schemas/PatchedIncidentCreateUpdate"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedIncidentCreateUpdate'
+              $ref: "#/components/schemas/PatchedIncidentCreateUpdate"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedIncidentCreateUpdate'
+              $ref: "#/components/schemas/PatchedIncidentCreateUpdate"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentCreateUpdate'
-          description: ''
+                $ref: "#/components/schemas/IncidentCreateUpdate"
+          description: ""
     delete:
       operationId: v1_incidents_destroy
       description: Deletes an incident (ADMIN access required).
       summary: Delete incident
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '204':
+        "204":
           description: No response body
   /api/v1/incidents/{id}/assign/:
     post:
@@ -954,37 +971,37 @@ paths:
       description: Assigns or reassigns an incident to an organization user.
       summary: Assign incident to a team member
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentAssign'
+              $ref: "#/components/schemas/IncidentAssign"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentAssign'
+              $ref: "#/components/schemas/IncidentAssign"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentAssign'
+              $ref: "#/components/schemas/IncidentAssign"
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentDetail'
-          description: ''
-        '400':
+                $ref: "#/components/schemas/IncidentDetail"
+          description: ""
+        "400":
           description: Invalid user ID
   /api/v1/incidents/{id}/comments/:
     get:
@@ -992,292 +1009,293 @@ paths:
       description: GET lists all comments for the incident. POST posts a new comment.
       summary: List or add incident comments
       parameters:
-      - in: query
-        name: assigned_to
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: category
-        schema:
-          type: string
-          enum:
-          - Application
-          - Database
-          - Infrastructure
-          - Network
-          - Other
-          - Security
-        description: |-
-          * `Infrastructure` - Infrastructure
-          * `Security` - Security
-          * `Application` - Application
-          * `Database` - Database
-          * `Network` - Network
-          * `Other` - Other
-      - in: query
-        name: created_at_after
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_before
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_by
-        schema:
-          type: string
-          format: uuid
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      - in: query
-        name: severity
-        schema:
-          type: string
-          enum:
-          - CRITICAL
-          - HIGH
-          - LOW
-          - MEDIUM
-        description: |-
-          * `CRITICAL` - Critical
-          * `HIGH` - High
-          * `MEDIUM` - Medium
-          * `LOW` - Low
-      - in: query
-        name: status
-        schema:
-          type: string
-          enum:
-          - CLOSED
-          - IDENTIFIED
-          - INVESTIGATING
-          - MITIGATING
-          - OPEN
-          - RESOLVED
-        description: |-
-          * `OPEN` - Open
-          * `INVESTIGATING` - Investigating
-          * `IDENTIFIED` - Identified
-          * `MITIGATING` - Mitigating
-          * `RESOLVED` - Resolved
-          * `CLOSED` - Closed
+        - in: query
+          name: assigned_to
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - Application
+              - Database
+              - Infrastructure
+              - Network
+              - Other
+              - Security
+          description: |-
+            * `Infrastructure` - Infrastructure
+            * `Security` - Security
+            * `Application` - Application
+            * `Database` - Database
+            * `Network` - Network
+            * `Other` - Other
+        - in: query
+          name: created_at_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_at_before
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_by
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
+        - name: ordering
+          required: false
+          in: query
+          description: Which field to use when ordering the results.
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: search
+          required: false
+          in: query
+          description: A search term.
+          schema:
+            type: string
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum:
+              - CRITICAL
+              - HIGH
+              - LOW
+              - MEDIUM
+          description: |-
+            * `CRITICAL` - Critical
+            * `HIGH` - High
+            * `MEDIUM` - Medium
+            * `LOW` - Low
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - CLOSED
+              - IDENTIFIED
+              - INVESTIGATING
+              - MITIGATING
+              - OPEN
+              - RESOLVED
+          description: |-
+            * `OPEN` - Open
+            * `INVESTIGATING` - Investigating
+            * `IDENTIFIED` - Identified
+            * `MITIGATING` - Mitigating
+            * `RESOLVED` - Resolved
+            * `CLOSED` - Closed
       tags:
-      - Comments
+        - Comments
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCommentList'
-          description: ''
-        '201':
+                $ref: "#/components/schemas/PaginatedCommentList"
+          description: ""
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-          description: ''
-        '400':
+                $ref: "#/components/schemas/Comment"
+          description: ""
+        "400":
           description: Invalid comment message
     post:
       operationId: v1_incidents_comments_create
       description: GET lists all comments for the incident. POST posts a new comment.
       summary: List or add incident comments
       parameters:
-      - in: query
-        name: assigned_to
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: category
-        schema:
-          type: string
-          enum:
-          - Application
-          - Database
-          - Infrastructure
-          - Network
-          - Other
-          - Security
-        description: |-
-          * `Infrastructure` - Infrastructure
-          * `Security` - Security
-          * `Application` - Application
-          * `Database` - Database
-          * `Network` - Network
-          * `Other` - Other
-      - in: query
-        name: created_at_after
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_before
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_by
-        schema:
-          type: string
-          format: uuid
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      - in: query
-        name: severity
-        schema:
-          type: string
-          enum:
-          - CRITICAL
-          - HIGH
-          - LOW
-          - MEDIUM
-        description: |-
-          * `CRITICAL` - Critical
-          * `HIGH` - High
-          * `MEDIUM` - Medium
-          * `LOW` - Low
-      - in: query
-        name: status
-        schema:
-          type: string
-          enum:
-          - CLOSED
-          - IDENTIFIED
-          - INVESTIGATING
-          - MITIGATING
-          - OPEN
-          - RESOLVED
-        description: |-
-          * `OPEN` - Open
-          * `INVESTIGATING` - Investigating
-          * `IDENTIFIED` - Identified
-          * `MITIGATING` - Mitigating
-          * `RESOLVED` - Resolved
-          * `CLOSED` - Closed
+        - in: query
+          name: assigned_to
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - Application
+              - Database
+              - Infrastructure
+              - Network
+              - Other
+              - Security
+          description: |-
+            * `Infrastructure` - Infrastructure
+            * `Security` - Security
+            * `Application` - Application
+            * `Database` - Database
+            * `Network` - Network
+            * `Other` - Other
+        - in: query
+          name: created_at_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_at_before
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_by
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
+        - name: ordering
+          required: false
+          in: query
+          description: Which field to use when ordering the results.
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: search
+          required: false
+          in: query
+          description: A search term.
+          schema:
+            type: string
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum:
+              - CRITICAL
+              - HIGH
+              - LOW
+              - MEDIUM
+          description: |-
+            * `CRITICAL` - Critical
+            * `HIGH` - High
+            * `MEDIUM` - Medium
+            * `LOW` - Low
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - CLOSED
+              - IDENTIFIED
+              - INVESTIGATING
+              - MITIGATING
+              - OPEN
+              - RESOLVED
+          description: |-
+            * `OPEN` - Open
+            * `INVESTIGATING` - Investigating
+            * `IDENTIFIED` - Identified
+            * `MITIGATING` - Mitigating
+            * `RESOLVED` - Resolved
+            * `CLOSED` - Closed
       tags:
-      - Comments
+        - Comments
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Comment'
+              $ref: "#/components/schemas/Comment"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Comment'
+              $ref: "#/components/schemas/Comment"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Comment'
+              $ref: "#/components/schemas/Comment"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCommentList'
-          description: ''
-        '201':
+                $ref: "#/components/schemas/PaginatedCommentList"
+          description: ""
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-          description: ''
-        '400':
+                $ref: "#/components/schemas/Comment"
+          description: ""
+        "400":
           description: Invalid comment message
   /api/v1/incidents/{id}/status/:
     post:
       operationId: v1_incidents_status_create
-      description: Transitions an incident to a new status (e.g. OPEN -> INVESTIGATING
+      description:
+        Transitions an incident to a new status (e.g. OPEN -> INVESTIGATING
         -> RESOLVED -> CLOSED).
       summary: Change incident status
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
       tags:
-      - Incidents
+        - Incidents
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/IncidentStatus'
+              $ref: "#/components/schemas/IncidentStatus"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/IncidentStatus'
+              $ref: "#/components/schemas/IncidentStatus"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/IncidentStatus'
+              $ref: "#/components/schemas/IncidentStatus"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IncidentDetail'
-          description: ''
-        '400':
+                $ref: "#/components/schemas/IncidentDetail"
+          description: ""
+        "400":
           description: Invalid status transition
   /api/v1/incidents/{id}/timeline/:
     get:
@@ -1285,288 +1303,292 @@ paths:
       description: Returns full audit timeline history of events logged for this incident.
       summary: Retrieve incident event timeline
       parameters:
-      - in: query
-        name: assigned_to
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: category
-        schema:
-          type: string
-          enum:
-          - Application
-          - Database
-          - Infrastructure
-          - Network
-          - Other
-          - Security
-        description: |-
-          * `Infrastructure` - Infrastructure
-          * `Security` - Security
-          * `Application` - Application
-          * `Database` - Database
-          * `Network` - Network
-          * `Other` - Other
-      - in: query
-        name: created_at_after
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_at_before
-        schema:
-          type: string
-          format: date-time
-      - in: query
-        name: created_by
-        schema:
-          type: string
-          format: uuid
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this Incident.
-        required: true
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
-        schema:
-          type: string
-      - in: query
-        name: severity
-        schema:
-          type: string
-          enum:
-          - CRITICAL
-          - HIGH
-          - LOW
-          - MEDIUM
-        description: |-
-          * `CRITICAL` - Critical
-          * `HIGH` - High
-          * `MEDIUM` - Medium
-          * `LOW` - Low
-      - in: query
-        name: status
-        schema:
-          type: string
-          enum:
-          - CLOSED
-          - IDENTIFIED
-          - INVESTIGATING
-          - MITIGATING
-          - OPEN
-          - RESOLVED
-        description: |-
-          * `OPEN` - Open
-          * `INVESTIGATING` - Investigating
-          * `IDENTIFIED` - Identified
-          * `MITIGATING` - Mitigating
-          * `RESOLVED` - Resolved
-          * `CLOSED` - Closed
+        - in: query
+          name: assigned_to
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - Application
+              - Database
+              - Infrastructure
+              - Network
+              - Other
+              - Security
+          description: |-
+            * `Infrastructure` - Infrastructure
+            * `Security` - Security
+            * `Application` - Application
+            * `Database` - Database
+            * `Network` - Network
+            * `Other` - Other
+        - in: query
+          name: created_at_after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_at_before
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: created_by
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          description: A UUID string identifying this Incident.
+          required: true
+        - name: ordering
+          required: false
+          in: query
+          description: Which field to use when ordering the results.
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
+        - name: search
+          required: false
+          in: query
+          description: A search term.
+          schema:
+            type: string
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum:
+              - CRITICAL
+              - HIGH
+              - LOW
+              - MEDIUM
+          description: |-
+            * `CRITICAL` - Critical
+            * `HIGH` - High
+            * `MEDIUM` - Medium
+            * `LOW` - Low
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - CLOSED
+              - IDENTIFIED
+              - INVESTIGATING
+              - MITIGATING
+              - OPEN
+              - RESOLVED
+          description: |-
+            * `OPEN` - Open
+            * `INVESTIGATING` - Investigating
+            * `IDENTIFIED` - Identified
+            * `MITIGATING` - Mitigating
+            * `RESOLVED` - Resolved
+            * `CLOSED` - Closed
       tags:
-      - Timeline
+        - Timeline
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedIncidentEventList'
-          description: ''
+                $ref: "#/components/schemas/PaginatedIncidentEventList"
+          description: ""
   /api/v1/knowledge/:
     get:
       operationId: v1_knowledge_list
       description: List all knowledge documents within the authenticated user's organization.
       parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
+        - name: page
+          required: false
+          in: query
+          description: A page number within the paginated result set.
+          schema:
+            type: integer
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedKnowledgeDocumentListList'
-          description: ''
+                $ref: "#/components/schemas/PaginatedKnowledgeDocumentListList"
+          description: ""
   /api/v1/knowledge/{id}/:
     get:
       operationId: v1_knowledge_retrieve
       description: Retrieve or delete a specific knowledge document in the organization.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeDocumentDetail'
-          description: ''
+                $ref: "#/components/schemas/KnowledgeDocumentDetail"
+          description: ""
     delete:
       operationId: v1_knowledge_destroy
       description: Retrieve or delete a specific knowledge document in the organization.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '204':
+        "204":
           description: No response body
   /api/v1/knowledge/chat/:
     post:
       operationId: v1_knowledge_chat_create
-      description: Execute enterprise RAG AI chat answering user questions with citations
+      description:
+        Execute enterprise RAG AI chat answering user questions with citations
         and evidence.
       summary: Chat with organization RAG knowledge base
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KnowledgeChatRequest'
+              $ref: "#/components/schemas/KnowledgeChatRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KnowledgeChatRequest'
+              $ref: "#/components/schemas/KnowledgeChatRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KnowledgeChatRequest'
+              $ref: "#/components/schemas/KnowledgeChatRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeChatResponse'
-          description: ''
+                $ref: "#/components/schemas/KnowledgeChatResponse"
+          description: ""
   /api/v1/knowledge/search/:
     post:
       operationId: v1_knowledge_search_create
-      description: Perform Top-K semantic similarity search across the organization's
+      description:
+        Perform Top-K semantic similarity search across the organization's
         knowledge base.
       summary: Search organization RAG knowledge base
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KnowledgeSearchRequest'
+              $ref: "#/components/schemas/KnowledgeSearchRequest"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KnowledgeSearchRequest'
+              $ref: "#/components/schemas/KnowledgeSearchRequest"
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KnowledgeSearchRequest'
+              $ref: "#/components/schemas/KnowledgeSearchRequest"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeSearchResponse'
-          description: ''
+                $ref: "#/components/schemas/KnowledgeSearchResponse"
+          description: ""
   /api/v1/knowledge/status/{id}/:
     get:
       operationId: v1_knowledge_status_retrieve
-      description: Retrieve document processing status, chunk count, and embedding
+      description:
+        Retrieve document processing status, chunk count, and embedding
         count.
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
       tags:
-      - v1
+        - v1
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentStatus'
-          description: ''
+                $ref: "#/components/schemas/DocumentStatus"
+          description: ""
   /api/v1/knowledge/upload/:
     post:
       operationId: v1_knowledge_upload_create
-      description: Endpoint for uploading PDF, DOCX, TXT, or MD documents to the organization's
+      description:
+        Endpoint for uploading PDF, DOCX, TXT, or MD documents to the organization's
         RAG knowledge base.
       summary: Upload RAG knowledge base document
       tags:
-      - v1
+        - v1
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KnowledgeDocumentUpload'
+              $ref: "#/components/schemas/KnowledgeDocumentUpload"
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KnowledgeDocumentUpload'
+              $ref: "#/components/schemas/KnowledgeDocumentUpload"
         required: true
       security:
-      - jwtAuth: []
-      - cookieAuth: []
+        - jwtAuth: []
+        - cookieAuth: []
       responses:
-        '201':
+        "201":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KnowledgeDocumentDetail'
-          description: ''
+                $ref: "#/components/schemas/KnowledgeDocumentDetail"
+          description: ""
 components:
   schemas:
     AIIncidentAnalysis:
@@ -1615,16 +1637,16 @@ components:
           format: date-time
           readOnly: true
       required:
-      - confidence_score
-      - created_at
-      - id
-      - incident
-      - recommendations
-      - risk_score
-      - root_cause
-      - severity_prediction
-      - summary
-      - updated_at
+        - confidence_score
+        - created_at
+        - id
+        - incident
+        - recommendations
+        - risk_score
+        - root_cause
+        - severity_prediction
+        - summary
+        - updated_at
     Attachment:
       type: object
       properties:
@@ -1638,7 +1660,7 @@ components:
           readOnly: true
         uploaded_by:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         file:
           type: string
@@ -1651,20 +1673,20 @@ components:
           format: date-time
           readOnly: true
       required:
-      - file
-      - filename
-      - id
-      - incident
-      - uploaded_at
-      - uploaded_by
+        - file
+        - filename
+        - id
+        - incident
+        - uploaded_at
+        - uploaded_by
     CategoryEnum:
       enum:
-      - Infrastructure
-      - Security
-      - Application
-      - Database
-      - Network
-      - Other
+        - Infrastructure
+        - Security
+        - Application
+        - Database
+        - Network
+        - Other
       type: string
       description: |-
         * `Infrastructure` - Infrastructure
@@ -1687,9 +1709,9 @@ components:
           type: string
           writeOnly: true
       required:
-      - new_password
-      - new_password_confirm
-      - old_password
+        - new_password
+        - new_password_confirm
+        - old_password
     Citation:
       type: object
       description: Serializer for a single source citation reference.
@@ -1708,12 +1730,12 @@ components:
         snippet:
           type: string
       required:
-      - chunk
-      - document
-      - document_id
-      - page
-      - similarity
-      - snippet
+        - chunk
+        - document
+        - document_id
+        - page
+        - similarity
+        - snippet
     Comment:
       type: object
       properties:
@@ -1727,7 +1749,7 @@ components:
           readOnly: true
         author:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         message:
           type: string
@@ -1736,11 +1758,11 @@ components:
           format: date-time
           readOnly: true
       required:
-      - author
-      - created_at
-      - id
-      - incident
-      - message
+        - author
+        - created_at
+        - id
+        - incident
+        - message
     CustomTokenObtainPair:
       type: object
       description: |-
@@ -1754,11 +1776,12 @@ components:
           type: string
           writeOnly: true
       required:
-      - email
-      - password
+        - email
+        - password
     DocumentStatus:
       type: object
-      description: Serializer for polling document processing and vector indexing
+      description:
+        Serializer for polling document processing and vector indexing
         status.
       properties:
         id:
@@ -1766,7 +1789,7 @@ components:
           format: uuid
           readOnly: true
         status:
-          $ref: '#/components/schemas/Status15dEnum'
+          $ref: "#/components/schemas/Status15dEnum"
         processing_error:
           type: string
         page_count:
@@ -1790,16 +1813,16 @@ components:
           format: date-time
           readOnly: true
       required:
-      - id
-      - updated_at
+        - id
+        - updated_at
     EventTypeEnum:
       enum:
-      - CREATED
-      - STATUS_CHANGED
-      - SEVERITY_CHANGED
-      - ASSIGNED
-      - COMMENT_ADDED
-      - AI_ANALYSIS_COMPLETED
+        - CREATED
+        - STATUS_CHANGED
+        - SEVERITY_CHANGED
+        - ASSIGNED
+        - COMMENT_ADDED
+        - AI_ANALYSIS_COMPLETED
       type: string
       description: |-
         * `CREATED` - Created
@@ -1810,10 +1833,10 @@ components:
         * `AI_ANALYSIS_COMPLETED` - AI Analysis Completed
     FileTypeEnum:
       enum:
-      - PDF
-      - DOCX
-      - TXT
-      - MD
+        - PDF
+        - DOCX
+        - TXT
+        - MD
       type: string
       description: |-
         * `PDF` - PDF
@@ -1832,12 +1855,13 @@ components:
         status:
           type: string
       required:
-      - incident_id
-      - message
-      - status
+        - incident_id
+        - message
+        - status
     IncidentAnalysis:
       type: object
-      description: Serializer for IncidentAnalysis model returning standardized Phase
+      description:
+        Serializer for IncidentAnalysis model returning standardized Phase
         5 schema.
       properties:
         incident_id:
@@ -1846,7 +1870,7 @@ components:
           readOnly: true
         status:
           allOf:
-          - $ref: '#/components/schemas/IncidentAnalysisStatusEnum'
+            - $ref: "#/components/schemas/IncidentAnalysisStatusEnum"
           readOnly: true
         severity_prediction:
           type: string
@@ -1879,23 +1903,23 @@ components:
           format: date-time
           readOnly: true
       required:
-      - category
-      - confidence_score
-      - created_at
-      - impact
-      - incident_id
-      - recommendations
-      - risk_score
-      - root_cause
-      - severity_prediction
-      - status
-      - updated_at
+        - category
+        - confidence_score
+        - created_at
+        - impact
+        - incident_id
+        - recommendations
+        - risk_score
+        - root_cause
+        - severity_prediction
+        - status
+        - updated_at
     IncidentAnalysisStatusEnum:
       enum:
-      - pending
-      - processing
-      - completed
-      - failed
+        - pending
+        - processing
+        - completed
+        - failed
       type: string
       description: |-
         * `pending` - Pending
@@ -1913,18 +1937,18 @@ components:
           type: string
         logs:
           type: string
-          default: ''
+          default: ""
         severity:
           type: string
-          default: ''
+          default: ""
           maxLength: 50
         impact:
           type: string
-          default: ''
+          default: ""
           maxLength: 255
       required:
-      - description
-      - title
+        - description
+        - title
     IncidentAnalyzeResponse:
       type: object
       description: Serializer for incident analysis response outputs.
@@ -1956,7 +1980,7 @@ components:
           type: number
           format: double
       required:
-      - summary
+        - summary
     IncidentAssign:
       type: object
       properties:
@@ -1973,18 +1997,18 @@ components:
         description:
           type: string
         severity:
-          $ref: '#/components/schemas/SeverityEnum'
+          $ref: "#/components/schemas/SeverityEnum"
         status:
-          $ref: '#/components/schemas/Status231Enum'
+          $ref: "#/components/schemas/Status231Enum"
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: "#/components/schemas/CategoryEnum"
         assigned_to_id:
           type: string
           format: uuid
           writeOnly: true
           nullable: true
       required:
-      - title
+        - title
     IncidentDetail:
       type: object
       properties:
@@ -1998,18 +2022,18 @@ components:
         description:
           type: string
         severity:
-          $ref: '#/components/schemas/SeverityEnum'
+          $ref: "#/components/schemas/SeverityEnum"
         status:
-          $ref: '#/components/schemas/Status231Enum'
+          $ref: "#/components/schemas/Status231Enum"
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: "#/components/schemas/CategoryEnum"
         created_by:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         assigned_to:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         resolved_at:
           type: string
@@ -2038,32 +2062,32 @@ components:
         comments:
           type: array
           items:
-            $ref: '#/components/schemas/Comment'
+            $ref: "#/components/schemas/Comment"
           readOnly: true
         attachments:
           type: array
           items:
-            $ref: '#/components/schemas/Attachment'
+            $ref: "#/components/schemas/Attachment"
           readOnly: true
         events:
           type: array
           items:
-            $ref: '#/components/schemas/IncidentEvent'
+            $ref: "#/components/schemas/IncidentEvent"
           readOnly: true
       required:
-      - assigned_to
-      - attachments
-      - closed_at
-      - comments
-      - created_at
-      - created_by
-      - events
-      - id
-      - is_closed
-      - is_resolved
-      - resolved_at
-      - title
-      - updated_at
+        - assigned_to
+        - attachments
+        - closed_at
+        - comments
+        - created_at
+        - created_by
+        - events
+        - id
+        - is_closed
+        - is_resolved
+        - resolved_at
+        - title
+        - updated_at
     IncidentEvent:
       type: object
       properties:
@@ -2077,11 +2101,11 @@ components:
           readOnly: true
         user:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         event_type:
           allOf:
-          - $ref: '#/components/schemas/EventTypeEnum'
+            - $ref: "#/components/schemas/EventTypeEnum"
           readOnly: true
         message:
           type: string
@@ -2093,13 +2117,13 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - event_type
-      - id
-      - incident
-      - message
-      - metadata
-      - user
+        - created_at
+        - event_type
+        - id
+        - incident
+        - message
+        - metadata
+        - user
     IncidentList:
       type: object
       properties:
@@ -2111,18 +2135,18 @@ components:
           type: string
           maxLength: 255
         severity:
-          $ref: '#/components/schemas/SeverityEnum'
+          $ref: "#/components/schemas/SeverityEnum"
         status:
-          $ref: '#/components/schemas/Status231Enum'
+          $ref: "#/components/schemas/Status231Enum"
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: "#/components/schemas/CategoryEnum"
         created_by:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         assigned_to:
           allOf:
-          - $ref: '#/components/schemas/UserMinimal'
+            - $ref: "#/components/schemas/UserMinimal"
           readOnly: true
         created_at:
           type: string
@@ -2133,19 +2157,19 @@ components:
           format: date-time
           readOnly: true
       required:
-      - assigned_to
-      - created_at
-      - created_by
-      - id
-      - title
-      - updated_at
+        - assigned_to
+        - created_at
+        - created_by
+        - id
+        - title
+        - updated_at
     IncidentStatus:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/Status231Enum'
+          $ref: "#/components/schemas/Status231Enum"
       required:
-      - status
+        - status
     KnowledgeChatRequest:
       type: object
       description: Request serializer for enterprise RAG chat.
@@ -2163,10 +2187,11 @@ components:
             type: string
             maxLength: 50
       required:
-      - question
+        - question
     KnowledgeChatResponse:
       type: object
-      description: Response serializer for enterprise RAG chat answer with citations
+      description:
+        Response serializer for enterprise RAG chat answer with citations
         and evidence.
       properties:
         answer:
@@ -2180,35 +2205,36 @@ components:
         source_citations:
           type: array
           items:
-            $ref: '#/components/schemas/Citation'
+            $ref: "#/components/schemas/Citation"
         confidence_score:
           type: number
           format: double
         related_documents:
           type: array
           items:
-            $ref: '#/components/schemas/RelatedDocument'
+            $ref: "#/components/schemas/RelatedDocument"
         sources:
           type: array
           items:
-            $ref: '#/components/schemas/Citation'
+            $ref: "#/components/schemas/Citation"
         similarity_scores:
           type: array
           items:
             type: number
             format: double
       required:
-      - answer
-      - confidence_score
-      - related_documents
-      - similarity_scores
-      - source_citations
-      - sources
-      - summary
-      - supporting_evidence
+        - answer
+        - confidence_score
+        - related_documents
+        - similarity_scores
+        - source_citations
+        - sources
+        - summary
+        - supporting_evidence
     KnowledgeDocumentDetail:
       type: object
-      description: Detailed serializer for a knowledge document including indexing
+      description:
+        Detailed serializer for a knowledge document including indexing
         stats.
       properties:
         id:
@@ -2224,9 +2250,9 @@ components:
           type: string
           format: uri
         file_type:
-          $ref: '#/components/schemas/FileTypeEnum'
+          $ref: "#/components/schemas/FileTypeEnum"
         status:
-          $ref: '#/components/schemas/Status15dEnum'
+          $ref: "#/components/schemas/Status15dEnum"
         processing_error:
           type: string
         page_count:
@@ -2258,13 +2284,13 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - file
-      - file_type
-      - id
-      - title
-      - updated_at
-      - uploaded_by_name
+        - created_at
+        - file
+        - file_type
+        - id
+        - title
+        - updated_at
+        - uploaded_by_name
     KnowledgeDocumentList:
       type: object
       description: Serializer for listing organization knowledge documents.
@@ -2282,9 +2308,9 @@ components:
           type: string
           format: uri
         file_type:
-          $ref: '#/components/schemas/FileTypeEnum'
+          $ref: "#/components/schemas/FileTypeEnum"
         status:
-          $ref: '#/components/schemas/Status15dEnum'
+          $ref: "#/components/schemas/Status15dEnum"
         processing_error:
           type: string
         page_count:
@@ -2316,13 +2342,13 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - file
-      - file_type
-      - id
-      - title
-      - updated_at
-      - uploaded_by_name
+        - created_at
+        - file
+        - file_type
+        - id
+        - title
+        - updated_at
+        - uploaded_by_name
     KnowledgeDocumentUpload:
       type: object
       description: Serializer for uploading a new knowledge base document.
@@ -2341,22 +2367,22 @@ components:
           format: uri
           writeOnly: true
         file_type:
-          $ref: '#/components/schemas/FileTypeEnum'
+          $ref: "#/components/schemas/FileTypeEnum"
         status:
           allOf:
-          - $ref: '#/components/schemas/Status15dEnum'
+            - $ref: "#/components/schemas/Status15dEnum"
           readOnly: true
         created_at:
           type: string
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - file
-      - file_type
-      - id
-      - status
-      - title
+        - created_at
+        - file
+        - file_type
+        - id
+        - status
+        - title
     KnowledgeSearchRequest:
       type: object
       description: Request serializer for vector similarity search.
@@ -2393,7 +2419,7 @@ components:
           minimum: 0.0
           default: 0.0
       required:
-      - query
+        - query
     KnowledgeSearchResponse:
       type: object
       description: Response serializer for vector similarity search.
@@ -2405,11 +2431,11 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/KnowledgeSearchResponseItem'
+            $ref: "#/components/schemas/KnowledgeSearchResponseItem"
       required:
-      - query
-      - results
-      - total_results
+        - query
+        - results
+        - total_results
     KnowledgeSearchResponseItem:
       type: object
       description: Serializer for a single retrieved chunk in similarity search results.
@@ -2432,13 +2458,13 @@ components:
           default: 1
         metadata: {}
       required:
-      - chunk_id
-      - chunk_index
-      - content
-      - document_id
-      - document_title
-      - metadata
-      - similarity_score
+        - chunk_id
+        - chunk_index
+        - content
+        - document_id
+        - document_title
+        - metadata
+        - similarity_score
     Organization:
       type: object
       description: Serializer for Enterprise Organization management.
@@ -2467,16 +2493,16 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - id
-      - name
-      - slug
-      - updated_at
+        - created_at
+        - id
+        - name
+        - slug
+        - updated_at
     PaginatedCommentList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2494,12 +2520,12 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/Comment'
+            $ref: "#/components/schemas/Comment"
     PaginatedIncidentEventList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2517,12 +2543,12 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/IncidentEvent'
+            $ref: "#/components/schemas/IncidentEvent"
     PaginatedIncidentListList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2540,12 +2566,12 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/IncidentList'
+            $ref: "#/components/schemas/IncidentList"
     PaginatedKnowledgeDocumentListList:
       type: object
       required:
-      - count
-      - results
+        - count
+        - results
       properties:
         count:
           type: integer
@@ -2563,7 +2589,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/KnowledgeDocumentList'
+            $ref: "#/components/schemas/KnowledgeDocumentList"
     PatchedIncidentCreateUpdate:
       type: object
       properties:
@@ -2573,11 +2599,11 @@ components:
         description:
           type: string
         severity:
-          $ref: '#/components/schemas/SeverityEnum'
+          $ref: "#/components/schemas/SeverityEnum"
         status:
-          $ref: '#/components/schemas/Status231Enum'
+          $ref: "#/components/schemas/Status231Enum"
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: "#/components/schemas/CategoryEnum"
         assigned_to_id:
           type: string
           format: uuid
@@ -2634,11 +2660,11 @@ components:
           readOnly: true
         role:
           allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+            - $ref: "#/components/schemas/RoleEnum"
           readOnly: true
         organization:
           allOf:
-          - $ref: '#/components/schemas/Organization'
+            - $ref: "#/components/schemas/Organization"
           readOnly: true
         phone_number:
           type: string
@@ -2646,7 +2672,8 @@ components:
         is_active:
           type: boolean
           title: Active
-          description: Designates whether this user should be treated as active. Unselect
+          description:
+            Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
         date_joined:
           type: string
@@ -2671,19 +2698,19 @@ components:
           type: string
         category:
           type: string
-          default: ''
+          default: ""
           maxLength: 100
         severity:
           type: string
-          default: ''
+          default: ""
           maxLength: 50
         affected_components:
           type: array
           items:
             type: string
       required:
-      - description
-      - title
+        - description
+        - title
     RecommendationResponse:
       type: object
       description: Serializer for recommendation engine response outputs.
@@ -2701,9 +2728,9 @@ components:
           items:
             type: string
       required:
-      - immediate_mitigation_steps
-      - investigation_checklist
-      - prevention_recommendations
+        - immediate_mitigation_steps
+        - investigation_checklist
+        - prevention_recommendations
     RelatedDocument:
       type: object
       description: Serializer for a related knowledge document reference.
@@ -2716,15 +2743,15 @@ components:
           type: number
           format: double
       required:
-      - highest_similarity
-      - id
-      - title
+        - highest_similarity
+        - id
+        - title
     RoleEnum:
       enum:
-      - ADMIN
-      - ANALYST
-      - RESPONDER
-      - VIEWER
+        - ADMIN
+        - ANALYST
+        - RESPONDER
+        - VIEWER
       type: string
       description: |-
         * `ADMIN` - Admin
@@ -2733,10 +2760,10 @@ components:
         * `VIEWER` - Viewer
     SeverityEnum:
       enum:
-      - CRITICAL
-      - HIGH
-      - MEDIUM
-      - LOW
+        - CRITICAL
+        - HIGH
+        - MEDIUM
+        - LOW
       type: string
       description: |-
         * `CRITICAL` - Critical
@@ -2759,10 +2786,10 @@ components:
         description:
           type: string
       required:
-      - affected_users
-      - category
-      - description
-      - impact
+        - affected_users
+        - category
+        - description
+        - impact
     SeverityPredictResponse:
       type: object
       description: Serializer for severity prediction response outputs.
@@ -2775,14 +2802,14 @@ components:
           maximum: 1.0
           minimum: 0.0
       required:
-      - confidence_score
-      - predicted_severity
+        - confidence_score
+        - predicted_severity
     Status15dEnum:
       enum:
-      - UPLOADED
-      - PROCESSING
-      - INDEXED
-      - FAILED
+        - UPLOADED
+        - PROCESSING
+        - INDEXED
+        - FAILED
       type: string
       description: |-
         * `UPLOADED` - Uploaded
@@ -2791,12 +2818,12 @@ components:
         * `FAILED` - Failed
     Status231Enum:
       enum:
-      - OPEN
-      - INVESTIGATING
-      - IDENTIFIED
-      - MITIGATING
-      - RESOLVED
-      - CLOSED
+        - OPEN
+        - INVESTIGATING
+        - IDENTIFIED
+        - MITIGATING
+        - RESOLVED
+        - CLOSED
       type: string
       description: |-
         * `OPEN` - Open
@@ -2814,8 +2841,8 @@ components:
         refresh:
           type: string
       required:
-      - access
-      - refresh
+        - access
+        - refresh
     UserDetail:
       type: object
       description: Detailed serializer for User profile viewing and management.
@@ -2840,11 +2867,11 @@ components:
           readOnly: true
         role:
           allOf:
-          - $ref: '#/components/schemas/RoleEnum'
+            - $ref: "#/components/schemas/RoleEnum"
           readOnly: true
         organization:
           allOf:
-          - $ref: '#/components/schemas/Organization'
+            - $ref: "#/components/schemas/Organization"
           readOnly: true
         phone_number:
           type: string
@@ -2852,7 +2879,8 @@ components:
         is_active:
           type: boolean
           title: Active
-          description: Designates whether this user should be treated as active. Unselect
+          description:
+            Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
         date_joined:
           type: string
@@ -2867,14 +2895,14 @@ components:
           format: date-time
           readOnly: true
       required:
-      - created_at
-      - date_joined
-      - email
-      - full_name
-      - id
-      - organization
-      - role
-      - updated_at
+        - created_at
+        - date_joined
+        - email
+        - full_name
+        - id
+        - organization
+        - role
+        - updated_at
     UserMinimal:
       type: object
       properties:
@@ -2891,11 +2919,11 @@ components:
           type: string
           readOnly: true
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          $ref: "#/components/schemas/RoleEnum"
       required:
-      - email
-      - full_name
-      - id
+        - email
+        - full_name
+        - id
     UserRegistration:
       type: object
       description: |-
@@ -2920,7 +2948,7 @@ components:
           type: string
           maxLength: 150
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          $ref: "#/components/schemas/RoleEnum"
         organization_name:
           type: string
           writeOnly: true
@@ -2933,9 +2961,9 @@ components:
           type: string
           maxLength: 20
       required:
-      - email
-      - password
-      - password_confirm
+        - email
+        - password
+        - password_confirm
   securitySchemes:
     cookieAuth:
       type: apiKey

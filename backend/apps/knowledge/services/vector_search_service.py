@@ -133,4 +133,3 @@ class VectorSearchService:
             return results
         except Exception:
             return self._fallback_search(qs, query_vec, top_k, min_similarity)
-

@@ -14,7 +14,9 @@ from apps.knowledge.services.embedding_service import (
 from apps.knowledge.services.embeddings.factory import get_embedding_provider
 from apps.knowledge.services.file_hash_service import FileHashService
 from apps.knowledge.services.knowledge_chat_service import KnowledgeChatService
-from apps.knowledge.services.knowledge_retrieval_service import KnowledgeRetrievalService
+from apps.knowledge.services.knowledge_retrieval_service import (
+    KnowledgeRetrievalService,
+)
 from apps.knowledge.services.prompt_builder import PromptBuilder
 from apps.knowledge.services.similar_incident_service import SimilarIncidentService
 from apps.knowledge.services.vector_search_service import VectorSearchService

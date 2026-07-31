@@ -145,7 +145,9 @@ class TestVectorSearchService:
     # ------------------------------------------------------------------ helpers
 
     @staticmethod
-    def _make_chunk_with_embedding(document: KnowledgeDocument, content: str, idx: int = 0) -> None:
+    def _make_chunk_with_embedding(
+        document: KnowledgeDocument, content: str, idx: int = 0
+    ) -> None:
         """Create a DocumentChunk and immediately embed it."""
         chunk = DocumentChunk.objects.create(
             document=document,
@@ -156,7 +158,9 @@ class TestVectorSearchService:
         EmbeddingService().embed_chunk(chunk)
 
     @staticmethod
-    def _make_doc(org, user, title: str, status: str, content: bytes = b"") -> KnowledgeDocument:
+    def _make_doc(
+        org, user, title: str, status: str, content: bytes = b""
+    ) -> KnowledgeDocument:
         file_obj = SimpleUploadedFile(f"{title}.txt", content or title.encode())
         return KnowledgeDocument.objects.create(
             organization=org,
@@ -187,7 +191,9 @@ class TestVectorSearchService:
         """
         Chunks belonging to an INDEXED document must appear in search results.
         """
-        indexed_doc = self._make_doc(org, user, "Indexed Security Policy", DocumentStatus.INDEXED)
+        indexed_doc = self._make_doc(
+            org, user, "Indexed Security Policy", DocumentStatus.INDEXED
+        )
         self._make_chunk_with_embedding(
             indexed_doc,
             "Isolate the compromised host from the network segment immediately.",
@@ -221,9 +227,9 @@ class TestVectorSearchService:
             min_similarity=0.0,
         )
 
-        assert len(results) == 0, (
-            "FAILED document chunks must be excluded regardless of similarity score."
-        )
+        assert (
+            len(results) == 0
+        ), "FAILED document chunks must be excluded regardless of similarity score."
 
     def test_non_indexed_statuses_all_excluded(self, db, org, user):
         """
@@ -239,9 +245,9 @@ class TestVectorSearchService:
             organization=org,
             min_similarity=0.0,
         )
-        assert len(results) == 0, (
-            "Only INDEXED documents should contribute to search results."
-        )
+        assert (
+            len(results) == 0
+        ), "Only INDEXED documents should contribute to search results."
 
     # ------------------------------------------------------------------ min_similarity filtering
 
@@ -250,8 +256,12 @@ class TestVectorSearchService:
         Setting min_similarity=1.0 must return zero results (no perfect match exists),
         proving the threshold filter is applied and not silently skipped.
         """
-        indexed_doc = self._make_doc(org, user, "Threshold Test Doc", DocumentStatus.INDEXED)
-        self._make_chunk_with_embedding(indexed_doc, "database backup rotation schedule")
+        indexed_doc = self._make_doc(
+            org, user, "Threshold Test Doc", DocumentStatus.INDEXED
+        )
+        self._make_chunk_with_embedding(
+            indexed_doc, "database backup rotation schedule"
+        )
 
         service = VectorSearchService()
         results = service.search(
@@ -287,9 +297,9 @@ class TestVectorSearchService:
             organization=other_org,
             min_similarity=0.0,
         )
-        assert len(results_other) == 0, (
-            "Cross-organisation access must be blocked at the query level."
-        )
+        assert (
+            len(results_other) == 0
+        ), "Cross-organisation access must be blocked at the query level."
 
         # Own org must see the document
         results_own = service.search(
@@ -321,33 +331,44 @@ class TestVectorSearchService:
         assert len(results) == 1
         assert results[0]["document_title"] == "Security Runbook"
 
-    def test_search_unique_documents_deduplication_and_default_threshold(self, db, org, user):
+    def test_search_unique_documents_deduplication_and_default_threshold(
+        self, db, org, user
+    ):
         """
         Verify search removes duplicate chunks from the same document, returns top_k unique
         documents sorted by relevance descending, and defaults to min_similarity=0.65.
         """
-        doc1 = self._make_doc(org, user, "Ransomware Runbook Primary", DocumentStatus.INDEXED)
+        doc1 = self._make_doc(
+            org, user, "Ransomware Runbook Primary", DocumentStatus.INDEXED
+        )
         self._make_chunk_with_embedding(
-            doc1, "Ransomware containment procedure isolate affected VLAN immediately", idx=0
+            doc1,
+            "Ransomware containment procedure isolate affected VLAN immediately",
+            idx=0,
         )
         self._make_chunk_with_embedding(
             doc1, "Ransomware containment procedure step two disable RDP access", idx=1
         )
 
-        doc2 = self._make_doc(org, user, "Ransomware Runbook Secondary", DocumentStatus.INDEXED)
+        doc2 = self._make_doc(
+            org, user, "Ransomware Runbook Secondary", DocumentStatus.INDEXED
+        )
         self._make_chunk_with_embedding(
             doc2, "Ransomware containment procedure restore volume from backup", idx=0
         )
 
         service = VectorSearchService()
-        results = service.search("Ransomware containment procedure isolate VLAN", organization=org)
+        results = service.search(
+            "Ransomware containment procedure isolate VLAN", organization=org
+        )
         # Even though doc1 has 2 matching chunks, only 1 unique result for doc1 should appear
         doc_ids = [r["document_id"] for r in results]
-        assert len(doc_ids) == len(set(doc_ids)), "Duplicate chunks from the same document should be removed."
+        assert len(doc_ids) == len(
+            set(doc_ids)
+        ), "Duplicate chunks from the same document should be removed."
         # Verify sorted descending by similarity_score
         scores = [r["similarity_score"] for r in results]
         assert scores == sorted(scores, reverse=True)
-
 
 
 @pytest.mark.django_db
@@ -410,7 +431,6 @@ class TestCitationAndChatService:
         # Empty chunks should return 0
         assert CitationService.calculate_confidence([]) == 0
 
-
     def test_knowledge_chat_service_returns_cited_payload(self, db, org, sample_doc):
         chunk = DocumentChunk.objects.create(
             document=sample_doc,
@@ -437,8 +457,10 @@ class TestCitationAndChatService:
 
         # Verify that RAGQueryLog was logged
         from apps.knowledge.models import RAGQueryLog
-        assert RAGQueryLog.objects.filter(organization=org, question="How do I contain malware?").exists()
 
+        assert RAGQueryLog.objects.filter(
+            organization=org, question="How do I contain malware?"
+        ).exists()
 
 
 @pytest.mark.django_db

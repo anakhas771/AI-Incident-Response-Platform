@@ -54,12 +54,7 @@ export const KnowledgeDetailPage: React.FC = () => {
       <div className="py-24 text-center text-slate-400">
         <BookOpen className="mx-auto h-12 w-12 text-slate-600" />
         <p className="mt-4">Document not found.</p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/knowledge')}
-          className="mt-4"
-        >
+        <Button variant="outline" size="sm" onClick={() => navigate('/knowledge')} className="mt-4">
           Back to Knowledge Base
         </Button>
       </div>

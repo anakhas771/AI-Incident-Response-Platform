@@ -57,10 +57,10 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
                     stepStatus === 'completed'
                       ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
                       : stepStatus === 'active'
-                      ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400 animate-pulse'
-                      : stepStatus === 'error'
-                      ? 'border-rose-500 bg-rose-500/20 text-rose-400'
-                      : 'border-slate-700 bg-slate-800/40 text-slate-500'
+                        ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400 animate-pulse'
+                        : stepStatus === 'error'
+                          ? 'border-rose-500 bg-rose-500/20 text-rose-400'
+                          : 'border-slate-700 bg-slate-800/40 text-slate-500'
                   }`}
                 >
                   {stepStatus === 'completed' ? (
@@ -78,10 +78,10 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
                     stepStatus === 'completed'
                       ? 'text-emerald-300'
                       : stepStatus === 'active'
-                      ? 'text-cyan-300'
-                      : stepStatus === 'error'
-                      ? 'text-rose-300'
-                      : 'text-slate-500'
+                        ? 'text-cyan-300'
+                        : stepStatus === 'error'
+                          ? 'text-rose-300'
+                          : 'text-slate-500'
                   }`}
                 >
                   {step.label}
@@ -93,8 +93,8 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
                     status === 'INDEXED'
                       ? 'bg-emerald-500/50'
                       : idx === 0 && status === 'PROCESSING'
-                      ? 'bg-cyan-500/50'
-                      : 'bg-slate-800'
+                        ? 'bg-cyan-500/50'
+                        : 'bg-slate-800'
                   }`}
                 />
               )}
@@ -107,7 +107,8 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
         <div className="mt-4 flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs text-slate-400">
           <div className="flex items-center gap-4">
             <span>
-              <strong className="text-slate-200">{pageCount}</strong> {pageCount === 1 ? 'page' : 'pages'}
+              <strong className="text-slate-200">{pageCount}</strong>{' '}
+              {pageCount === 1 ? 'page' : 'pages'}
             </span>
             <span>
               <strong className="text-slate-200">{wordCount.toLocaleString()}</strong> words

@@ -143,17 +143,26 @@ class KnowledgeChatService:
                 if kp not in key_points:
                     key_points.append(kp)
 
-        recommendations = actions if actions else [
-            f"Review operational guidance in {c.get('document_title', 'knowledge base')} (Page {c.get('page_number', 1)})"
-            for c in chunks[:2]
-        ]
+        recommendations = (
+            actions
+            if actions
+            else [
+                f"Review operational guidance in {c.get('document_title', 'knowledge base')} (Page {c.get('page_number', 1)})"
+                for c in chunks[:2]
+            ]
+        )
 
         # Log to RAGQueryLog for evaluation and auditing
         try:
             from apps.knowledge.models import RAGQueryLog
+
             RAGQueryLog.objects.create(
                 organization=organization,
-                user=user if (user and getattr(user, "is_authenticated", False)) else None,
+                user=(
+                    user
+                    if (user and getattr(user, "is_authenticated", False))
+                    else None
+                ),
                 question=question,
                 retrieved_documents=[
                     {
@@ -185,4 +194,3 @@ class KnowledgeChatService:
             "sources": citations,
             "similarity_scores": [c["similarity"] for c in citations],
         }
-

@@ -38,7 +38,11 @@ export const SimilarityCard: React.FC<SimilarityCardProps> = ({
 
   const theme = getTheme();
   const sizeClass =
-    size === 'sm' ? 'px-2 py-0.5 text-[11px]' : size === 'lg' ? 'px-3 py-1.5 text-sm' : 'px-2.5 py-1 text-xs';
+    size === 'sm'
+      ? 'px-2 py-0.5 text-[11px]'
+      : size === 'lg'
+        ? 'px-3 py-1.5 text-sm'
+        : 'px-2.5 py-1 text-xs';
 
   return (
     <div

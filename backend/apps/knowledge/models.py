@@ -249,4 +249,3 @@ class RAGQueryLog(TimeStampedUUIDModel):
 
     def __str__(self) -> str:
         return f"RAGQueryLog [{self.organization}] @ {self.created_at}"
-

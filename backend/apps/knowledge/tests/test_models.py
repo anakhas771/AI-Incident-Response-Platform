@@ -116,7 +116,9 @@ class TestKnowledgeModels:
             organization=org,
             user=user,
             question="What is the ransomware protocol?",
-            retrieved_documents=[{"document_title": "Ransomware Runbook", "chunk_index": 0}],
+            retrieved_documents=[
+                {"document_title": "Ransomware Runbook", "chunk_index": 0}
+            ],
             similarity_scores=[0.85],
             answer="Summary of findings from Ransomware Runbook...",
             confidence_score=85,
@@ -129,4 +131,3 @@ class TestKnowledgeModels:
         assert log.similarity_scores == [0.85]
         assert log.confidence_score == 85
         assert "RAGQueryLog" in str(log)
-

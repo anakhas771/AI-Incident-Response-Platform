@@ -13,33 +13,23 @@ from apps.knowledge.models import (
     KnowledgeDocument,
 )
 
+
 @extend_schema_field(OpenApiTypes.BINARY)
 class BinaryFileField(serializers.FileField):
     """FileField annotated so drf-spectacular emits type: string, format: binary."""
+
     pass
 
 
 class KnowledgeDocumentUploadSerializer(serializers.Serializer):
 
-    title = serializers.CharField(
-        max_length=255
-    )
+    title = serializers.CharField(max_length=255)
 
+    description = serializers.CharField(required=False, allow_blank=True)
 
+    file = BinaryFileField(required=True, write_only=True)
 
-    description = serializers.CharField(
-        required=False,
-        allow_blank=True
-    )
-
-    file = BinaryFileField(
-        required=True,
-        write_only=True
-    )
-
-    file_type = serializers.ChoiceField(
-        choices=DocumentType.choices
-    )
+    file_type = serializers.ChoiceField(choices=DocumentType.choices)
 
     tags = serializers.ListField(
         child=serializers.CharField(max_length=50),
@@ -47,7 +37,6 @@ class KnowledgeDocumentUploadSerializer(serializers.Serializer):
         default=list,
         help_text="Optional list of tag names to attach to the document.",
     )
-
 
     def validate_title(self, value: str) -> str:
         value = value.strip()
@@ -78,9 +67,7 @@ class KnowledgeDocumentUploadSerializer(serializers.Serializer):
         value = value.upper().strip()
 
         if value not in DocumentType.values:
-            raise serializers.ValidationError(
-                f"Unsupported file type '{value}'"
-            )
+            raise serializers.ValidationError(f"Unsupported file type '{value}'")
 
         return value
 
@@ -93,6 +80,7 @@ class KnowledgeDocumentUploadSerializer(serializers.Serializer):
         this method, so all required model fields are present here.
         """
         return KnowledgeDocument.objects.create(**validated_data)
+
 
 class KnowledgeDocumentListSerializer(serializers.ModelSerializer):
     """
@@ -200,7 +188,6 @@ class KnowledgeSearchRequestSerializer(serializers.Serializer):
     )
 
 
-
 class KnowledgeSearchResponseItemSerializer(serializers.Serializer):
     """
     Serializer for a single retrieved chunk in similarity search results.
@@ -285,7 +272,6 @@ class KnowledgeChatResponseSerializer(serializers.Serializer):
     related_documents = RelatedDocumentSerializer(many=True)
     sources = CitationSerializer(many=True)
     similarity_scores = serializers.ListField(child=serializers.FloatField())
-
 
 
 class DocumentStatusSerializer(serializers.ModelSerializer):

@@ -1,11 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  X,
-  UploadCloud,
-  FileText,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { X, UploadCloud, FileText, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { DocumentType } from '../../types/knowledge';
 import toast from 'react-hot-toast';

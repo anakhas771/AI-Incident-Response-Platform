@@ -21,11 +21,7 @@ import { SearchBar } from '../components/knowledge/SearchBar';
 import { CitationPanel } from '../components/knowledge/CitationPanel';
 import { SimilarityCard } from '../components/knowledge/SimilarityCard';
 import { DocumentViewer } from '../components/knowledge/DocumentViewer';
-import {
-  KnowledgeDocument,
-  KnowledgeSearchResponseItem,
-  Citation,
-} from '../types/knowledge';
+import { KnowledgeDocument, KnowledgeSearchResponseItem, Citation } from '../types/knowledge';
 import {
   getKnowledgeDocuments,
   uploadKnowledgeDocument,
@@ -134,9 +130,7 @@ export const KnowledgeBasePage: React.FC = () => {
   const handleReindex = async (id: string) => {
     toast.success(`Re-indexing task triggered for document ${id}`);
     setTimeout(() => {
-      setDocuments((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, status: 'INDEXED' } : d))
-      );
+      setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'INDEXED' } : d)));
       toast.success('Vector re-indexing completed successfully');
     }, 2000);
   };
@@ -194,13 +188,11 @@ export const KnowledgeBasePage: React.FC = () => {
   };
 
   const filteredDocs = documents.filter((doc) => {
-    const matchesType =
-      docFilterType === 'ALL' || doc.file_type === docFilterType;
+    const matchesType = docFilterType === 'ALL' || doc.file_type === docFilterType;
     const matchesQuery =
       !docSearchQuery ||
       doc.title.toLowerCase().includes(docSearchQuery.toLowerCase()) ||
-      (doc.description &&
-        doc.description.toLowerCase().includes(docSearchQuery.toLowerCase()));
+      (doc.description && doc.description.toLowerCase().includes(docSearchQuery.toLowerCase()));
     return matchesType && matchesQuery;
   });
 
@@ -219,7 +211,8 @@ export const KnowledgeBasePage: React.FC = () => {
             Enterprise Knowledge Base
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            Vector-indexed security policies, runbooks, and historical incident intelligence for AI grounding
+            Vector-indexed security policies, runbooks, and historical incident intelligence for AI
+            grounding
           </p>
         </div>
 
@@ -255,7 +248,9 @@ export const KnowledgeBasePage: React.FC = () => {
             <BookOpen className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="mt-2 text-2xl font-bold text-slate-100">{totalDocs}</div>
-          <div className="mt-1 text-xs text-slate-500">{totalWords.toLocaleString()} total words</div>
+          <div className="mt-1 text-xs text-slate-500">
+            {totalWords.toLocaleString()} total words
+          </div>
         </div>
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
@@ -408,7 +403,8 @@ export const KnowledgeBasePage: React.FC = () => {
               Semantic Vector Similarity Search
             </h3>
             <p className="mt-1 text-xs text-slate-400">
-              Uses cosine similarity over 1536-dimensional embeddings to retrieve contextually relevant chunks
+              Uses cosine similarity over 1536-dimensional embeddings to retrieve contextually
+              relevant chunks
             </p>
             <div className="mt-4">
               <SearchBar
@@ -449,9 +445,7 @@ export const KnowledgeBasePage: React.FC = () => {
             ) : (
               <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-12 text-center">
                 <Sparkles className="mx-auto h-10 w-10 text-cyan-400" />
-                <h4 className="mt-3 text-sm font-bold text-slate-300">
-                  Ready for Semantic Search
-                </h4>
+                <h4 className="mt-3 text-sm font-bold text-slate-300">Ready for Semantic Search</h4>
                 <p className="mt-1 text-xs text-slate-500">
                   Enter a query above to test vector retrieval across your enterprise runbooks.
                 </p>
@@ -470,9 +464,7 @@ export const KnowledgeBasePage: React.FC = () => {
                         <FileText className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-200">
-                          {item.document_title}
-                        </h4>
+                        <h4 className="text-sm font-bold text-slate-200">{item.document_title}</h4>
                         <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
                           <span>Page {item.page_number}</span>
                           <span>•</span>
@@ -546,11 +538,7 @@ export const KnowledgeBasePage: React.FC = () => {
                           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             RAG Grounding Confidence
                           </span>
-                          <SimilarityCard
-                            score={msg.confidence}
-                            label="Confidence"
-                            size="sm"
-                          />
+                          <SimilarityCard score={msg.confidence} label="Confidence" size="sm" />
                         </div>
 
                         {msg.citations && msg.citations.length > 0 && (
@@ -612,13 +600,12 @@ export const KnowledgeBasePage: React.FC = () => {
           <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <Database className="h-5 w-5 text-cyan-400" />
-              <h3 className="text-sm font-bold text-slate-200">
-                How RAG Grounding Works
-              </h3>
+              <h3 className="text-sm font-bold text-slate-200">How RAG Grounding Works</h3>
             </div>
 
             <p className="text-xs leading-relaxed text-slate-400">
-              When you ask a question, the platform converts your prompt into a 1536-dimensional vector and queries the enterprise vector index using cosine similarity.
+              When you ask a question, the platform converts your prompt into a 1536-dimensional
+              vector and queries the enterprise vector index using cosine similarity.
             </p>
 
             <div className="space-y-3 pt-2">

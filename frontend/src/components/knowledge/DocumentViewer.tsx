@@ -56,8 +56,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       i === 0
         ? `# ${document.title}\n\nStandard procedure and automated security workflows for enterprise incident mitigation across multi-tenant environments.`
         : i === 1
-        ? `## Section ${i + 1}: Containment Protocols\nImmediate VLAN isolation and BGP traffic scrubbing must be triggered within 5 minutes of high-severity alert verification.`
-        : `## Section ${i + 1}: Operational Guidelines\nEnsure memory dump and forensic snapshot retention before executing remediation scripts. Record all audit trails in PostgreSQL.`,
+          ? `## Section ${i + 1}: Containment Protocols\nImmediate VLAN isolation and BGP traffic scrubbing must be triggered within 5 minutes of high-severity alert verification.`
+          : `## Section ${i + 1}: Operational Guidelines\nEnsure memory dump and forensic snapshot retention before executing remediation scripts. Record all audit trails in PostgreSQL.`,
   })).filter(
     (chunk) =>
       !searchTerm ||
@@ -141,7 +141,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
             <div className="text-sm font-bold text-cyan-400">{document.chunk_count}</div>
           </div>
           <div className="border-l border-slate-800">
-            <div className="text-[10px] uppercase font-bold text-slate-500">Embeddings (pgvector)</div>
+            <div className="text-[10px] uppercase font-bold text-slate-500">
+              Embeddings (pgvector)
+            </div>
             <div className="text-sm font-bold text-emerald-400">{document.embedding_count}</div>
           </div>
         </div>

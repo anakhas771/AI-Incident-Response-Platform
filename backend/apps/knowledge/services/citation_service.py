@@ -50,7 +50,6 @@ class CitationService:
         confidence = round(max(0.0, min(1.0, avg_sim)) * 100)
         return int(confidence)
 
-
     @classmethod
     def build_supporting_evidence(cls, chunks: List[Dict[str, Any]]) -> List[str]:
         """

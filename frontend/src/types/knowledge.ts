@@ -2,9 +2,9 @@
  * TypeScript definitions for Enterprise RAG Knowledge Base documents, chunks, search, and AI chat.
  */
 
-export type DocumentType = "PDF" | "DOCX" | "TXT" | "MD";
+export type DocumentType = 'PDF' | 'DOCX' | 'TXT' | 'MD';
 
-export type DocumentStatus = "UPLOADED" | "PROCESSING" | "INDEXED" | "FAILED";
+export type DocumentStatus = 'UPLOADED' | 'PROCESSING' | 'INDEXED' | 'FAILED';
 
 export interface KnowledgeDocument {
   id: string;

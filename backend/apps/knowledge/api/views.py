@@ -81,10 +81,11 @@ class KnowledgeDocumentUploadView(APIView):
 
         if is_duplicate:
             return Response(
-                {"error": "This document already exists in your organization's knowledge base."},
+                {
+                    "error": "This document already exists in your organization's knowledge base."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
 
         # Pop tags before save (not a model field on KnowledgeDocument)
         tags: list[str] = serializer.validated_data.pop("tags", [])
@@ -99,7 +100,11 @@ class KnowledgeDocumentUploadView(APIView):
         # --- T4: Create DocumentTag instances ---
         if tags:
             DocumentTag.objects.bulk_create(
-                [DocumentTag(document=doc, name=tag.strip().lower()) for tag in tags if tag.strip()],
+                [
+                    DocumentTag(document=doc, name=tag.strip().lower())
+                    for tag in tags
+                    if tag.strip()
+                ],
                 ignore_conflicts=True,
             )
 
@@ -245,7 +250,6 @@ class KnowledgeChatView(APIView):
             filters=filters,
             user=request.user,
         )
-
 
         return Response(result, status=status.HTTP_200_OK)
 

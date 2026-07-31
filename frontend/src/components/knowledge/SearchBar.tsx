@@ -66,7 +66,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>Filters</span>
         </button>
-        <Button type="submit" variant="default" disabled={isLoading} className="h-10 px-4 text-xs font-bold">
+        <Button
+          type="submit"
+          variant="default"
+          disabled={isLoading}
+          className="h-10 px-4 text-xs font-bold"
+        >
           <Search className="mr-1.5 h-3.5 w-3.5" />
           {isLoading ? 'Searching...' : 'Vector Search'}
         </Button>

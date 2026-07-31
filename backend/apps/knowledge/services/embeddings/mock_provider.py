@@ -52,6 +52,5 @@ class MockEmbeddingProvider(EmbeddingProvider):
             return [0.0] * self.DIMENSIONS
         return [round(v / norm, 6) for v in sum_vec]
 
-
     def embed_batch(self, texts: List[str]) -> List[List[float]]:
         return [self.embed_text(t) for t in texts]

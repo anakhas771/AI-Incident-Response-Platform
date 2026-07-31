@@ -34,7 +34,9 @@ def _log(document: KnowledgeDocument, stage: str, message: str) -> None:
             message=message,
         )
     except Exception as exc:  # pragma: no cover
-        logger.warning("Failed to write processing log for %s [%s]: %s", document.id, stage, exc)
+        logger.warning(
+            "Failed to write processing log for %s [%s]: %s", document.id, stage, exc
+        )
 
 
 @shared_task(
@@ -57,7 +59,11 @@ def process_document_task(self, document_id: str) -> Dict[str, Any]:
         document.status = DocumentStatus.PROCESSING
         document.processing_error = ""
         document.save(update_fields=["status", "processing_error", "updated_at"])
-        _log(document, ProcessingStage.UPLOAD, "Document received and processing started.")
+        _log(
+            document,
+            ProcessingStage.UPLOAD,
+            "Document received and processing started.",
+        )
 
         # 1. Parse document text & structure
         _log(document, ProcessingStage.PARSING, "Parsing document text and structure.")
@@ -76,7 +82,11 @@ def process_document_task(self, document_id: str) -> Dict[str, Any]:
         )
 
         # 2. Chunk document
-        _log(document, ProcessingStage.CHUNKING, "Splitting document into overlapping chunks.")
+        _log(
+            document,
+            ProcessingStage.CHUNKING,
+            "Splitting document into overlapping chunks.",
+        )
         chunks_data = DocumentChunkingService.chunk_document(document, parse_result)
 
         # 3. Replace existing chunks and persist new chunks
@@ -103,7 +113,11 @@ def process_document_task(self, document_id: str) -> Dict[str, Any]:
         )
 
         # 4. Generate embeddings
-        _log(document, ProcessingStage.EMBEDDING, "Generating vector embeddings for all chunks.")
+        _log(
+            document,
+            ProcessingStage.EMBEDDING,
+            "Generating vector embeddings for all chunks.",
+        )
         embedding_service = EmbeddingService()
         created_embeddings = embedding_service.embed_document_chunks(created_chunks)
         _log(

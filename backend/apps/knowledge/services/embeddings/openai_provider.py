@@ -32,7 +32,9 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
 
     def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
         self._api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
-        self._model = model or os.environ.get("OPENAI_EMBEDDING_MODEL", self.DEFAULT_MODEL)
+        self._model = model or os.environ.get(
+            "OPENAI_EMBEDDING_MODEL", self.DEFAULT_MODEL
+        )
         self._client = None
 
         if not self._api_key:
@@ -54,8 +56,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
                 self._client = OpenAI(api_key=self._api_key)
             except ImportError:
                 logger.error(
-                    "openai package not installed. "
-                    "Run: pip install openai>=1.0.0"
+                    "openai package not installed. " "Run: pip install openai>=1.0.0"
                 )
         return self._client
 

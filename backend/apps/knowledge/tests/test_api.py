@@ -133,8 +133,10 @@ class TestKnowledgeAPI:
         assert response2.status_code == status.HTTP_400_BAD_REQUEST
 
         assert "error" in response2.data
-        assert response2.data["error"] == "This document already exists in your organization's knowledge base."
-
+        assert (
+            response2.data["error"]
+            == "This document already exists in your organization's knowledge base."
+        )
 
     @patch("apps.knowledge.api.views.process_document_task.delay")
     def test_different_files_both_succeed(
@@ -169,9 +171,7 @@ class TestKnowledgeAPI:
         assert response1.data["id"] != response2.data["id"]
 
     @patch("apps.knowledge.api.views.process_document_task.delay")
-    def test_upload_with_tags(
-        self, mock_delay, api_client, user_alpha, org_alpha
-    ):
+    def test_upload_with_tags(self, mock_delay, api_client, user_alpha, org_alpha):
         """Tags submitted at upload time should be attached and returned in the response."""
         api_client.force_authenticate(user=user_alpha)
         url = reverse("knowledge:knowledge-upload")

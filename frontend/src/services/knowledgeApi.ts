@@ -18,7 +18,8 @@ const mockDocuments: KnowledgeDocument[] = [
   {
     id: 'doc-rag-01',
     title: 'Enterprise Incident Response Runbook 2026',
-    description: 'Standard operating procedures for severity Level 1 and Level 2 security incidents.',
+    description:
+      'Standard operating procedures for severity Level 1 and Level 2 security incidents.',
     file_type: 'MD',
     status: 'INDEXED',
     page_count: 14,
@@ -69,7 +70,8 @@ export async function uploadKnowledgeDocument(formData: FormData): Promise<Knowl
     // Demo fallback for instant frontend testing
     const title = (formData.get('title') as string) || 'New Knowledge Document';
     const desc = (formData.get('description') as string) || '';
-    const fileType = ((formData.get('file_type') as string) || 'MD') as KnowledgeDocument['file_type'];
+    const fileType = ((formData.get('file_type') as string) ||
+      'MD') as KnowledgeDocument['file_type'];
     const newDoc: KnowledgeDocument = {
       id: `doc-rag-${Date.now()}`,
       title,
