@@ -7,13 +7,13 @@ import logging
 from typing import Any
 
 from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_spectacular.utils import extend_schema
 
 from apps.knowledge.models import DocumentStatus, DocumentTag, KnowledgeDocument
 from apps.knowledge.permissions import IsKnowledgeOrganizationMember
@@ -27,10 +27,10 @@ from apps.knowledge.serializers import (
     KnowledgeSearchRequestSerializer,
     KnowledgeSearchResponseSerializer,
 )
+from apps.knowledge.services.file_hash_service import FileHashService
 from apps.knowledge.services.knowledge_chat_service import KnowledgeChatService
 from apps.knowledge.services.vector_search_service import VectorSearchService
 from apps.knowledge.tasks import process_document_task
-from apps.knowledge.services.file_hash_service import FileHashService
 
 logger = logging.getLogger(__name__)
 

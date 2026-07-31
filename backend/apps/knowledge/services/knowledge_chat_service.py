@@ -61,66 +61,97 @@ class KnowledgeChatService:
             f"{uncertainty_note}"
         )
 
-    def chat(
+    def _build_filters(
+        self, filters: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Normalize and build retrieval filters.
+        """
+        return filters
+
+    def _retrieve_context(
         self,
         question: str,
         organization: Organization,
         filters: Optional[Dict[str, Any]] = None,
-        user: Any = None,
     ) -> Dict[str, Any]:
         """
-        Execute RAG chat for a user question and return a cited answer payload.
+        Retrieve relevant context chunks and prompt payload for the query.
         """
-        retrieval_result = self.retrieval_service.retrieve_context(
+        retrieval_filters = self._build_filters(filters)
+        return self.retrieval_service.retrieve_context(
             query=question,
             organization=organization,
             top_k=5,
-            filters=filters,
+            filters=retrieval_filters,
         )
 
-        chunks = retrieval_result["chunks"]
-        prompt_payload = retrieval_result["prompt_payload"]
+    def _build_prompt(self, prompt_payload: Dict[str, Any]) -> tuple[str, str]:
+        """
+        Extract user and system prompts from prompt payload.
+        """
+        return prompt_payload["user_prompt"], prompt_payload["system_prompt"]
 
-        # Extract citations & metadata
-        citations = CitationService.extract_citations(chunks)
-        confidence_score = CitationService.calculate_confidence(chunks)
-        supporting_evidence = CitationService.build_supporting_evidence(chunks)
-        related_documents = CitationService.extract_related_documents(chunks)
+    def _parse_llm_response(self, llm_response: Any) -> str:
+        """
+        Extract string content from LLM client completion response.
+        """
+        if isinstance(llm_response, dict):
+            return str(
+                llm_response.get("content")
+                or llm_response.get("text")
+                or llm_response.get("response")
+                or ""
+            ).strip()
+        elif isinstance(llm_response, str):
+            return llm_response.strip()
+        return ""
 
-        # Generate answer via LLMClient or fallback
+    def _generate_response(
+        self,
+        question: str,
+        prompt_payload: Dict[str, Any],
+        chunks: list[Dict[str, Any]],
+        confidence: int = 0,
+    ) -> str:
+        """
+        Generate answer via LLMClient or fallback to rule-based answer.
+        """
         answer_text = ""
         try:
+            user_prompt, system_prompt = self._build_prompt(prompt_payload)
             llm_response = self.llm_client.generate_completion(
-                prompt=prompt_payload["user_prompt"],
-                system_prompt=prompt_payload["system_prompt"],
+                prompt=user_prompt,
+                system_prompt=system_prompt,
                 temperature=0.2,
                 max_tokens=1000,
             )
-            if isinstance(llm_response, dict):
-                answer_text = str(
-                    llm_response.get("content")
-                    or llm_response.get("text")
-                    or llm_response.get("response")
-                    or ""
-                ).strip()
-            elif isinstance(llm_response, str):
-                answer_text = llm_response.strip()
+            answer_text = self._parse_llm_response(llm_response)
         except Exception as exc:
             logger.info("LLMClient completion fallback triggered: %s", exc)
 
         if not answer_text:
             answer_text = self._generate_fallback_answer(
-                question, chunks, confidence=confidence_score
+                question, chunks, confidence=confidence
             )
 
-        # Build concise summary (first sentence or 200 chars of answer)
+        return answer_text
+
+    def _extract_summary(self, answer_text: str) -> str:
+        """
+        Build concise summary from answer text.
+        """
         summary_text = answer_text.split(". ")[0].strip()
         if not summary_text.endswith("."):
             summary_text += "."
         if len(summary_text) > 250:
             summary_text = summary_text[:247] + "..."
+        return summary_text
 
-        # Extract actionable steps (lines starting with a number or bullet)
+    def _extract_actions(self, answer_text: str) -> list[str]:
+        """
+        Extract actionable steps from answer text.
+        """
         actions: list[str] = []
         for line in answer_text.splitlines():
             stripped = line.strip()
@@ -131,8 +162,12 @@ class KnowledgeChatService:
                 or stripped.lower().startswith("step")
             ):
                 actions.append(stripped)
-        actions = actions[:10]  # cap at 10 items
+        return actions[:10]
 
+    def _extract_key_points(self, chunks: list[Dict[str, Any]]) -> list[str]:
+        """
+        Extract unique key points from top chunks.
+        """
         key_points: list[str] = []
         for c in chunks[:3]:
             content = str(c.get("content", "")).strip()
@@ -142,8 +177,15 @@ class KnowledgeChatService:
                     kp += "."
                 if kp not in key_points:
                     key_points.append(kp)
+        return key_points
 
-        recommendations = (
+    def _build_recommendations(
+        self, actions: list[str], chunks: list[Dict[str, Any]]
+    ) -> list[str]:
+        """
+        Build recommendations from actions or chunk guidance.
+        """
+        return (
             actions
             if actions
             else [
@@ -152,7 +194,18 @@ class KnowledgeChatService:
             ]
         )
 
-        # Log to RAGQueryLog for evaluation and auditing
+    def _log_query(
+        self,
+        question: str,
+        organization: Organization,
+        user: Any,
+        chunks: list[Dict[str, Any]],
+        answer_text: str,
+        confidence_score: int,
+    ) -> None:
+        """
+        Log to RAGQueryLog for evaluation and auditing.
+        """
         try:
             from apps.knowledge.models import RAGQueryLog
 
@@ -180,6 +233,35 @@ class KnowledgeChatService:
         except Exception as exc:
             logger.error("Failed to log RAG query evaluation log: %s", exc)
 
+    def _build_result(
+        self,
+        question: str,
+        organization: Organization,
+        user: Any,
+        answer_text: str,
+        chunks: list[Dict[str, Any]],
+        citations: list[Dict[str, Any]],
+        confidence_score: int,
+        supporting_evidence: list[Dict[str, Any]],
+        related_documents: list[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """
+        Build the final chat result payload and log query evaluation.
+        """
+        summary_text = self._extract_summary(answer_text)
+        actions = self._extract_actions(answer_text)
+        key_points = self._extract_key_points(chunks)
+        recommendations = self._build_recommendations(actions, chunks)
+
+        self._log_query(
+            question=question,
+            organization=organization,
+            user=user,
+            chunks=chunks,
+            answer_text=answer_text,
+            confidence_score=confidence_score,
+        )
+
         return {
             "answer": answer_text,
             "summary": summary_text,
@@ -194,3 +276,48 @@ class KnowledgeChatService:
             "sources": citations,
             "similarity_scores": [c["similarity"] for c in citations],
         }
+
+    def chat(
+        self,
+        question: str,
+        organization: Organization,
+        filters: Optional[Dict[str, Any]] = None,
+        user: Any = None,
+    ) -> Dict[str, Any]:
+        """
+        Execute RAG chat for a user question and return a cited answer payload.
+        """
+        retrieval_result = self._retrieve_context(
+            question=question,
+            organization=organization,
+            filters=filters,
+        )
+
+        chunks = retrieval_result["chunks"]
+        prompt_payload = retrieval_result["prompt_payload"]
+
+        # Extract citations & metadata
+        citations = CitationService.extract_citations(chunks)
+        confidence_score = CitationService.calculate_confidence(chunks)
+        supporting_evidence = CitationService.build_supporting_evidence(chunks)
+        related_documents = CitationService.extract_related_documents(chunks)
+
+        # Generate answer via LLMClient or fallback
+        answer_text = self._generate_response(
+            question=question,
+            prompt_payload=prompt_payload,
+            chunks=chunks,
+            confidence=confidence_score,
+        )
+
+        return self._build_result(
+            question=question,
+            organization=organization,
+            user=user,
+            answer_text=answer_text,
+            chunks=chunks,
+            citations=citations,
+            confidence_score=confidence_score,
+            supporting_evidence=supporting_evidence,
+            related_documents=related_documents,
+        )

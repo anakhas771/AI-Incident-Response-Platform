@@ -8,7 +8,6 @@ from rest_framework import serializers
 
 from apps.knowledge.models import (
     DocumentChunk,
-    DocumentTag,
     DocumentType,
     KnowledgeDocument,
 )
