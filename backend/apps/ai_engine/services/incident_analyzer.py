@@ -159,6 +159,30 @@ class IncidentAnalyzer:
             impact=getattr(incident, "impact", ""),
         )
 
+        recs = (
+            list(data["recommendations"])
+            if isinstance(data["recommendations"], list)
+            else [str(data["recommendations"])]
+        )
+
+        try:
+            from apps.knowledge.services.similar_incident_service import (
+                SimilarIncidentService,
+            )
+
+            sim_data = SimilarIncidentService().find_similar_for_incident(incident)
+            for action in sim_data.get("recommended_actions", []):
+                if action and action not in recs:
+                    recs.append(f"[Knowledge RAG] {action}")
+            for res in sim_data.get("previous_resolutions", []):
+                if res and res not in recs:
+                    recs.append(f"[Similar Incident] {res}")
+        except Exception as exc:
+            logger.info(
+                "SimilarIncidentService not available or error during RAG enrichment: %s",
+                exc,
+            )
+
         analysis = AIIncidentAnalysis.objects.create(
             incident=incident,
             summary=data["summary"],
@@ -166,6 +190,6 @@ class IncidentAnalyzer:
             severity_prediction=data["severity_prediction"],
             risk_score=data["risk_score"],
             confidence_score=data["confidence_score"],
-            recommendations=data["recommendations"],
+            recommendations=recs,
         )
         return analysis

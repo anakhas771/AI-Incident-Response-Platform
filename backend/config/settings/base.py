@@ -26,6 +26,7 @@ LOCAL_APPS = [
     "apps.logs",
     "apps.monitoring",
     "apps.ai_engine",
+    "apps.knowledge",
 ]
 
 # Installed Applications

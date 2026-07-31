@@ -121,6 +121,26 @@ connPool.SetConnMaxLifetime(5 * time.Minute)`,
           resolved_in_mins: 32,
         },
       ],
+      rag_citations: [
+        {
+          document_id: 'doc-rag-01',
+          document_title: 'Enterprise Incident Response Runbook 2026',
+          page: 3,
+          chunk: 2,
+          similarity: 0.94,
+          snippet:
+            'In case of unauthorized network intrusion or SYN flood, immediately isolate the host VLAN and apply Cloudflare rate limiting rules.',
+        },
+        {
+          document_id: 'doc-rag-02',
+          document_title: 'DDoS Mitigation & Upstream Routing Policy',
+          page: 2,
+          chunk: 4,
+          similarity: 0.89,
+          snippet:
+            'When volumetric SYN flood exceeds 4000 RPS, trigger upstream BGP anycast scrubbing and scale pod memory limits.',
+        },
+      ],
     },
   },
   {

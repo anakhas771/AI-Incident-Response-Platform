@@ -102,6 +102,14 @@ export interface AISummary {
     similarity_score: number;
     resolved_in_mins: number;
   }>;
+  rag_citations?: Array<{
+    document_id: string;
+    document_title: string;
+    page: number;
+    chunk: number;
+    similarity: number;
+    snippet: string;
+  }>;
 }
 
 export interface SystemMetrics {
