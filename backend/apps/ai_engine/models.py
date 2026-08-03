@@ -2,6 +2,8 @@
 Database models for AI Engine analysis, predictions, and recommendations.
 """
 
+from typing import Any, cast
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -123,4 +125,5 @@ class IncidentAnalysis(TimeStampedUUIDModel):
         verbose_name_plural = _("Incident AI Analyses")
 
     def __str__(self) -> str:
-        return f"AI Workflow Analysis for {self.incident.title} [{self.get_status_display()}]"
+        status_display = cast(Any, self).get_status_display()
+        return f"AI Workflow Analysis for {self.incident.title} [{status_display}]"

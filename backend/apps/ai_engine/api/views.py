@@ -3,7 +3,7 @@ REST API Views for AI Engine analysis, severity prediction, and recommendation s
 """
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
@@ -129,7 +129,7 @@ class IncidentAnalysisRetrieveView(APIView):
         incident = get_object_or_404(Incident, id=incident_id)
         self.check_object_permissions(request, incident)
 
-        analysis = incident.ai_analyses.first()
+        analysis = cast(Any, incident).ai_analyses.first()
         if not analysis:
             return Response(
                 {"error": "No AI analysis found for this incident."},

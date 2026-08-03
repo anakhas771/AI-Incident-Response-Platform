@@ -3,7 +3,7 @@ Service responsible for synthesizing user questions and retrieved knowledge chun
 into structured prompts with citation instructions for LLM execution.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class PromptBuilder:
@@ -44,7 +44,7 @@ class PromptBuilder:
         cls,
         question: str,
         chunks: List[Dict[str, Any]],
-        system_instructions: str = None,
+        system_instructions: Optional[str] = None,
     ) -> Dict[str, str]:
         """
         Construct complete RAG prompt dictionary with system prompt, context text, and user prompt.

@@ -299,7 +299,11 @@ class KnowledgeChatService:
         # Extract citations & metadata
         citations = CitationService.extract_citations(chunks)
         confidence_score = CitationService.calculate_confidence(chunks)
-        supporting_evidence = CitationService.build_supporting_evidence(chunks)
+        raw_supporting_evidence = CitationService.build_supporting_evidence(chunks)
+        supporting_evidence: list[Dict[str, Any]] = [
+            item if isinstance(item, dict) else {"text": str(item)}
+            for item in raw_supporting_evidence
+        ]
         related_documents = CitationService.extract_related_documents(chunks)
 
         # Generate answer via LLMClient or fallback

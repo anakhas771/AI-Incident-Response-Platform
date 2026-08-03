@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics, status
@@ -55,7 +55,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     SimpleJWT login view utilizing custom email authentication.
     """
 
-    serializer_class = CustomTokenObtainPairSerializer
+    serializer_class: Any = CustomTokenObtainPairSerializer
 
 
 @extend_schema(
@@ -133,11 +133,12 @@ class OrganizationDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsSameOrganization]
 
     def get_object(self) -> Organization:
-        org = self.request.user.organization
+        user = cast(User, self.request.user)
+        org = user.organization
         if not org:
             self.raise_exception_or_404()
         self.check_object_permissions(self.request, org)
-        return org
+        return cast(Organization, org)
 
     def raise_exception_or_404(self) -> None:
         from rest_framework.exceptions import NotFound

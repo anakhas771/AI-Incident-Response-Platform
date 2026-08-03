@@ -227,9 +227,9 @@ class TestVectorSearchService:
             min_similarity=0.0,
         )
 
-        assert (
-            len(results) == 0
-        ), "FAILED document chunks must be excluded regardless of similarity score."
+        assert len(results) == 0, (
+            "FAILED document chunks must be excluded regardless of similarity score."
+        )
 
     def test_non_indexed_statuses_all_excluded(self, db, org, user):
         """
@@ -245,9 +245,9 @@ class TestVectorSearchService:
             organization=org,
             min_similarity=0.0,
         )
-        assert (
-            len(results) == 0
-        ), "Only INDEXED documents should contribute to search results."
+        assert len(results) == 0, (
+            "Only INDEXED documents should contribute to search results."
+        )
 
     # ------------------------------------------------------------------ min_similarity filtering
 
@@ -297,9 +297,9 @@ class TestVectorSearchService:
             organization=other_org,
             min_similarity=0.0,
         )
-        assert (
-            len(results_other) == 0
-        ), "Cross-organisation access must be blocked at the query level."
+        assert len(results_other) == 0, (
+            "Cross-organisation access must be blocked at the query level."
+        )
 
         # Own org must see the document
         results_own = service.search(
@@ -363,9 +363,9 @@ class TestVectorSearchService:
         )
         # Even though doc1 has 2 matching chunks, only 1 unique result for doc1 should appear
         doc_ids = [r["document_id"] for r in results]
-        assert len(doc_ids) == len(
-            set(doc_ids)
-        ), "Duplicate chunks from the same document should be removed."
+        assert len(doc_ids) == len(set(doc_ids)), (
+            "Duplicate chunks from the same document should be removed."
+        )
         # Verify sorted descending by similarity_score
         scores = [r["similarity_score"] for r in results]
         assert scores == sorted(scores, reverse=True)

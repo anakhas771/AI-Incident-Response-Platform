@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -39,7 +39,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             slug = f"{base_slug}-{counter}"
             counter += 1
         validated_data["slug"] = slug
-        return super().create(validated_data)
+        return cast(Organization, super().create(validated_data))
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -132,7 +132,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             first_name=attrs.get("first_name", ""),
             last_name=attrs.get("last_name", ""),
         )
-        validate_password(password, user=user_temp)
+        validate_password(str(password), user=user_temp)
 
         return attrs
 
@@ -174,22 +174,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = User.USERNAME_FIELD
 
     @classmethod
-    def get_token(cls, user: User) -> Any:
+    def get_token(cls, user: Any) -> Any:
         token = super().get_token(user)
+        user_obj = cast(User, user)
 
         # Custom claims embedded in token
-        token["email"] = user.email
-        token["role"] = user.role
+        token["email"] = user_obj.email
+        token["role"] = user_obj.role
         token["organization_id"] = (
-            str(user.organization_id) if user.organization_id else None
+            str(user_obj.organization_id) if user_obj.organization_id else None
         )
-        token["full_name"] = user.full_name
+        token["full_name"] = user_obj.full_name
         return token
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         data = super().validate(attrs)
         # Append user metadata to login response body
-        data["user"] = UserDetailSerializer(self.user).data
+        data["user"] = cast(Any, UserDetailSerializer(self.user).data)
         return data
 
 

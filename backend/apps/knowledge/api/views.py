@@ -4,7 +4,7 @@ deletion, semantic search, AI chat, and status polling.
 """
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
@@ -15,6 +15,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.models import User
 from apps.knowledge.models import DocumentStatus, DocumentTag, KnowledgeDocument
 from apps.knowledge.permissions import IsKnowledgeOrganizationMember
 from apps.knowledge.serializers import (
@@ -70,13 +71,14 @@ class KnowledgeDocumentUploadView(APIView):
         **kwargs: Any,
     ) -> Response:
 
+        user = cast(User, request.user)
         serializer = KnowledgeDocumentUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # --- Duplicate detection via SHA-256 file hash (FileHashService) ---
         uploaded_file = serializer.validated_data["file"]
         file_hash, is_duplicate = FileHashService.check_and_hash(
-            uploaded_file, request.user.organization
+            uploaded_file, user.organization
         )
 
         if is_duplicate:
@@ -91,8 +93,8 @@ class KnowledgeDocumentUploadView(APIView):
         tags: list[str] = serializer.validated_data.pop("tags", [])
 
         doc = serializer.save(
-            organization=request.user.organization,
-            uploaded_by=request.user,
+            organization=user.organization,
+            uploaded_by=user,
             status=DocumentStatus.UPLOADED,
             file_hash=file_hash,
         )
@@ -139,8 +141,9 @@ class KnowledgeDocumentListView(generics.ListAPIView):
         if getattr(self, "swagger_fake_view", False):
             return KnowledgeDocument.objects.none()
 
+        user = cast(User, self.request.user)
         qs = KnowledgeDocument.objects.filter(
-            organization=self.request.user.organization
+            organization=user.organization
         ).prefetch_related("tags")
         status_param = self.request.query_params.get("status")
         file_type_param = self.request.query_params.get("file_type")
@@ -168,8 +171,9 @@ class KnowledgeDocumentDetailView(generics.RetrieveDestroyAPIView):
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
         if getattr(self, "swagger_fake_view", False):
             return KnowledgeDocument.objects.none()
+        user = cast(User, self.request.user)
         return KnowledgeDocument.objects.filter(
-            organization=self.request.user.organization
+            organization=user.organization
         ).prefetch_related("tags")
 
 
@@ -186,6 +190,7 @@ class KnowledgeSearchView(APIView):
         summary="Search organization RAG knowledge base",
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
         serializer = KnowledgeSearchRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -200,7 +205,7 @@ class KnowledgeSearchView(APIView):
         search_service = VectorSearchService()
         results = search_service.search(
             query=query,
-            organization=request.user.organization,
+            organization=user.organization,
             top_k=top_k,
             document_id=str(document_id) if document_id else None,
             date_from=date_from,
@@ -230,6 +235,7 @@ class KnowledgeChatView(APIView):
         summary="Chat with organization RAG knowledge base",
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
         serializer = KnowledgeChatRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -246,9 +252,9 @@ class KnowledgeChatView(APIView):
         chat_service = KnowledgeChatService()
         result = chat_service.chat(
             question=question,
-            organization=request.user.organization,
+            organization=user.organization,
             filters=filters,
-            user=request.user,
+            user=user,
         )
 
         return Response(result, status=status.HTTP_200_OK)
@@ -266,6 +272,5 @@ class KnowledgeDocumentStatusView(generics.RetrieveAPIView):
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
         if getattr(self, "swagger_fake_view", False):
             return KnowledgeDocument.objects.none()
-        return KnowledgeDocument.objects.filter(
-            organization=self.request.user.organization
-        )
+        user = cast(User, self.request.user)
+        return KnowledgeDocument.objects.filter(organization=user.organization)

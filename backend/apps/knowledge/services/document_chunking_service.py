@@ -110,8 +110,8 @@ class DocumentChunkingService:
                             "document_title": document.title,
                             "file_type": document.file_type,
                             "created_by": (
-                                str(document.uploaded_by_id)
-                                if document.uploaded_by_id
+                                str(document.uploaded_by.id)
+                                if document.uploaded_by
                                 else None
                             ),
                             "page_number": page_num,

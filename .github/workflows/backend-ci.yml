@@ -15,6 +15,10 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -48,26 +52,37 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: "backend/requirements/*.txt"
+
+      - name: Cache MyPy and Ruff caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/.mypy_cache
+            backend/.ruff_cache
+          key: ${{ runner.os }}-python-${{ hashFiles('backend/requirements/*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black mypy pytest pytest-django
-          pip install -r backend/requirements/development.txt
+          pip install ruff mypy pytest pytest-django
+          pip install -r requirements/development.txt
 
-      - name: Code Formatting Check (Black)
+      - name: Code Formatting Check (Ruff Format)
         run: |
-          black --check backend/
+          ruff format --check .
 
       - name: Linting Check (Ruff)
         run: |
-          ruff check backend/
+          ruff check .
 
       - name: Type Checking (Mypy)
         run: |
-          mypy backend/ --config-file backend/pyproject.toml || true
+          mypy .
 
-      - name: Run Django Tests
+      - name: Run Django Tests (Pytest)
         env:
           POSTGRES_DB: incident_platform_test
           POSTGRES_USER: postgres_user
@@ -76,7 +91,6 @@ jobs:
           POSTGRES_PORT: 5432
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: ci-test-secret-key
-          DEBUG: False
+          DEBUG: "False"
         run: |
-          cd backend
-          python manage.py test --settings=config.settings.test
+          pytest

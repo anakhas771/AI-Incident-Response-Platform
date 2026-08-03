@@ -1,5 +1,9 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+ci:
+  autofix_commit_msg: "style: auto fixes from pre-commit.ci hooks"
+  autoupdate_schedule: weekly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -20,12 +24,6 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
         files: ^backend/
       - id: ruff-format
-        files: ^backend/
-
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
         files: ^backend/
 
   - repo: https://github.com/pre-commit/mirrors-prettier

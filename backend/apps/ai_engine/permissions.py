@@ -2,11 +2,13 @@
 Permission classes for AI Engine endpoints enforcing RBAC and organization isolation.
 """
 
-from typing import Any
+from typing import Any, cast
 
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
+
+from apps.accounts.models import User
 
 
 class IsAIIncidentOrganizationMember(BasePermission):
@@ -18,7 +20,8 @@ class IsAIIncidentOrganizationMember(BasePermission):
     def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
-        if request.user.is_superuser:
+        user = cast(User, request.user)
+        if user.is_superuser:
             return True
 
         incident_org = getattr(obj, "organization", None)
@@ -28,7 +31,5 @@ class IsAIIncidentOrganizationMember(BasePermission):
                 incident_org = getattr(incident, "organization", None)
 
         return bool(
-            request.user.organization
-            and incident_org
-            and request.user.organization == incident_org
+            user.organization and incident_org and user.organization == incident_org
         )

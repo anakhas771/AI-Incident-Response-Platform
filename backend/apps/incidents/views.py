@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional, cast
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
@@ -141,7 +141,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         },
     )
     @action(detail=True, methods=["post"], url_path="assign")
-    def assign(self, request: Request, pk: str = None) -> Response:
+    def assign(self, request: Request, pk: Optional[str] = None) -> Response:
         incident = self.get_object()
         serializer = self.get_serializer(
             data=request.data, context={"request": request}
@@ -156,7 +156,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         updated_incident = IncidentService.assign_incident(
             incident=incident,
             assigned_to_user=assigned_to_user,
-            performing_user=request.user,
+            performing_user=cast(User, request.user),
         )
         return Response(
             IncidentDetailSerializer(updated_incident).data, status=status.HTTP_200_OK
@@ -173,7 +173,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         },
     )
     @action(detail=True, methods=["post"], url_path="status")
-    def change_status(self, request: Request, pk: str = None) -> Response:
+    def change_status(self, request: Request, pk: Optional[str] = None) -> Response:
         incident = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -182,7 +182,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         updated_incident = IncidentService.change_status(
             incident=incident,
             new_status=new_status,
-            performing_user=request.user,
+            performing_user=cast(User, request.user),
         )
         return Response(
             IncidentDetailSerializer(updated_incident).data, status=status.HTTP_200_OK
@@ -199,7 +199,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         },
     )
     @action(detail=True, methods=["get", "post"], url_path="comments")
-    def comments(self, request: Request, pk: str = None) -> Response:
+    def comments(self, request: Request, pk: Optional[str] = None) -> Response:
         incident = self.get_object()
 
         if request.method == "GET":
@@ -213,7 +213,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         message = serializer.validated_data["message"]
 
         comment = IncidentService.add_comment(
-            incident=incident, author=request.user, message=message
+            incident=incident, author=cast(User, request.user), message=message
         )
         return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
 
@@ -224,7 +224,7 @@ class IncidentViewSet(viewsets.ModelViewSet):
         responses={200: IncidentEventSerializer(many=True)},
     )
     @action(detail=True, methods=["get"], url_path="timeline")
-    def timeline(self, request: Request, pk: str = None) -> Response:
+    def timeline(self, request: Request, pk: Optional[str] = None) -> Response:
         incident = self.get_object()
         events = incident.events.select_related("user").all()
         serializer = IncidentEventSerializer(events, many=True)

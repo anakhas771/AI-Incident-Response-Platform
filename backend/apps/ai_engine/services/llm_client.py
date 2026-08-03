@@ -28,7 +28,7 @@ class LLMClient:
         api_key: Optional[str] = None,
         model: Optional[str] = None,
     ):
-        self.provider = (provider or os.getenv("AI_PROVIDER", "mock")).lower()
+        self.provider = (provider or os.getenv("AI_PROVIDER", "mock") or "mock").lower()
         self.api_key = api_key or os.getenv("AI_API_KEY", "")
         self.model = model or os.getenv("AI_MODEL", "gpt-4-turbo")
 
@@ -74,6 +74,17 @@ class LLMClient:
                 str(exc),
             )
             raise LLMClientError(f"LLM request failed: {exc}") from exc
+
+    def generate_completion(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> str:
+        """
+        Alias for generate_response to support legacy caller interfaces.
+        """
+        return self.generate_response(prompt, system_prompt=system_prompt, **kwargs)
 
     def generate_json(
         self,
@@ -231,7 +242,7 @@ class LLMClient:
         try:
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["choices"][0]["message"]["content"]
+                return str(data["choices"][0]["message"]["content"])
         except Exception as exc:
             logger.warning(
                 "OpenAI API call failed, falling back to mock response: %s",
@@ -250,11 +261,12 @@ class LLMClient:
         """
         import urllib.request
 
-        headers = {
+        headers: dict[str, str] = {
             "Content-Type": "application/json",
-            "x-api-key": self.api_key,
             "anthropic-version": "2023-06-01",
         }
+        if self.api_key:
+            headers["x-api-key"] = self.api_key
         payload = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
@@ -272,7 +284,7 @@ class LLMClient:
         try:
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                return data["content"][0]["text"]
+                return str(data["content"][0]["text"])
         except Exception as exc:
             logger.warning(
                 "Anthropic API call failed, falling back to mock response: %s",
