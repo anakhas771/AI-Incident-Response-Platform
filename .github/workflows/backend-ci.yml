@@ -81,13 +81,19 @@ jobs:
       - name: Type Checking (Mypy)
         run: |
           mypy .
-      - name: Debug repository state
+      - name: Debug repository
         run: |
           pwd
           git rev-parse HEAD
           git status
-          git log --oneline -5
-          find . -name "pyproject.toml"
+          git ls-files | wc -l
+          python --version
+          ruff --version
+          find apps/knowledge -type f
+      - name: Ruff Debug
+        run: |
+          ruff format --version
+          ruff format --diff .
 
       - name: Run Django Tests (Pytest)
         env:
