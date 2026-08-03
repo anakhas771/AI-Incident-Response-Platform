@@ -6,7 +6,7 @@ Every pipeline stage is recorded to DocumentProcessingLog for audit trail.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from celery import shared_task
 from django.db import transaction
@@ -181,7 +181,7 @@ def reindex_document_task(self, document_id: str) -> Dict[str, Any]:
         return {"status": "error", "message": "Document not found"}
 
     DocumentChunk.objects.filter(document=document).delete()
-    return process_document_task(str(document.id))
+    return cast(Dict[str, Any], process_document_task(str(document.id)))
 
 
 @shared_task(bind=True)

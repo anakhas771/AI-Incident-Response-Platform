@@ -2,11 +2,15 @@
 DRF serializers for Enterprise RAG Knowledge Base documents, chunks, search, and chat API endpoints.
 """
 
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.knowledge.models import (
+    ChatMessage,
+    ChatSession,
     DocumentChunk,
     DocumentType,
     KnowledgeDocument,
@@ -21,7 +25,6 @@ class BinaryFileField(serializers.FileField):
 
 
 class KnowledgeDocumentUploadSerializer(serializers.Serializer):
-
     title = serializers.CharField(max_length=255)
 
     description = serializers.CharField(required=False, allow_blank=True)
@@ -290,3 +293,191 @@ class DocumentStatusSerializer(serializers.ModelSerializer):
             "embedding_count",
             "updated_at",
         ]
+
+
+class ChatSessionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Enterprise AI Copilot conversation session detail and listing.
+    """
+
+    class Meta:
+        model = ChatSession
+        fields = [
+            "id",
+            "organization",
+            "user",
+            "title",
+            "last_message_preview",
+            "last_message_at",
+            "token_count",
+            "is_archived",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "organization",
+            "user",
+            "last_message_preview",
+            "last_message_at",
+            "token_count",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class ChatSessionCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating a new Enterprise AI Copilot conversation session.
+    """
+
+    class Meta:
+        model = ChatSession
+        fields = ["title"]
+        extra_kwargs = {
+            "title": {"required": False, "default": "New Chat"},
+        }
+
+
+class ChatSessionUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for renaming or archiving an Enterprise AI Copilot conversation session.
+    """
+
+    class Meta:
+        model = ChatSession
+        fields = ["title", "is_archived"]
+        extra_kwargs = {
+            "title": {"required": False},
+            "is_archived": {"required": False},
+        }
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for individual Enterprise AI Copilot chat messages.
+    """
+
+    class Meta:
+        model = ChatMessage
+        fields = [
+            "id",
+            "session",
+            "role",
+            "content",
+            "tokens",
+            "prompt_tokens",
+            "completion_tokens",
+            "metadata",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class ChatMessageCreateSerializer(serializers.Serializer):
+    """
+    Serializer for sending a new message to the Copilot.
+    """
+
+    content = serializers.CharField(required=True)
+
+
+class CopilotCitationSerializer(serializers.Serializer):
+    """
+    Serializer for Copilot source citations.
+    """
+
+    document_id = serializers.UUIDField()
+    document_title = serializers.CharField()
+    page = serializers.IntegerField()
+    chunk_index = serializers.IntegerField()
+    similarity = serializers.FloatField()
+    snippet = serializers.CharField()
+    highlight_start = serializers.IntegerField(default=0)
+    highlight_end = serializers.IntegerField(default=0)
+    source_url = serializers.CharField(default="")
+    version = serializers.CharField(default="1.0")
+
+
+class CopilotConfidenceSerializer(serializers.Serializer):
+    """
+    Serializer for Copilot confidence engine metrics.
+    """
+
+    score = serializers.IntegerField()
+    level = serializers.CharField()
+    reasoning = serializers.CharField()
+
+
+class CopilotUsageSerializer(serializers.Serializer):
+    """
+    Serializer for token usage and estimated cost accounting.
+    """
+
+    prompt_tokens = serializers.IntegerField(default=0)
+    completion_tokens = serializers.IntegerField(default=0)
+    total_tokens = serializers.IntegerField(default=0)
+    embedding_tokens = serializers.IntegerField(default=0)
+    retrieval_tokens = serializers.IntegerField(default=0)
+    cached_tokens = serializers.IntegerField(default=0)
+    estimated_cost = serializers.FloatField(default=0.0)
+    provider = serializers.CharField(default="mock")
+    model = serializers.CharField(default="mock-gpt-model")
+    latency_ms = serializers.FloatField(default=0.0)
+
+
+class CopilotResponseSerializer(serializers.Serializer):
+    """
+    Serializer for the orchestrator response.
+    """
+
+    session_id = serializers.UUIDField()
+    message_id = serializers.UUIDField()
+    content = serializers.CharField()
+    role = serializers.CharField()
+    tokens = serializers.IntegerField()
+    prompt_tokens = serializers.IntegerField()
+    completion_tokens = serializers.IntegerField()
+    citations = CopilotCitationSerializer(many=True)
+    confidence = CopilotConfidenceSerializer()
+    metadata = serializers.JSONField()
+    suggested_questions = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        default=list,
+    )
+    usage = CopilotUsageSerializer(required=False, allow_null=True, default=None)
+
+
+class CopilotChatRequestSerializer(serializers.Serializer):
+    """
+    Serializer for Copilot chat and streaming execution requests.
+    """
+
+    session_id = serializers.UUIDField(
+        required=True,
+        help_text="UUID of the existing conversation session.",
+    )
+    message = serializers.CharField(
+        required=False,
+        allow_blank=False,
+        trim_whitespace=True,
+        max_length=4000,
+        help_text="User prompt message to send to the Enterprise AI Copilot.",
+    )
+    question = serializers.CharField(
+        required=False,
+        allow_blank=False,
+        trim_whitespace=True,
+        max_length=4000,
+        help_text="Alias for message.",
+    )
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        msg = attrs.get("message") or attrs.get("question")
+        if not msg or not str(msg).strip():
+            raise serializers.ValidationError(
+                {"message": "Prompt message cannot be empty."}
+            )
+        attrs["message"] = str(msg).strip()
+        return attrs

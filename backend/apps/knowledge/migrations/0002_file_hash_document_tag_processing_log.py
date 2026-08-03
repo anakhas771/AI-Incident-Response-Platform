@@ -34,7 +34,6 @@ class Migration(migrations.Migration):
                 name="unique_document_hash_per_org",
             ),
         ),
-
         # --- T4: DocumentTag model ---
         migrations.CreateModel(
             name="DocumentTag",
@@ -71,7 +70,6 @@ class Migration(migrations.Migration):
             name="documenttag",
             unique_together={("document", "name")},
         ),
-
         # --- T8: DocumentProcessingLog model ---
         migrations.CreateModel(
             name="DocumentProcessingLog",

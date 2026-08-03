@@ -3,20 +3,21 @@ Database models for Enterprise RAG Knowledge Base, document chunks, and vector e
 """
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import Organization, User
 from apps.common.models import TimeStampedUUIDModel
 
 try:
-    from pgvector.django import VectorField as PgVectorField
+    from pgvector.django import VectorField as PgVectorField  # type: ignore[import]
 
     class VectorField(PgVectorField):
         pass
 
 except ImportError:
 
-    class VectorField(models.JSONField):
+    class VectorField(models.JSONField):  # type: ignore[no-redef]
         """
         Fallback vector storage using JSONField when pgvector extension is not loaded (e.g. SQLite tests).
         """
@@ -249,3 +250,117 @@ class RAGQueryLog(TimeStampedUUIDModel):
 
     def __str__(self) -> str:
         return f"RAGQueryLog [{self.organization}] @ {self.created_at}"
+
+
+class MessageRole(models.TextChoices):
+    USER = "user", _("User")
+    ASSISTANT = "assistant", _("Assistant")
+    SYSTEM = "system", _("System")
+    TOOL = "tool", _("Tool")
+
+
+class ConfidenceLevel(models.TextChoices):
+    HIGH = "high", _("High")
+    MEDIUM = "medium", _("Medium")
+    LOW = "low", _("Low")
+
+
+class ChatSession(TimeStampedUUIDModel):
+    """
+    Enterprise AI Copilot conversation session scoped to an organization and user.
+    """
+
+    organization: models.ForeignKey = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="copilot_sessions",
+        db_index=True,
+    )
+    user: models.ForeignKey = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="copilot_sessions",
+        db_index=True,
+    )
+    title: models.CharField = models.CharField(max_length=255, default="New Chat")
+    last_message_preview: models.CharField = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    last_message_at: models.DateTimeField = models.DateTimeField(
+        default=timezone.now,
+        db_index=True,
+    )
+    token_count: models.IntegerField = models.IntegerField(
+        default=0,
+        help_text=_("Total tokens consumed in this session."),
+    )
+    is_archived: models.BooleanField = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
+    class Meta:
+        ordering = ["-last_message_at", "-updated_at"]
+        verbose_name = _("Chat Session")
+        verbose_name_plural = _("Chat Sessions")
+        indexes = [
+            models.Index(
+                fields=["organization", "user", "is_archived", "-last_message_at"],
+                name="copilot_sess_org_user_idx",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.user.email})"
+
+
+class ChatMessage(TimeStampedUUIDModel):
+    """
+    Individual chat turn within an Enterprise AI Copilot session.
+    """
+
+    session: models.ForeignKey = models.ForeignKey(
+        ChatSession,
+        on_delete=models.CASCADE,
+        related_name="messages",
+        db_index=True,
+    )
+    role: models.CharField = models.CharField(
+        max_length=20,
+        choices=MessageRole.choices,
+        db_index=True,
+    )
+    content: models.TextField = models.TextField()
+    tokens: models.IntegerField = models.IntegerField(
+        default=0,
+        help_text=_("Total tokens for this message."),
+    )
+    prompt_tokens: models.IntegerField = models.IntegerField(
+        default=0,
+        help_text=_("Prompt tokens used."),
+    )
+    completion_tokens: models.IntegerField = models.IntegerField(
+        default=0,
+        help_text=_("Completion tokens used."),
+    )
+    metadata: models.JSONField = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_("Extensible metadata dictionary."),
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = _("Chat Message")
+        verbose_name_plural = _("Chat Messages")
+        indexes = [
+            models.Index(
+                fields=["session", "created_at"],
+                name="copilot_msg_sess_time_idx",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"[{self.role}] {self.content[:30]}"

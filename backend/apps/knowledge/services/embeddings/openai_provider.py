@@ -8,7 +8,7 @@ in development environments.
 
 import logging
 import os
-from typing import List
+from typing import List, cast
 
 from apps.knowledge.services.embeddings.base import EmbeddingProvider
 
@@ -56,7 +56,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
                 self._client = OpenAI(api_key=self._api_key)
             except ImportError:
                 logger.error(
-                    "openai package not installed. " "Run: pip install openai>=1.0.0"
+                    "openai package not installed. Run: pip install openai>=1.0.0"
                 )
         return self._client
 
@@ -76,7 +76,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
                 input=[text.replace("\n", " ")],
                 model=self._model,
             )
-            return response.data[0].embedding
+            return cast(List[float], response.data[0].embedding)
         except Exception as exc:
             logger.exception("OpenAI embedding failed for text snippet: %s", exc)
             return self._zero_vector()

@@ -1,10 +1,10 @@
-from typing import Any
+from typing import Any, cast
 
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from apps.accounts.models import Role
+from apps.accounts.models import Role, User
 
 
 class IncidentPermission(BasePermission):
@@ -19,6 +19,8 @@ class IncidentPermission(BasePermission):
 
     ALLOWED_ROLES_PER_ACTION = {
         "create": [Role.ADMIN, Role.ANALYST],
+        "list": [Role.ADMIN, Role.ANALYST, Role.RESPONDER, Role.VIEWER],
+        "retrieve": [Role.ADMIN, Role.ANALYST, Role.RESPONDER, Role.VIEWER],
         "update": [Role.ADMIN, Role.ANALYST],
         "partial_update": [Role.ADMIN, Role.ANALYST],
         "destroy": [Role.ADMIN],
@@ -31,14 +33,15 @@ class IncidentPermission(BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
-        if request.user.is_superuser or request.method in SAFE_METHODS:
+        user = cast(User, request.user)
+        if user.is_superuser or request.method in SAFE_METHODS:
             return True
 
         action = getattr(view, "action", None)
         allowed_roles = self.ALLOWED_ROLES_PER_ACTION.get(
-            action, [Role.ADMIN, Role.ANALYST]
+            str(action) if action else "", [Role.ADMIN, Role.ANALYST]
         )
-        return request.user.role in allowed_roles
+        return user.role in allowed_roles
 
 
 class IsIncidentOrganizationMember(BasePermission):
@@ -49,12 +52,11 @@ class IsIncidentOrganizationMember(BasePermission):
     def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
-        if request.user.is_superuser:
+        user = cast(User, request.user)
+        if user.is_superuser:
             return True
 
         incident_org = getattr(obj, "organization", None)
         return bool(
-            request.user.organization
-            and incident_org
-            and request.user.organization == incident_org
+            user.organization and incident_org and user.organization == incident_org
         )
