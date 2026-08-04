@@ -25,6 +25,7 @@ apps/ai_engine/
 ```
 
 ### Key Architectural Design Principles
+
 1. **Provider-Agnostic Abstraction**: `LLMClient` isolates underlying model APIs (`mock`, `openai`, `anthropic`). Domain services never depend directly on vendor SDKs.
 2. **Deterministic Fallbacks**: When running in local development or CI (`AI_PROVIDER=mock`), `LLMClient` returns deterministic, realistic enterprise responses without requiring external network calls or API keys.
 3. **Structured JSON Output**: All domain services enforce structured JSON contracts with strict key normalization and type validation.
@@ -34,11 +35,13 @@ apps/ai_engine/
 ## 2. Services
 
 ### `LLMClient` (`services.llm_client.LLMClient`)
+
 - Reads configuration from environment variables (`AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`).
 - Provides `generate_response(prompt, system_prompt, **kwargs)` and `generate_json(prompt, system_prompt, **kwargs)` with automatic markdown stripping and JSON error recovery.
 - Uses `logging` for auditability and debug tracing.
 
 ### `IncidentAnalyzer` (`services.incident_analyzer.IncidentAnalyzer`)
+
 - Synthesizes incident title, description, and logs into a structured triage report.
 - **Output Schema**:
   ```json
@@ -51,6 +54,7 @@ apps/ai_engine/
   ```
 
 ### `SeverityPredictor` (`services.severity_predictor.SeverityPredictor`)
+
 - Evaluates incident category, user blast radius (`affected_users`), impact, and description to predict standardized severity levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`) and confidence scores (`0.0` to `1.0`).
 - **Output Schema**:
   ```json
@@ -61,13 +65,18 @@ apps/ai_engine/
   ```
 
 ### `RecommendationEngine` (`services.recommendation_engine.RecommendationEngine`)
+
 - Generates immediate mitigation actions, systematic investigation checklists, and long-term prevention measures.
 - **Output Schema**:
   ```json
   {
-    "immediate_mitigation_steps": ["Isolate affected services from public routing."],
+    "immediate_mitigation_steps": [
+      "Isolate affected services from public routing."
+    ],
     "investigation_checklist": ["Review application audit logs."],
-    "prevention_recommendations": ["Implement automated alerting for latency spikes."]
+    "prevention_recommendations": [
+      "Implement automated alerting for latency spikes."
+    ]
   }
   ```
 
@@ -78,6 +87,7 @@ apps/ai_engine/
 All endpoints are authenticated (`IsAuthenticated`) and accept/return JSON payloads. They are accessible via both `/api/ai/` and `/api/v1/ai/`.
 
 ### 1. Analyze Incident
+
 - **Endpoint**: `POST /api/ai/analyze/`
 - **Request**:
   ```json
@@ -100,6 +110,7 @@ All endpoints are authenticated (`IsAuthenticated`) and accept/return JSON paylo
   ```
 
 ### 2. Predict Severity
+
 - **Endpoint**: `POST /api/ai/predict-severity/`
 - **Request**:
   ```json
@@ -119,6 +130,7 @@ All endpoints are authenticated (`IsAuthenticated`) and accept/return JSON paylo
   ```
 
 ### 3. Generate Recommendations
+
 - **Endpoint**: `POST /api/ai/recommendations/`
 - **Request**:
   ```json
@@ -144,6 +156,7 @@ All endpoints are authenticated (`IsAuthenticated`) and accept/return JSON paylo
 ## 4. Future LLM Integration
 
 The service layer is designed for seamless extension:
+
 1. **LangChain / LangGraph**: Agents can consume `LLMClient` as their underlying model provider or orchestrate multi-step reasoning loops using `IncidentAnalyzer` and `RecommendationEngine` as tool steps.
 2. **FAISS / Vector Search**: Custom context retrieval (RAG) can be integrated into user prompt builders in `prompts/incident_prompts.py` by querying historical incident embeddings before invoking `LLMClient.generate_json`.
 3. **Asynchronous Processing**: High-latency LLM calls can be dispatched to Celery background tasks (`ai_tasks` queue) using the same service layer abstractions.

@@ -1,5 +1,5 @@
 import uuid
-from typing import Any
+from typing import Any, ClassVar
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
@@ -26,7 +26,7 @@ class Organization(TimeStampedUUIDModel):
         verbose_name_plural = _("Organizations")
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
 
 
 class Role(models.TextChoices):
@@ -99,6 +99,7 @@ class User(AbstractUser):
         blank=True,
         related_name="users",
     )
+    organization_id: Any
     phone_number: models.CharField = models.CharField(
         max_length=20, blank=True, default=""
     )
@@ -109,7 +110,7 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
-    objects = UserManager()  # type: ignore[assignment]
+    objects: ClassVar[UserManager] = UserManager()  # type: ignore[assignment]
 
     class Meta:
         ordering = ["-date_joined"]
@@ -117,7 +118,7 @@ class User(AbstractUser):
         verbose_name_plural = _("Users")
 
     def __str__(self) -> str:
-        return self.email
+        return str(self.email)
 
     @property
     def full_name(self) -> str:

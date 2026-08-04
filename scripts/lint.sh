@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-echo "[+] Running Backend Formatting (Black & Ruff)..."
+echo "[+] Running Backend Formatting & Linting (Ruff)..."
 cd backend
-black --check .
+ruff format --check .
 ruff check .
 cd ..
 

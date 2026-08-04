@@ -33,7 +33,7 @@ backend/
 │   └── run_dev.sh            # Helper launch script
 ├── .env.example              # Environment variables template
 ├── manage.py                 # Management script with python-dotenv loading
-├── pyproject.toml            # Code quality settings (Ruff, Black, isort, mypy)
+├── pyproject.toml            # Code quality settings (Ruff, MyPy, Pytest)
 └── README.md
 ```
 
@@ -66,6 +66,24 @@ cp .env.example .env
 python manage.py migrate
 
 # 4. Run development server
+python manage.py runserver
+```
+
+---
+
+## Developer Commands
+
+```bash
+cd backend
+
+ruff check .
+ruff format .
+
+mypy .
+
+pytest
+
+python manage.py migrate
 python manage.py runserver
 ```
 

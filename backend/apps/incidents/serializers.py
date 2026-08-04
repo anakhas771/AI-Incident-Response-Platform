@@ -1,7 +1,8 @@
-from typing import Any
+from typing import Any, cast
 
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
+from apps.accounts.models import User
 
 from .models import (
     Attachment,
@@ -12,8 +13,6 @@ from .models import (
     Severity,
     Status,
 )
-
-User = get_user_model()
 
 
 class UserMinimalSerializer(serializers.ModelSerializer):
@@ -158,7 +157,7 @@ class IncidentCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_assigned_to_id(self, value: Any) -> Any:
         if value:
-            user = self.context["request"].user
+            user = cast(User, self.context["request"].user)
             try:
                 assignee = User.objects.get(id=value)
                 if assignee.organization != user.organization:
@@ -177,7 +176,7 @@ class IncidentAssignSerializer(serializers.Serializer):
 
     def validate_assigned_to_id(self, value: Any) -> Any:
         if value:
-            user = self.context["request"].user
+            user = cast(User, self.context["request"].user)
             try:
                 assignee = User.objects.get(id=value)
                 if assignee.organization != user.organization:

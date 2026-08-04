@@ -1,0 +1,9 @@
+{history}
+
+RETRIEVED KNOWLEDGE BASE CONTEXT:
+===================================
+{retrieved_context}
+
+USER MESSAGE:
+=============
+{user_message}

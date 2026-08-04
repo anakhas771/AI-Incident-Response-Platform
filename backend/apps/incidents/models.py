@@ -94,11 +94,11 @@ class Incident(TimeStampedUUIDModel):
 
     @property
     def is_resolved(self) -> bool:
-        return self.status == Status.RESOLVED
+        return bool(self.status == Status.RESOLVED)
 
     @property
     def is_closed(self) -> bool:
-        return self.status == Status.CLOSED
+        return bool(self.status == Status.CLOSED)
 
 
 class EventType(models.TextChoices):

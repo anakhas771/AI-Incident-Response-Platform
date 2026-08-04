@@ -6,6 +6,7 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
+
   pull_request:
     branches: [main, develop]
     paths:
@@ -15,6 +16,11 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -41,42 +47,105 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python 3.11
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: backend/requirements/*.txt
+
+      - name: Cache Ruff & MyPy
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/.ruff_cache
+            backend/.mypy_cache
+          key: ${{ runner.os }}-python-${{ hashFiles('backend/requirements/*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black mypy pytest pytest-django
-          pip install -r backend/requirements/development.txt
+          pip install -r requirements/development.txt
 
-      - name: Code Formatting Check (Black)
+          echo "Python:"
+          python --version
+
+          echo "Ruff:"
+          ruff --version
+
+          echo "Mypy:"
+          mypy --version
+
+          pip freeze
+
+      - name: Environment Information
         run: |
-          black --check backend/
+          pwd
+          git rev-parse HEAD
+          git status
 
-      - name: Linting Check (Ruff)
+          python --version
+          pip --version
+          ruff --version
+          mypy --version
+          pytest --version
+
+          echo ""
+          echo "===== pyproject.toml ====="
+          cat pyproject.toml
+
+      - name: Debug Ruff Formatting
         run: |
-          ruff check backend/
+          echo "===== Ruff Diff ====="
+          ruff format --diff .
 
-      - name: Type Checking (Mypy)
+          echo ""
+          echo "===== Git Diff ====="
+          git diff
+
+          echo ""
+          echo "===== views.py ====="
+          sed -n '1,250p' apps/knowledge/api/views.py
+
+          echo ""
+          echo "===== test_serializers.py ====="
+          sed -n '1,250p' apps/knowledge/tests/test_serializers.py
+
+          echo ""
+          echo "===== test_services.py ====="
+          sed -n '200,420p' apps/knowledge/tests/test_services.py
+
+      - name: Ruff Format Check
         run: |
-          mypy backend/ --config-file backend/pyproject.toml || true
+          ruff format --check .
 
-      - name: Run Django Tests
+      - name: Ruff Lint
+        run: |
+          ruff check .
+
+      - name: MyPy
+        run: |
+          mypy .
+
+      - name: Pytest
         env:
           POSTGRES_DB: incident_platform_test
           POSTGRES_USER: postgres_user
           POSTGRES_PASSWORD: postgres_password
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
+
           REDIS_URL: redis://localhost:6379/0
+
           SECRET_KEY: ci-test-secret-key
-          DEBUG: False
+          DEBUG: "False"
+
         run: |
-          cd backend
-          python manage.py test --settings=config.settings.test
+          pytest
