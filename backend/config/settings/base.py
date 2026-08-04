@@ -148,9 +148,35 @@ SIMPLE_JWT = {
 # OpenAPI Schema Documentation Settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "AI Incident Response Platform API",
-    "DESCRIPTION": "Enterprise API for AI Incident Response Platform",
+    "DESCRIPTION": (
+        "Enterprise API for AI Incident Response Platform with AI Engine and RAG Copilot"
+    ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/v1/",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SECURITY": [{"jwtAuth": []}],
+    "COMPONENTS": {
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    "ENUM_NAME_OVERRIDES": {
+        "UserRoleEnum": "apps.accounts.models.Role",
+        "IncidentStatusEnum": "apps.incidents.models.Status",
+        "IncidentSeverityEnum": "apps.incidents.models.Severity",
+        "DocumentTypeEnum": "apps.knowledge.models.DocumentType",
+        "DocumentStatusEnum": "apps.knowledge.models.DocumentStatus",
+    },
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+    },
 }
 
 # Redis Caching Configuration
@@ -173,6 +199,12 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_DEFAULT_QUEUE = os.environ.get("CELERY_TASK_DEFAULT_QUEUE", "default")
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60
+CELERY_TASK_MAX_RETRIES = 3
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "False") == "True"
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = os.environ.get(
@@ -211,4 +243,24 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+# AI Engine & Knowledge RAG Settings
+AI_ENGINE_CONFIG = {
+    "PROVIDER": os.environ.get("AI_PROVIDER", "mock"),
+    "API_KEY": os.environ.get("AI_API_KEY", ""),
+    "MODEL": os.environ.get("AI_MODEL", "gpt-4-turbo"),
+}
+
+KNOWLEDGE_RAG_CONFIG = {
+    "EMBEDDING_PROVIDER": os.environ.get("EMBEDDING_PROVIDER", "mock"),
+    "EMBEDDING_MODEL": os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small"),
+    "EMBEDDING_API_KEY": os.environ.get("EMBEDDING_API_KEY", ""),
+    "EMBEDDING_DIMENSION": int(os.environ.get("EMBEDDING_DIMENSION", "1536")),
+    "CHUNK_SIZE": int(os.environ.get("CHUNK_SIZE", "500")),
+    "CHUNK_OVERLAP": int(os.environ.get("CHUNK_OVERLAP", "100")),
+    "VECTOR_SEARCH_TOP_K": int(os.environ.get("VECTOR_SEARCH_TOP_K", "5")),
+    "VECTOR_SIMILARITY_THRESHOLD": float(
+        os.environ.get("VECTOR_SIMILARITY_THRESHOLD", "0.7")
+    ),
 }

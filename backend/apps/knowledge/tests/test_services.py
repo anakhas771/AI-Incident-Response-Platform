@@ -110,6 +110,24 @@ class TestDocumentChunkingService:
         assert first["metadata"]["page_number"] == 1
         assert "# Security Runbook" in first["metadata"]["headings"]
 
+    def test_recursive_chunking_and_overlap(self):
+        text = (
+            "First paragraph explaining incident mitigation protocols in detail.\n\n"
+            "Second paragraph describing server containment and network isolation steps.\n\n"
+            "Third paragraph summarizing long term prevention and monitoring strategies."
+        )
+        chunks = DocumentChunkingService.chunk_text(
+            text=text,
+            target_tokens=15,
+            overlap_tokens=5,
+        )
+        assert len(chunks) >= 2
+        # Verify overlap: some tail words of chunks[0] should appear in chunks[1]
+        words_0 = chunks[0].split()
+        words_1 = chunks[1].split()
+        overlap_found = any(w in words_1 for w in words_0[-5:])
+        assert overlap_found
+
 
 @pytest.mark.django_db
 class TestEmbeddingService:
@@ -130,6 +148,28 @@ class TestEmbeddingService:
         embedding = service.embed_chunk(chunk)
         assert embedding.chunk == chunk
         assert len(embedding.embedding) == 1536
+
+    def test_openai_embedding_provider_fallback(self):
+        from apps.knowledge.services.embeddings.openai_provider import (
+            OpenAIEmbeddingProvider,
+        )
+
+        provider = OpenAIEmbeddingProvider(api_key="")
+        vec = provider.embed_text("sample text")
+        assert len(vec) == 1536
+        assert all(v == 0.0 for v in vec)
+
+    def test_embed_document_chunks_batch(self, sample_doc):
+        c1 = DocumentChunk.objects.create(
+            document=sample_doc, chunk_index=0, content="Chunk one content"
+        )
+        c2 = DocumentChunk.objects.create(
+            document=sample_doc, chunk_index=1, content="Chunk two content"
+        )
+        service = EmbeddingService()
+        embeddings = service.embed_document_chunks([c1, c2])
+        assert len(embeddings) == 2
+        assert embeddings[0].vector_dimension == 1536
 
 
 @pytest.mark.django_db
@@ -487,3 +527,34 @@ class TestSimilarIncidentService:
         assert "similar_incidents" in result
         assert "recommended_actions" in result
         assert len(result["recommended_actions"]) > 0
+
+
+@pytest.mark.django_db
+class TestRecommendationEngineRAGIntegration:
+    def test_recommendation_engine_includes_rag_citations(self, db, org, sample_doc):
+        from apps.ai_engine.services.recommendation_engine import RecommendationEngine
+
+        chunk = DocumentChunk.objects.create(
+            document=sample_doc,
+            chunk_index=0,
+            content="Isolate API Gateway server and enable rate limiting immediately.",
+            metadata={"page_number": 1},
+        )
+        EmbeddingService().embed_chunk(chunk)
+
+        engine = RecommendationEngine()
+        result = engine.recommend(
+            title="API Gateway Denial of Service",
+            description="High latency and packet drops observed on API Gateway.",
+            organization=org,
+        )
+
+        assert "immediate_mitigation_steps" in result
+        assert "investigation_checklist" in result
+        assert "prevention_recommendations" in result
+        assert "knowledge_citations" in result
+        assert "rag_context_used" in result
+        assert result["rag_context_used"] is True
+        assert len(result["knowledge_citations"]) >= 1
+        first_citation = result["knowledge_citations"][0]
+        assert first_citation["document_id"] == str(sample_doc.id)

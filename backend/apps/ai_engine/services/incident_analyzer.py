@@ -67,6 +67,15 @@ class IncidentAnalyzer:
         Analyze an incident and return a structured dictionary containing security
         summary, root cause analysis, severity prediction, risk score, and recommendations.
         """
+        if not title or not isinstance(title, str) or not title.strip():
+            raise ValueError("Incident title must be a non-empty string.")
+        if (
+            not description
+            or not isinstance(description, str)
+            or not description.strip()
+        ):
+            raise ValueError("Incident description must be a non-empty string.")
+
         logger.info(
             "Analyzing incident title=%s severity=%s",
             title,
@@ -84,6 +93,12 @@ class IncidentAnalyzer:
         result = self.llm_client.generate_json(
             prompt=prompt,
             system_prompt=INCIDENT_ANALYZER_SYSTEM_PROMPT,
+            expected_keys=[
+                "summary",
+                "probable_root_cause",
+                "affected_components",
+                "recommended_actions",
+            ],
         )
 
         summary = str(
@@ -111,7 +126,6 @@ class IncidentAnalyzer:
         else:
             recommendations = [str(actions_raw)]
 
-        # Determine severity prediction and confidence
         severity_prediction = (
             str(result.get("predicted_severity") or severity or "MEDIUM")
             .strip()
