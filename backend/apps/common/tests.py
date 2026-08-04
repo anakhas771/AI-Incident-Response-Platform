@@ -19,3 +19,30 @@ class HealthCheckViewTest(TestCase):
         self.assertIn("status", response.data)
         self.assertIn("database", response.data)
         self.assertIn("redis", response.data)
+
+
+class OpenAPIDocumentationTest(TestCase):
+    """
+    Test suite for OpenAPI 3 schema generation, Swagger UI, and Redoc endpoints.
+    """
+
+    def test_openapi_schema_endpoint(self):
+        url = reverse("schema")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode("utf-8")
+        self.assertIn("openapi", content.lower())
+
+    def test_swagger_ui_endpoint(self):
+        url = reverse("swagger-ui")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode("utf-8")
+        self.assertIn("swagger", content.lower())
+
+    def test_redoc_endpoint(self):
+        url = reverse("redoc")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode("utf-8")
+        self.assertIn("redoc", content.lower())

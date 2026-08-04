@@ -1,17 +1,26 @@
 """
 Provider-agnostic LLM Client service for AI Engine.
+Supports OpenAI, Anthropic, and deterministic Mock providers with retry logic,
+timeout handling, input validation, and structured JSON output parsing.
 """
 
 import json
 import logging
 import os
-from typing import Any, Dict, Optional
+import socket
+import time
+import urllib.error
+import urllib.request
+from typing import Any, Callable, Dict, List, Optional
+
+from apps.ai_engine.parsers import extract_json_payload
+from apps.ai_engine.utils import sanitize_prompt_input
 
 logger = logging.getLogger(__name__)
 
 
 class LLMClientError(Exception):
-    """Raised when an LLM service request fails."""
+    """Raised when an LLM service request fails after retries or fails validation."""
 
     pass
 
@@ -19,23 +28,39 @@ class LLMClientError(Exception):
 class LLMClient:
     """
     Provider-agnostic LLM abstraction client.
-    Reads configuration from environment variables (AI_PROVIDER, AI_API_KEY, AI_MODEL).
+    Supports OpenAI, Anthropic, and Mock providers.
+    Provides configurable retry logic, timeout handling, and structured JSON output.
     """
+
+    SUPPORTED_PROVIDERS = {"openai", "anthropic", "mock"}
 
     def __init__(
         self,
         provider: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Optional[str] = None,
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
+        timeout: int = 15,
+        fallback_to_mock: bool = True,
     ):
-        self.provider = (provider or os.getenv("AI_PROVIDER", "mock") or "mock").lower()
+        raw_provider = (provider or os.getenv("AI_PROVIDER", "mock") or "mock").lower()
+        self.provider = (
+            raw_provider if raw_provider in self.SUPPORTED_PROVIDERS else "mock"
+        )
         self.api_key = api_key or os.getenv("AI_API_KEY", "")
         self.model = model or os.getenv("AI_MODEL", "gpt-4-turbo")
+        self.max_retries = max(0, int(max_retries))
+        self.retry_delay = max(0.1, float(retry_delay))
+        self.timeout = max(1, int(timeout))
+        self.fallback_to_mock = fallback_to_mock
 
         logger.info(
-            "Initialized LLMClient with provider=%s model=%s",
+            "Initialized LLMClient provider=%s model=%s retries=%d timeout=%ds",
             self.provider,
             self.model,
+            self.max_retries,
+            self.timeout,
         )
 
     def generate_response(
@@ -45,28 +70,39 @@ class LLMClient:
         **kwargs: Any,
     ) -> str:
         """
-        Generate a text response from the configured LLM provider.
+        Generate a text response from the configured LLM provider with retry logic.
         """
-        if not prompt or not isinstance(prompt, str):
-            logger.error("Invalid prompt provided to LLMClient.")
+        if not prompt or not isinstance(prompt, str) or not prompt.strip():
+            logger.error("Invalid empty prompt provided to LLMClient.")
             raise LLMClientError("Prompt must be a non-empty string.")
 
+        sanitized_prompt = sanitize_prompt_input(prompt)
         logger.debug(
             "Generating LLM response provider=%s model=%s prompt_len=%d",
             self.provider,
             self.model,
-            len(prompt),
+            len(sanitized_prompt),
         )
 
         try:
             if self.provider == "openai" and self.api_key:
-                return self._call_openai(prompt, system_prompt=system_prompt, **kwargs)
+                return self._execute_with_retry(
+                    self._call_openai,
+                    sanitized_prompt,
+                    system_prompt=system_prompt,
+                    **kwargs,
+                )
             elif self.provider == "anthropic" and self.api_key:
-                return self._call_anthropic(
-                    prompt, system_prompt=system_prompt, **kwargs
+                return self._execute_with_retry(
+                    self._call_anthropic,
+                    sanitized_prompt,
+                    system_prompt=system_prompt,
+                    **kwargs,
                 )
             else:
-                return self._call_mock(prompt, system_prompt=system_prompt, **kwargs)
+                return self._call_mock(
+                    sanitized_prompt, system_prompt=system_prompt, **kwargs
+                )
         except Exception as exc:
             logger.exception(
                 "Error generating LLM response with provider=%s: %s",
@@ -90,10 +126,11 @@ class LLMClient:
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
+        expected_keys: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Generate a response and parse it as structured JSON.
+        Generate a response and parse it as validated structured JSON.
         """
         response_text = self.generate_response(
             prompt=prompt,
@@ -101,22 +138,64 @@ class LLMClient:
             **kwargs,
         )
 
-        cleaned_text = response_text.strip()
-        if cleaned_text.startswith("```json"):
-            cleaned_text = cleaned_text[len("```json") :].strip()
-        if cleaned_text.startswith("```"):
-            cleaned_text = cleaned_text[len("```") :].strip()
-        if cleaned_text.endswith("```"):
-            cleaned_text = cleaned_text[:-3].strip()
-
         try:
-            parsed = json.loads(cleaned_text)
-            if not isinstance(parsed, dict):
-                raise ValueError("Parsed JSON is not a dictionary object.")
-            return parsed
-        except (json.JSONDecodeError, ValueError) as exc:
-            logger.error("Failed to parse LLM response as JSON: %s", str(exc))
+            data = extract_json_payload(response_text)
+        except Exception as exc:
+            logger.error("Failed to parse LLM response as JSON: %s", exc)
             raise LLMClientError(f"Invalid JSON returned by LLM: {exc}") from exc
+
+        if expected_keys:
+            missing_keys = [k for k in expected_keys if k not in data]
+            if missing_keys:
+                raise LLMClientError(
+                    f"Response JSON missing required keys: {missing_keys}"
+                )
+
+        return data
+
+    def _execute_with_retry(
+        self,
+        call_func: Callable[..., str],
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> str:
+        """
+        Execute an API call function with exponential backoff retry logic and timeout handling.
+        """
+        last_exception: Optional[Exception] = None
+        for attempt in range(1, self.max_retries + 2):
+            try:
+                return call_func(prompt, system_prompt=system_prompt, **kwargs)
+            except (
+                urllib.error.URLError,
+                urllib.error.HTTPError,
+                TimeoutError,
+                socket.timeout,
+                ConnectionError,
+            ) as exc:
+                last_exception = exc
+                logger.warning(
+                    "LLM API request attempt %d/%d failed: %s",
+                    attempt,
+                    self.max_retries + 1,
+                    exc,
+                )
+                if attempt <= self.max_retries:
+                    sleep_time = self.retry_delay * (2 ** (attempt - 1))
+                    time.sleep(sleep_time)
+
+        if self.fallback_to_mock:
+            logger.warning(
+                "All %d retry attempts exhausted for provider=%s. Falling back to mock response.",
+                self.max_retries + 1,
+                self.provider,
+            )
+            return self._call_mock(prompt, system_prompt=system_prompt, **kwargs)
+
+        raise LLMClientError(
+            f"LLM request exhausted retries ({self.max_retries}): {last_exception}"
+        )
 
     def _call_mock(
         self,
@@ -134,7 +213,6 @@ class LLMClient:
             "evaluate the severity" in prompt_lower
             or "predicted_severity" in prompt_lower
         ):
-            # Severity prediction mock response
             category = "infrastructure"
             if "category:" in prompt_lower:
                 for line in prompt.splitlines():
@@ -166,7 +244,6 @@ class LLMClient:
             "generate actionable response recommendations" in prompt_lower
             or "immediate_mitigation_steps" in prompt_lower
         ):
-            # Recommendation engine mock response
             return json.dumps(
                 {
                     "immediate_mitigation_steps": [
@@ -185,7 +262,6 @@ class LLMClient:
             )
 
         else:
-            # Incident analysis mock response
             title_line = "Production Incident"
             for line in prompt.splitlines():
                 if line.lower().startswith("title:"):
@@ -214,10 +290,8 @@ class LLMClient:
         **kwargs: Any,
     ) -> str:
         """
-        Call OpenAI API using urllib HTTP request to avoid hard dependency errors if sdk missing.
+        Call OpenAI API using urllib HTTP request with configurable timeout.
         """
-        import urllib.request
-
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
@@ -239,16 +313,9 @@ class LLMClient:
             headers=headers,
             method="POST",
         )
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return str(data["choices"][0]["message"]["content"])
-        except Exception as exc:
-            logger.warning(
-                "OpenAI API call failed, falling back to mock response: %s",
-                str(exc),
-            )
-            return self._call_mock(prompt, system_prompt=system_prompt, **kwargs)
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return str(data["choices"][0]["message"]["content"])
 
     def _call_anthropic(
         self,
@@ -257,10 +324,8 @@ class LLMClient:
         **kwargs: Any,
     ) -> str:
         """
-        Call Anthropic API using urllib HTTP request.
+        Call Anthropic API using urllib HTTP request with configurable timeout.
         """
-        import urllib.request
-
         headers: dict[str, str] = {
             "Content-Type": "application/json",
             "anthropic-version": "2023-06-01",
@@ -281,13 +346,6 @@ class LLMClient:
             headers=headers,
             method="POST",
         )
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return str(data["content"][0]["text"])
-        except Exception as exc:
-            logger.warning(
-                "Anthropic API call failed, falling back to mock response: %s",
-                str(exc),
-            )
-            return self._call_mock(prompt, system_prompt=system_prompt, **kwargs)
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return str(data["content"][0]["text"])

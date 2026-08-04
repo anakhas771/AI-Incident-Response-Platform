@@ -1,10 +1,10 @@
 """
 Service responsible for splitting parsed document text into overlapping token-bounded chunks
-and annotating them with page, document, and heading metadata.
+and annotating them with page, document, and heading metadata using recursive text splitting.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from apps.knowledge.models import KnowledgeDocument
 
@@ -13,12 +13,24 @@ logger = logging.getLogger(__name__)
 
 class DocumentChunkingService:
     """
-    Enterprise document chunking service generating 600-800 token segments with 100-token overlap.
+    Enterprise document chunking service generating token segments with chunk overlap
+    using recursive character/token splitting and rich metadata tracking.
     """
 
     CHARS_PER_TOKEN = 4
     DEFAULT_CHUNK_TOKENS = 500
     DEFAULT_OVERLAP_TOKENS = 100
+    DEFAULT_SEPARATORS = [
+        "\n\n",
+        "\n",
+        ". ",
+        "? ",
+        "! ",
+        "; ",
+        ", ",
+        " ",
+        "",
+    ]
 
     @classmethod
     def estimate_tokens(cls, text: str) -> int:
@@ -33,35 +45,96 @@ class DocumentChunkingService:
         return max(1, int((char_estimate + word_estimate) / 2))
 
     @classmethod
+    def _split_recursively_by_separators(
+        cls,
+        text: str,
+        max_length: int,
+        separators: List[str],
+    ) -> List[str]:
+        """
+        Recursively split text into smaller syntactic units based on hierarchical separators.
+        """
+        if not text:
+            return []
+        if len(text) <= max_length:
+            return [text]
+
+        separator = ""
+        next_separators = []
+        for i, sep in enumerate(separators):
+            if sep == "":
+                separator = sep
+                break
+            if sep in text:
+                separator = sep
+                next_separators = separators[i + 1 :]
+                break
+
+        if separator == "":
+            return [text[i : i + max_length] for i in range(0, len(text), max_length)]
+
+        splits = text.split(separator)
+        result: List[str] = []
+        for s in splits:
+            if not s:
+                continue
+            if len(s) <= max_length:
+                result.append(s)
+            else:
+                sub_splits = cls._split_recursively_by_separators(
+                    s, max_length=max_length, separators=next_separators
+                )
+                result.extend(sub_splits)
+        return result
+
+    @classmethod
     def chunk_text(
         cls,
         text: str,
         target_tokens: int = DEFAULT_CHUNK_TOKENS,
         overlap_tokens: int = DEFAULT_OVERLAP_TOKENS,
+        separators: Optional[List[str]] = None,
     ) -> List[str]:
         """
-        Split raw text into chunks approximating target_tokens with overlap_tokens.
+        Split raw text into chunks approximating target_tokens with overlap_tokens
+        using recursive character text splitting.
         """
-        words = text.split()
-        if not words:
+        if not text or not text.strip():
             return []
 
-        # Approximate words per token (~0.75 words per token)
-        words_per_token = 0.75
-        chunk_word_size = max(10, int(target_tokens * words_per_token))
-        overlap_word_size = max(0, int(overlap_tokens * words_per_token))
+        seps = separators if separators is not None else cls.DEFAULT_SEPARATORS
+        max_chars = max(40, target_tokens * cls.CHARS_PER_TOKEN)
+        overlap_chars = max(
+            0, min(max_chars - 10, overlap_tokens * cls.CHARS_PER_TOKEN)
+        )
 
-        step = max(1, chunk_word_size - overlap_word_size)
+        raw_blocks = cls._split_recursively_by_separators(
+            text.strip(), max_length=max_chars, separators=seps
+        )
+        if not raw_blocks:
+            return []
+
         chunks: List[str] = []
+        current_chunk = raw_blocks[0]
 
-        for start in range(0, len(words), step):
-            end = start + chunk_word_size
-            chunk_slice = words[start:end]
-            chunk_str = " ".join(chunk_slice).strip()
-            if chunk_str:
-                chunks.append(chunk_str)
-            if end >= len(words):
-                break
+        for block in raw_blocks[1:]:
+            candidate = f"{current_chunk} {block}".strip()
+            if len(candidate) <= max_chars:
+                current_chunk = candidate
+            else:
+                chunks.append(current_chunk)
+                if overlap_chars > 0 and len(current_chunk) > overlap_chars:
+                    tail = current_chunk[-overlap_chars:].strip()
+                    # ensure we don't start mid-word if possible
+                    space_idx = tail.find(" ")
+                    if space_idx != -1 and space_idx < len(tail) // 2:
+                        tail = tail[space_idx + 1 :]
+                    current_chunk = f"{tail} {block}".strip()
+                else:
+                    current_chunk = block
+
+        if current_chunk:
+            chunks.append(current_chunk)
 
         return chunks
 
@@ -123,7 +196,7 @@ class DocumentChunkingService:
                 chunk_index += 1
 
         logger.info(
-            "Generated %s chunks for document_id=%s ('%s')",
+            "Generated %s chunks for document_id=%s ('%s') via recursive chunking",
             len(chunks_data),
             document.id,
             document.title,
