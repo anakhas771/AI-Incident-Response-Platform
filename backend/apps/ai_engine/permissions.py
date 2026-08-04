@@ -17,6 +17,14 @@ class IsAIIncidentOrganizationMember(BasePermission):
     belonging to their own organization.
     """
 
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if not (request.user and request.user.is_authenticated):
+            return False
+        user = cast(User, request.user)
+        if user.is_superuser:
+            return True
+        return bool(user.organization)
+
     def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
@@ -33,3 +41,28 @@ class IsAIIncidentOrganizationMember(BasePermission):
         return bool(
             user.organization and incident_org and user.organization == incident_org
         )
+
+
+class CanTriggerAIAnalysis(BasePermission):
+    """
+    RBAC permission class that allows all authenticated organization members read-only
+    access (GET, HEAD, OPTIONS), but restricts triggering AI operations (POST, PUT, PATCH, DELETE)
+    to ADMIN, ANALYST, and RESPONDER roles (excludes VIEWER role).
+    """
+
+    message = "You do not have permission to trigger AI analysis or remediation."
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if not (request.user and request.user.is_authenticated):
+            return False
+        user = cast(User, request.user)
+        if user.is_superuser:
+            return True
+
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return bool(user.organization)
+
+        from apps.accounts.models import Role
+
+        allowed_roles = {Role.ADMIN, Role.ANALYST, Role.RESPONDER}
+        return bool(user.organization and user.role in allowed_roles)

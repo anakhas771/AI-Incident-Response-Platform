@@ -61,11 +61,27 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - AI_PROVIDER=${AI_PROVIDER:-mock}
+      - AI_MODEL=${AI_MODEL:-gpt-4-turbo}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-mock}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-1536}
+      - CHUNK_SIZE=${CHUNK_SIZE:-500}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-100}
+      - VECTOR_SEARCH_TOP_K=${VECTOR_SEARCH_TOP_K:-5}
+      - VECTOR_SIMILARITY_THRESHOLD=${VECTOR_SIMILARITY_THRESHOLD:-0.7}
+      - CELERY_TASK_DEFAULT_QUEUE=${CELERY_TASK_DEFAULT_QUEUE:-default}
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/api/v1/health/\")' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - app-network
 
@@ -75,7 +91,7 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: incident_platform_celery_worker
-    command: celery -A config worker -l info --concurrency=4
+    command: celery -A config worker -l info --concurrency=4 -Q default,ai_tasks
     volumes:
       - ./backend:/app
     environment:
@@ -90,11 +106,27 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - AI_PROVIDER=${AI_PROVIDER:-mock}
+      - AI_MODEL=${AI_MODEL:-gpt-4-turbo}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-mock}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-1536}
+      - CHUNK_SIZE=${CHUNK_SIZE:-500}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-100}
+      - VECTOR_SEARCH_TOP_K=${VECTOR_SEARCH_TOP_K:-5}
+      - VECTOR_SIMILARITY_THRESHOLD=${VECTOR_SIMILARITY_THRESHOLD:-0.7}
+      - CELERY_TASK_DEFAULT_QUEUE=${CELERY_TASK_DEFAULT_QUEUE:-default}
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
     networks:
       - app-network
 
@@ -119,11 +151,27 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - AI_PROVIDER=${AI_PROVIDER:-mock}
+      - AI_MODEL=${AI_MODEL:-gpt-4-turbo}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-mock}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - EMBEDDING_DIMENSION=${EMBEDDING_DIMENSION:-1536}
+      - CHUNK_SIZE=${CHUNK_SIZE:-500}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-100}
+      - VECTOR_SEARCH_TOP_K=${VECTOR_SEARCH_TOP_K:-5}
+      - VECTOR_SIMILARITY_THRESHOLD=${VECTOR_SIMILARITY_THRESHOLD:-0.7}
+      - CELERY_TASK_DEFAULT_QUEUE=${CELERY_TASK_DEFAULT_QUEUE:-default}
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os, sys; any('beat' in open(f'/proc/{p}/cmdline', 'rb').read().decode('utf-8', 'ignore') and p != str(os.getpid()) for p in os.listdir('/proc') if p.isdigit()) or sys.exit(1)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - app-network
 

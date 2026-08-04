@@ -69,9 +69,11 @@ def build_recommendations_prompt(
     category: Optional[str] = None,
     severity: Optional[str] = None,
     affected_components: Optional[List[str]] = None,
+    rag_context: Optional[str] = None,
 ) -> str:
     """
-    Build structured prompt for immediate mitigation, investigation checklist, and prevention recommendations.
+    Build structured prompt for immediate mitigation, investigation checklist, and prevention recommendations,
+    incorporating organization RAG runbook context when provided.
     """
     prompt = (
         "Generate actionable response recommendations for the following incident:\n\n"
@@ -84,6 +86,11 @@ def build_recommendations_prompt(
         prompt += f"Severity: {severity}\n"
     if affected_components:
         prompt += f"Affected Components: {', '.join(affected_components)}\n"
+    if rag_context:
+        prompt += (
+            "\nRelevant Organization Runbooks & Knowledge Base (RAG Context):\n"
+            f"{rag_context}\n"
+        )
 
     prompt += (
         "\nReturn a valid JSON object with the following schema:\n"

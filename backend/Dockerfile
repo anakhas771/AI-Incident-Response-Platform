@@ -30,6 +30,8 @@ RUN pip install -r requirements/development.txt
 COPY . $APP_HOME
 
 EXPOSE 8000
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=15s \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/') or exit(1)"
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 # Stage 3: Builder for Production
@@ -52,4 +54,6 @@ RUN chown -R appuser:appuser $APP_HOME
 USER appuser
 
 EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=20s \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/') or exit(1)"
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2"]

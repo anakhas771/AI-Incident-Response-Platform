@@ -42,6 +42,53 @@ class TestIncidentAnalyzeSerializers:
         serializer = IncidentAnalyzeResponseSerializer(data=data)
         assert serializer.is_valid(), serializer.errors
 
+    def test_invalid_placeholder_title(self):
+        data = {
+            "title": "test",
+            "description": "API Gateway responding with 504 errors repeatedly",
+            "severity": "HIGH",
+        }
+        serializer = IncidentAnalyzeRequestSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "title" in serializer.errors
+
+    def test_title_too_short(self):
+        data = {
+            "title": "AB",
+            "description": "API Gateway responding with 504 errors repeatedly",
+        }
+        serializer = IncidentAnalyzeRequestSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "title" in serializer.errors
+
+    def test_description_too_short(self):
+        data = {
+            "title": "API Gateway Failure",
+            "description": "short",
+        }
+        serializer = IncidentAnalyzeRequestSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "description" in serializer.errors
+
+    def test_severity_normalization_and_validation(self):
+        data = {
+            "title": "API Gateway Failure",
+            "description": "API Gateway responding with 504 errors repeatedly",
+            "severity": "critical",
+        }
+        serializer = IncidentAnalyzeRequestSerializer(data=data)
+        assert serializer.is_valid(), serializer.errors
+        assert serializer.validated_data["severity"] == "CRITICAL"
+
+        bad_data = {
+            "title": "API Gateway Failure",
+            "description": "API Gateway responding with 504 errors repeatedly",
+            "severity": "SUPER_BAD",
+        }
+        bad_ser = IncidentAnalyzeRequestSerializer(data=bad_data)
+        assert not bad_ser.is_valid()
+        assert "severity" in bad_ser.errors
+
 
 @pytest.mark.django_db
 class TestSeverityPredictSerializers:
@@ -96,3 +143,26 @@ class TestRecommendationSerializers:
         }
         serializer = RecommendationResponseSerializer(data=data)
         assert serializer.is_valid(), serializer.errors
+
+    def test_component_cleaning_and_severity_validation(self):
+        data = {
+            "title": "SQL Injection Alert",
+            "description": "Anomalous queries detected in logs",
+            "category": "security",
+            "severity": "critical",
+            "affected_components": [" Database ", "WAF", " Database ", " "],
+        }
+        serializer = RecommendationRequestSerializer(data=data)
+        assert serializer.is_valid(), serializer.errors
+        assert serializer.validated_data["severity"] == "CRITICAL"
+        assert serializer.validated_data["affected_components"] == ["Database", "WAF"]
+
+        bad_data = {
+            "title": "demo",
+            "description": "Anomalous queries detected in logs",
+            "severity": "UNKNOWN_SEV",
+        }
+        bad_ser = RecommendationRequestSerializer(data=bad_data)
+        assert not bad_ser.is_valid()
+        assert "title" in bad_ser.errors
+        assert "severity" in bad_ser.errors
