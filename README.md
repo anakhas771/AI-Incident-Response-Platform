@@ -4,19 +4,10 @@
 > An enterprise-grade AI-powered incident management platform that helps DevOps, SRE, Security, and IT Operations teams detect, analyze, prioritize, and resolve incidents faster using Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), and intelligent automation.
 
 <p align="center">
-
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-5.x-092E20?style=for-the-badge&logo=django)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
-
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=python,django,react,typescript,postgresql,redis,docker,aws" />
+  </a>
 </p>
-
----
 
 # 📖 Table of Contents
 
