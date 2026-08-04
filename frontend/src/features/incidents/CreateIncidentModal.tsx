@@ -4,9 +4,9 @@ import { z } from 'zod';
 import { Sparkles } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { useCommandStore } from '../../store/useCommandStore';
-import { useIncidentStore } from '../../store/useIncidentStore';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useCommandStore } from '../../stores/useCommandStore';
+import { useIncidentStore } from '../../stores/useIncidentStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import { Category, Severity } from '../../types';
 import { mockUsers } from '../../services/mockData';
 

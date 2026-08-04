@@ -1,6 +1,6 @@
 import React from 'react';
 import { Building2, Plus } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { mockOrganization } from '../services/mockData';
 import { Card, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';

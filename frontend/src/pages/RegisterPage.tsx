@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Mail, Lock, Building } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { Role } from '../types';
 import { Button } from '../components/ui/Button';
 
