@@ -4,8 +4,7 @@ Includes retry policy, Redis queue routing, batch processing, and automatic disc
 """
 
 import logging
-from typing import Any, Dict, List
-
+from typing import Any, Dict, List, cast
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError
 from django.db import transaction
@@ -129,7 +128,7 @@ def analyze_incident_task(self, incident_id: str) -> Dict[str, Any]:
                     retries + 1,
                     self.max_retries,
                 )
-                return self.retry(exc=exc, countdown=countdown)
+                return cast(Dict[str, Any], self.retry(exc=exc, countdown=countdown))
             except self.MaxRetriesExceededError:
                 pass
             except Exception as retry_exc:
@@ -258,7 +257,7 @@ def reanalyze_incident_task(self, incident_id: str) -> Dict[str, Any]:
         analysis.status = AnalysisStatus.PROCESSING
         analysis.save(update_fields=["status", "updated_at"])
 
-    return analyze_incident_task(str(incident.id))
+    return cast(Dict[str, Any], analyze_incident_task(str(incident.id)))
 
 
 @shared_task(
@@ -292,7 +291,7 @@ def predict_severity_task(
             result.get("predicted_severity"),
             result.get("confidence_score"),
         )
-        return result
+        return cast(Dict[str, Any], result)
     except Exception as exc:
         retries = getattr(self.request, "retries", 0)
         logger.warning(
