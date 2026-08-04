@@ -10,8 +10,8 @@ import {
   Share2,
   Terminal,
 } from 'lucide-react';
-import { useIncidentStore } from '../store/useIncidentStore';
-import { useAuthStore } from '../store/useAuthStore';
+import { useIncidentStore } from '../stores/useIncidentStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { AISummaryCard } from '../components/ai/AISummaryCard';

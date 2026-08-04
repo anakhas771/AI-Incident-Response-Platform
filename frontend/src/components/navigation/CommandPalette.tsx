@@ -11,8 +11,8 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
-import { useCommandStore } from '../../store/useCommandStore';
-import { useIncidentStore } from '../../store/useIncidentStore';
+import { useCommandStore } from '../../stores/useCommandStore';
+import { useIncidentStore } from '../../stores/useIncidentStore';
 import { Modal } from '../ui/Modal';
 import { SeverityBadge } from '../ui/Badge';
 

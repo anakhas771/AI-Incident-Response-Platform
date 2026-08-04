@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useCommandStore } from '../../store/useCommandStore';
+import { useCommandStore } from '../../stores/useCommandStore';
 import { Modal } from '../ui/Modal';
 
 export const KeyboardShortcutsModal: React.FC = () => {

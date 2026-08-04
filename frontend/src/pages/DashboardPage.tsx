@@ -25,8 +25,8 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { useIncidentStore } from '../store/useIncidentStore';
-import { useCommandStore } from '../store/useCommandStore';
+import { useIncidentStore } from '../stores/useIncidentStore';
+import { useCommandStore } from '../stores/useCommandStore';
 import { mockSystemMetrics, mockActivityLogs } from '../services/mockData';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';

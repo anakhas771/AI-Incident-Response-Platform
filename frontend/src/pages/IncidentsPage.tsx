@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, MoreVertical, MessageSquare, Paperclip } from 'lucide-react';
-import { useIncidentStore } from '../store/useIncidentStore';
-import { useCommandStore } from '../store/useCommandStore';
-import { useAuthStore } from '../store/useAuthStore';
+import { useIncidentStore } from '../stores/useIncidentStore';
+import { useCommandStore } from '../stores/useCommandStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Category, Severity, Status } from '../types';

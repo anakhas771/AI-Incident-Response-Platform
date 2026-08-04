@@ -1,106 +1,135 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import AppLayout from '../layouts/AppLayout';
-import SplashPage from '../pages/SplashPage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import ForgotPasswordPage from '../pages/ForgotPasswordPage';
-import DashboardPage from '../pages/DashboardPage';
-import IncidentsPage from '../pages/IncidentsPage';
-import IncidentDetailPage from '../pages/IncidentDetailPage';
-import AIAssistantPage from '../pages/AIAssistantPage';
-import { KnowledgeBasePage } from '../pages/KnowledgeBasePage';
-import { KnowledgeDetailPage } from '../pages/KnowledgeDetailPage';
-import AnalyticsPage from '../pages/AnalyticsPage';
-import TimelinePage from '../pages/TimelinePage';
-import AlertsPage from '../pages/AlertsPage';
-import OrganizationsPage from '../pages/OrganizationsPage';
-import TeamPage from '../pages/TeamPage';
-import SettingsPage from '../pages/SettingsPage';
-import ProfilePage from '../pages/ProfilePage';
-import ActivityLogPage from '../pages/ActivityLogPage';
-import NotFoundPage from '../pages/NotFoundPage';
+import { AppLayout } from '../layouts/AppLayout';
+import { AuthLayout } from '../layouts/AuthLayout';
+import { DashboardLayout } from '../layouts/DashboardLayout';
+import { ProtectedRoute, PublicRoute } from './guards';
+
+// Lazy load all page components for code splitting & optimal performance
+const SplashPage = lazy(() => import('../pages/SplashPage'));
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const DashboardPage = lazy(() => import('../pages/DashboardPage'));
+const IncidentsPage = lazy(() => import('../pages/IncidentsPage'));
+const IncidentDetailPage = lazy(() => import('../pages/IncidentDetailPage'));
+const AIAssistantPage = lazy(() => import('../pages/AIAssistantPage'));
+const KnowledgeBasePage = lazy(() =>
+  import('../pages/KnowledgeBasePage').then((module) => ({ default: module.KnowledgeBasePage }))
+);
+const KnowledgeDetailPage = lazy(() =>
+  import('../pages/KnowledgeDetailPage').then((module) => ({ default: module.KnowledgeDetailPage }))
+);
+const AnalyticsPage = lazy(() => import('../pages/AnalyticsPage'));
+const TimelinePage = lazy(() => import('../pages/TimelinePage'));
+const AlertsPage = lazy(() => import('../pages/AlertsPage'));
+const OrganizationsPage = lazy(() => import('../pages/OrganizationsPage'));
+const TeamPage = lazy(() => import('../pages/TeamPage'));
+const SettingsPage = lazy(() => import('../pages/SettingsPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const ActivityLogPage = lazy(() => import('../pages/ActivityLogPage'));
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 
 const router = createBrowserRouter([
-  {
-    path: '/splash',
-    element: <SplashPage />,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/register',
-    element: <RegisterPage />,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPasswordPage />,
-  },
   {
     path: '/',
     element: <AppLayout />,
     children: [
+      // Public / Auth Routes
       {
-        index: true,
-        element: <DashboardPage />,
+        element: (
+          <PublicRoute>
+            <AuthLayout />
+          </PublicRoute>
+        ),
+        children: [
+          {
+            path: 'login',
+            element: <LoginPage />,
+          },
+          {
+            path: 'register',
+            element: <RegisterPage />,
+          },
+          {
+            path: 'forgot-password',
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: 'splash',
+            element: <SplashPage />,
+          },
+        ],
       },
+      // Private / Authenticated Workspace Routes
       {
-        path: 'incidents',
-        element: <IncidentsPage />,
-      },
-      {
-        path: 'incidents/:id',
-        element: <IncidentDetailPage />,
-      },
-      {
-        path: 'ai-assistant',
-        element: <AIAssistantPage />,
-      },
-      {
-        path: 'knowledge',
-        element: <KnowledgeBasePage />,
-      },
-      {
-        path: 'knowledge/:id',
-        element: <KnowledgeDetailPage />,
-      },
-      {
-        path: 'analytics',
-        element: <AnalyticsPage />,
-      },
-      {
-        path: 'timeline',
-        element: <TimelinePage />,
-      },
-      {
-        path: 'alerts',
-        element: <AlertsPage />,
-      },
-      {
-        path: 'organizations',
-        element: <OrganizationsPage />,
-      },
-      {
-        path: 'team',
-        element: <TeamPage />,
-      },
-      {
-        path: 'settings',
-        element: <SettingsPage />,
-      },
-      {
-        path: 'profile',
-        element: <ProfilePage />,
-      },
-      {
-        path: 'activity-log',
-        element: <ActivityLogPage />,
-      },
-      {
-        path: '*',
-        element: <NotFoundPage />,
+        element: (
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: <DashboardPage />,
+          },
+          {
+            path: 'incidents',
+            element: <IncidentsPage />,
+          },
+          {
+            path: 'incidents/:id',
+            element: <IncidentDetailPage />,
+          },
+          {
+            path: 'ai-assistant',
+            element: <AIAssistantPage />,
+          },
+          {
+            path: 'knowledge',
+            element: <KnowledgeBasePage />,
+          },
+          {
+            path: 'knowledge/:id',
+            element: <KnowledgeDetailPage />,
+          },
+          {
+            path: 'analytics',
+            element: <AnalyticsPage />,
+          },
+          {
+            path: 'timeline',
+            element: <TimelinePage />,
+          },
+          {
+            path: 'alerts',
+            element: <AlertsPage />,
+          },
+          {
+            path: 'organizations',
+            element: <OrganizationsPage />,
+          },
+          {
+            path: 'team',
+            element: <TeamPage />,
+          },
+          {
+            path: 'settings',
+            element: <SettingsPage />,
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
+          {
+            path: 'activity-log',
+            element: <ActivityLogPage />,
+          },
+          {
+            path: '*',
+            element: <NotFoundPage />,
+          },
+        ],
       },
     ],
   },

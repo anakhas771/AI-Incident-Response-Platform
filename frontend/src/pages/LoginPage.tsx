@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Lock, Mail, CheckCircle2 } from 'lucide-react';
 
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { Button } from '../components/ui/Button';
 import { mockUsers } from '../services/mockData';
 export const LoginPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GitCommit, Clock, ShieldAlert } from 'lucide-react';
-import { useIncidentStore } from '../store/useIncidentStore';
+import { useIncidentStore } from '../stores/useIncidentStore';
 import { SeverityBadge } from '../components/ui/Badge';
 
 export const TimelinePage: React.FC = () => {

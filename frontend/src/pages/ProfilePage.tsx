@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User as UserIcon, Save } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../stores/useAuthStore';
 import { RoleBadge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
