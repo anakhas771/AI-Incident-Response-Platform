@@ -19,7 +19,7 @@ describe('copilotService', () => {
     vi.clearAllMocks();
   });
 
-  it('listSessions should return sessions from API when available', async () => {
+  it('listSessions should return sessions from API', async () => {
     const mockData = [{ id: 's-1', title: 'Test Session' }];
     vi.mocked(copilotApi.getSessions).mockResolvedValueOnce(mockData as never);
 
@@ -29,32 +29,24 @@ describe('copilotService', () => {
     expect(result).toEqual(mockData);
   });
 
-  it('listSessions should fall back to offline mock sessions when API is unreachable', async () => {
+  it('listSessions should throw when API is unreachable', async () => {
     vi.mocked(copilotApi.getSessions).mockRejectedValueOnce(new Error('Network Error'));
 
-    const result = await copilotService.listSessions(false);
-
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThanOrEqual(1);
+    await expect(copilotService.listSessions(false)).rejects.toThrow('Network Error');
   });
 
-  it('createSession should return offline session when API fails', async () => {
-    vi.mocked(copilotApi.createSession).mockRejectedValueOnce(new Error('Offline'));
+  it('createSession should call API and return session', async () => {
+    const mockData = { id: 's-2', title: 'New Investigation', is_pinned: true };
+    vi.mocked(copilotApi.createSession).mockResolvedValueOnce(mockData as never);
 
-    const result = await copilotService.createSession('New Offline Investigation', true);
+    const result = await copilotService.createSession('New Investigation', true);
 
-    expect(result.title).toBe('New Offline Investigation');
-    expect(result.is_pinned).toBe(true);
-    expect(result.id).toContain('session-offline-');
+    expect(copilotApi.createSession).toHaveBeenCalledWith({ title: 'New Investigation', is_pinned: true });
+    expect(result).toEqual(mockData);
   });
 
-  it('loadMessages should return mock messages when API is unreachable', async () => {
-    vi.mocked(copilotApi.getMessages).mockRejectedValueOnce(new Error('Offline'));
-
-    const result = await copilotService.loadMessages('session-copilot-1');
-
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
-    expect(result[0].role).toBe('user');
+  it('loadMessages should throw when API is unreachable', async () => {
+    vi.mocked(copilotApi.getMessages).mockRejectedValueOnce(new Error('Network Error'));
+    await expect(copilotService.loadMessages('s-1')).rejects.toThrow('Network Error');
   });
 });

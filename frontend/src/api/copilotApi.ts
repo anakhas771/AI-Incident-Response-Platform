@@ -26,8 +26,13 @@ export const copilotApi = {
    */
   getSessions: async (isArchived?: boolean): Promise<ChatSession[]> => {
     const params = isArchived !== undefined ? { is_archived: isArchived } : undefined;
-    const response = await apiClient.get<ChatSession[]>('/copilot/sessions/', { params });
-    return response.data;
+    const response = await apiClient.get<ChatSession[] | { results: ChatSession[] }>('/copilot/sessions/', { params });
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+      return data.results;
+    }
+    return [];
   },
 
   /**
@@ -65,8 +70,15 @@ export const copilotApi = {
    * Retrieve message history for a session
    */
   getMessages: async (sessionId: string): Promise<ChatMessage[]> => {
-    const response = await apiClient.get<ChatMessage[]>(`/copilot/sessions/${sessionId}/messages/`);
-    return response.data;
+    const response = await apiClient.get<ChatMessage[] | { results: ChatMessage[] }>(
+      `/copilot/sessions/${sessionId}/messages/`
+    );
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+      return data.results;
+    }
+    return [];
   },
 
   /**
@@ -91,7 +103,8 @@ export function parseSSEBlock(block: string): { eventType: string; data: unknown
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith(':')) {
+    if (!trimmed) continue;
+    if (trimmed.startsWith(':')) {
       // Comment or heartbeat
       if (trimmed.includes('heartbeat')) {
         return { eventType: 'heartbeat', data: 'keep-alive' };
@@ -138,12 +151,12 @@ export async function streamCopilotChat(
     }
 
     try {
-      const token = useAuthStore.getState().token;
+      const token = useAuthStore.getState().token || localStorage.getItem('access');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
       };
-      if (token) {
+      if (token && !token.startsWith('mock-') && !token.includes('mock-jwt')) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
@@ -188,9 +201,8 @@ export async function streamCopilotChat(
 
         buffer += decoder.decode(value, { stream: true });
 
-        // SSE messages are separated by empty lines (\n\n or \r\n\r\n)
         const parts = buffer.split(/\r?\n\r?\n/);
-        buffer = parts.pop() || ''; // Keep trailing incomplete block in buffer
+        buffer = parts.pop() || '';
 
         for (const part of parts) {
           const trimmed = part.trim();
@@ -202,7 +214,7 @@ export async function streamCopilotChat(
           const { eventType, data } = parsed;
 
           if (eventType === 'heartbeat') {
-            continue; // Ignore heartbeat keep-alive
+            continue;
           } else if (eventType === 'start') {
             callbacks.onStart?.(data as { session_id: string; status: string });
           } else if (eventType === 'token') {
@@ -232,7 +244,6 @@ export async function streamCopilotChat(
         }
       }
 
-      // If stream ended normally without done event, mark as done
       if (!isDone) {
         isDone = true;
         callbacks.onDone?.({ session_id: sessionId, status: 'completed' });
@@ -240,7 +251,6 @@ export async function streamCopilotChat(
       break;
     } catch (err) {
       if (signal?.aborted || (err instanceof DOMException && err.name === 'AbortError')) {
-        // Stream aborted by user cancellation
         break;
       }
 
@@ -254,7 +264,6 @@ export async function streamCopilotChat(
         break;
       }
 
-      // Exponential backoff before reconnect attempt: 500ms, 1000ms...
       const delay = Math.pow(2, attempt - 1) * 500;
       await new Promise((resolve) => setTimeout(resolve, delay));
     }

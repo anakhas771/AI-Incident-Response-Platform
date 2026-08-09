@@ -1,28 +1,57 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldAlert, ArrowRight, Lock, Mail, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Lock, Mail, CheckCircle2, KeyRound } from 'lucide-react';
 
 import { useAuthStore } from '../stores/useAuthStore';
 import { Button } from '../components/ui/Button';
-import { mockUsers } from '../services/mockData';
+
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('alex.chen@acme-security.io');
-  const [password, setPassword] = useState('SuperSecretPassword123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
   const { login } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const registeredMessage = (location.state as { registeredMessage?: string } | null)?.registeredMessage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
-    await login(email, password);
+
+    const result = await login(email.trim().toLowerCase(), password);
     setIsLoading(false);
+
+    if (!result.success) {
+      setError(result.error || 'Invalid email or password');
+      return;
+    }
+
     navigate('/');
   };
 
-  const selectDemoUser = (userEmail: string) => {
-    setEmail(userEmail);
+  const handleDemoLogin = async () => {
+    const demoEmail = 'demo@incident.ai';
+    const demoPassword = 'Demo@123456';
+
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError('');
+    setIsLoading(true);
+
+    const result = await login(demoEmail, demoPassword);
+    setIsLoading(false);
+
+    if (!result.success) {
+      setError(result.error || 'Failed to authenticate with demo account.');
+      return;
+    }
+
+    navigate('/');
   };
 
   return (
@@ -37,7 +66,7 @@ export const LoginPage: React.FC = () => {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md bg-surface border border-zinc-800 rounded-2xl p-8 shadow-2xl z-10 relative"
       >
-        <div className="flex flex-col items-center text-center mb-8">
+        <div className="flex flex-col items-center text-center mb-6">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white shadow-xl shadow-indigo-500/25 mb-3">
             <ShieldAlert className="w-6 h-6" />
           </div>
@@ -52,27 +81,47 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="mb-6 p-3 rounded-xl bg-surface-elevated border border-zinc-800/80">
-          <span className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block mb-2">
-            1-Click Demo Persona Switcher:
-          </span>
-          <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
-            {mockUsers.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => selectDemoUser(u.email)}
-                className={`px-2.5 py-1.5 rounded-lg border text-left flex items-center justify-between transition-all ${
-                  email.toLowerCase() === u.email.toLowerCase()
-                    ? 'bg-indigo-950/80 border-indigo-600/60 text-indigo-200'
-                    : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                <span className="truncate">{u.first_name}</span>
-                <span className="text-[10px] opacity-75">{u.role}</span>
-              </button>
-            ))}
+        {registeredMessage && (
+          <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>{registeredMessage}</span>
           </div>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-xs text-rose-300 flex items-center gap-2"
+          >
+            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Demo Account One-Click Card */}
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-br from-indigo-950/40 to-zinc-900 border border-indigo-500/30">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-300">
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Demo Account</span>
+            </div>
+            <span className="text-[10px] font-mono bg-indigo-900/60 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-700/50">
+              ADMIN
+            </span>
+          </div>
+          <div className="text-xs font-mono text-zinc-400 space-y-1 mb-3">
+            <div><span className="text-zinc-500">Email:</span> demo@incident.ai</div>
+            <div><span className="text-zinc-500">Password:</span> Demo@123456</div>
+          </div>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isLoading}
+            className="w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
+          >
+            <span>Login as Demo</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,6 +162,7 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-10 pr-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors font-mono"
+                placeholder="••••••••••••"
               />
             </div>
           </div>

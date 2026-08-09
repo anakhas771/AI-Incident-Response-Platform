@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '../layouts/AppLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
@@ -29,6 +29,12 @@ const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 const ActivityLogPage = lazy(() => import('../pages/ActivityLogPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-200">
+    Loading...
+  </div>
+);
 
 const router = createBrowserRouter([
   {
@@ -136,7 +142,11 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRoutes: React.FC = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 };
 
 export default AppRoutes;

@@ -44,6 +44,8 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: incident_platform_backend
+    env_file:
+      - ./backend/.env
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
@@ -91,6 +93,8 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: incident_platform_celery_worker
+    env_file:
+      - ./backend/.env
     command: celery -A config worker -l info --concurrency=4 -Q default,ai_tasks
     volumes:
       - ./backend:/app
@@ -136,6 +140,8 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: incident_platform_celery_beat
+    env_file:
+      - ./backend/.env
     command: celery -A config beat -l info
     volumes:
       - ./backend:/app

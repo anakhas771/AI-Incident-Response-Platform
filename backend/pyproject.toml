@@ -1,25 +1,19 @@
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-exclude = [
-    ".git",
-    "__pycache__",
-    "migrations",
-    "venv",
-    ".venv",
-]
+exclude = [".git", "__pycache__", "migrations", "venv", ".venv"]
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
 ]
 ignore = [
-    "E501",  # line too long, handled by ruff format
+    "E501", # line too long, handled by ruff format
 ]
 
 [tool.ruff.format]
@@ -35,10 +29,7 @@ line-ending = "auto"
 python_version = "3.11"
 files = ["apps", "config"]
 mypy_path = "."
-plugins = [
-    "mypy_django_plugin.main",
-    "mypy_drf_plugin.main",
-]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
 warn_return_any = true
 warn_unused_configs = true
@@ -54,7 +45,7 @@ module = ["celery.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = "--ds=config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["apps"]
 pythonpath = "."

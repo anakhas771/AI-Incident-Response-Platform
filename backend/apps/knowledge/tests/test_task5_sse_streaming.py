@@ -46,6 +46,24 @@ class TestSSEStreamingAPI:
             "client": client,
         }
 
+    def test_sse_streaming_accept_header(self, setup_data):
+        client = setup_data["client"]
+        session = setup_data["session"]
+        url = reverse("copilot:copilot-stream")
+
+        payload = {
+            "session_id": str(session.id),
+            "message": "Test accept header",
+        }
+        response = client.post(
+            url,
+            payload,
+            format="json",
+            HTTP_ACCEPT="text/event-stream",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "text/event-stream"
+
     def test_sse_streaming_success_and_event_sequence(self, setup_data):
         client = setup_data["client"]
         session = setup_data["session"]

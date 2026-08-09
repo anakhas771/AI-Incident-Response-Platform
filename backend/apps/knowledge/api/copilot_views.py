@@ -12,10 +12,12 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.accounts.models import User
+from apps.common.renderers import ServerSentEventRenderer
 from apps.knowledge.models import ChatMessage, ChatSession
 from apps.knowledge.permissions import (
     IsCopilotSessionOwner,
@@ -298,6 +300,7 @@ class CopilotStreamView(generics.GenericAPIView):
         IsCopilotSessionOwner,
     ]
     serializer_class = CopilotChatRequestSerializer
+    renderer_classes = [ServerSentEventRenderer, JSONRenderer]
 
     def post(
         self, request: Request, *args: Any, **kwargs: Any

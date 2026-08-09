@@ -21,6 +21,7 @@ export interface ChatWindowProps {
   onStopGeneration: () => void;
   onRegenerateMessage: () => void;
   onSelectSuggestedQuestion: (question: string) => void;
+
   onOpenShortcutsModal?: () => void;
   onOpenCitation?: (citation: Citation) => void;
   onLikeToggle?: (messageId: string, liked: boolean | null) => void;
@@ -35,7 +36,7 @@ const DEFAULT_SUGGESTED_QUESTIONS = [
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   session,
-  messages,
+  messages: rawMessages,
   isStreaming,
   onSendMessage,
   onStopGeneration,
@@ -45,6 +46,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onOpenCitation,
   onLikeToggle,
 }) => {
+
+  const messages: ChatMessage[] = Array.isArray(rawMessages)
+    ? rawMessages
+    : ((rawMessages as unknown) as { results?: ChatMessage[] })?.results ?? [];
   const [input, setInput] = useState('');
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const virtuosoRef = useRef<VirtuosoHandle>(null);

@@ -283,6 +283,11 @@ class ChatSession(TimeStampedUUIDModel):
         db_index=True,
     )
     title: models.CharField = models.CharField(max_length=255, default="New Chat")
+    is_pinned: models.BooleanField = models.BooleanField(default=False)
+    is_archived: models.BooleanField = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
     last_message_preview: models.CharField = models.CharField(
         max_length=255,
         blank=True,
@@ -295,10 +300,6 @@ class ChatSession(TimeStampedUUIDModel):
     token_count: models.IntegerField = models.IntegerField(
         default=0,
         help_text=_("Total tokens consumed in this session."),
-    )
-    is_archived: models.BooleanField = models.BooleanField(
-        default=False,
-        db_index=True,
     )
 
     class Meta:
