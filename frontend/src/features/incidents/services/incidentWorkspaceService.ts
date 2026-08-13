@@ -167,7 +167,8 @@ class IncidentWorkspaceService {
           resolved_in_mins: item.resolved_in_mins,
           severity: item.severity || 'HIGH',
           status: item.status || 'RESOLVED',
-          root_cause_summary: item.root_cause_summary || 'Resolved via automated firewall rule mitigation.',
+          root_cause_summary:
+            item.root_cause_summary || 'Resolved via automated firewall rule mitigation.',
         }));
       }
       return this.getFallbackSimilarIncidents(id);
@@ -264,17 +265,18 @@ class IncidentWorkspaceService {
       const incident = await this.loadIncident(id);
       return {
         incident_id: id,
-        overall_score: incident.severity === 'CRITICAL' ? 94 : incident.severity === 'HIGH' ? 78 : 52,
+        overall_score:
+          incident.severity === 'CRITICAL' ? 94 : incident.severity === 'HIGH' ? 78 : 52,
         trend: incident.severity === 'CRITICAL' ? 'UP' : 'STABLE',
         severity: incident.severity,
         color_indicator:
           incident.severity === 'CRITICAL'
             ? 'red'
             : incident.severity === 'HIGH'
-            ? 'amber'
-            : incident.severity === 'MEDIUM'
-            ? 'yellow'
-            : 'green',
+              ? 'amber'
+              : incident.severity === 'MEDIUM'
+                ? 'yellow'
+                : 'green',
         ai_confidence: 96,
         breakdown: [
           { label: 'Infrastructure Blast Radius', score: 92, weight: 40 },
@@ -481,7 +483,8 @@ class IncidentWorkspaceService {
         incident_id: id,
         event_type: 'CREATED',
         title: 'Incident Detected & Created',
-        message: 'Automated anomaly detection rule #401 triggered: Ingress SYN packet rate exceeded 120,000 pps.',
+        message:
+          'Automated anomaly detection rule #401 triggered: Ingress SYN packet rate exceeded 120,000 pps.',
         actor: mockUsers[0],
         timestamp: new Date(baseTime - 1000 * 60 * 45).toISOString(),
         icon_type: 'alert',
@@ -491,7 +494,8 @@ class IncidentWorkspaceService {
         incident_id: id,
         event_type: 'AI_ANALYSIS',
         title: 'AI Engine Triage Completed',
-        message: 'AI Copilot generated RCA hypothesis with 94% confidence: Distributed Layer-7 SYN flood attack.',
+        message:
+          'AI Copilot generated RCA hypothesis with 94% confidence: Distributed Layer-7 SYN flood attack.',
         actor: null,
         timestamp: new Date(baseTime - 1000 * 60 * 38).toISOString(),
         icon_type: 'ai',
@@ -521,7 +525,8 @@ class IncidentWorkspaceService {
         incident_id: id,
         event_type: 'COMMENT_ADDED',
         title: 'Analyst Comment Posted',
-        message: 'Engaged Network Security Operations. Applying Cloudflare custom WAF rule #802 to clamp ingress SYN flood.',
+        message:
+          'Engaged Network Security Operations. Applying Cloudflare custom WAF rule #802 to clamp ingress SYN flood.',
         actor: mockUsers[1],
         timestamp: new Date(baseTime - 1000 * 60 * 15).toISOString(),
         icon_type: 'comment',
@@ -638,7 +643,8 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/zones/{zone_id}/firewall/rul
         severity: 'CRITICAL',
         resolved_in_mins: 28,
         status: 'RESOLVED',
-        root_cause_summary: 'Resolved by applying Cloudflare Managed Challenge and scaling Envoy pods.',
+        root_cause_summary:
+          'Resolved by applying Cloudflare Managed Challenge and scaling Envoy pods.',
       },
       {
         id: 'inc-8841-04',
@@ -647,7 +653,8 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/zones/{zone_id}/firewall/rul
         severity: 'HIGH',
         resolved_in_mins: 42,
         status: 'RESOLVED',
-        root_cause_summary: 'Resolved via Redis connection pool resizing and circuit breaker tuning.',
+        root_cause_summary:
+          'Resolved via Redis connection pool resizing and circuit breaker tuning.',
       },
       {
         id: 'inc-8520-09',
@@ -677,7 +684,8 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/zones/{zone_id}/firewall/rul
         incident_id: id,
         timestamp: new Date(now - 1000 * 60 * 44).toISOString(),
         action_type: 'AI_EXECUTION',
-        description: 'AI Engine triage pipeline triggered (RAG knowledge index query + LLM root cause analysis).',
+        description:
+          'AI Engine triage pipeline triggered (RAG knowledge index query + LLM root cause analysis).',
         actor: null,
       },
       {

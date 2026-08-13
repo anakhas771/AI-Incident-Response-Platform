@@ -46,10 +46,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onOpenCitation,
   onLikeToggle,
 }) => {
-
   const messages: ChatMessage[] = Array.isArray(rawMessages)
     ? rawMessages
-    : ((rawMessages as unknown) as { results?: ChatMessage[] })?.results ?? [];
+    : ((rawMessages as unknown as { results?: ChatMessage[] })?.results ?? []);
   const [input, setInput] = useState('');
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const virtuosoRef = useRef<VirtuosoHandle>(null);

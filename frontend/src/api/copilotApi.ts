@@ -1,4 +1,3 @@
-
 import { apiClient } from './client';
 import {
   ChatSession,
@@ -27,12 +26,12 @@ export const copilotApi = {
    * Fetch all conversation sessions for the authenticated user.
    */
   getSessions: async (isArchived?: boolean): Promise<ChatSession[]> => {
-    const params =
-      isArchived !== undefined ? { is_archived: isArchived } : undefined;
+    const params = isArchived !== undefined ? { is_archived: isArchived } : undefined;
 
-    const response = await apiClient.get<
-      ChatSession[] | { results: ChatSession[] }
-    >('/copilot/sessions/', { params });
+    const response = await apiClient.get<ChatSession[] | { results: ChatSession[] }>(
+      '/copilot/sessions/',
+      { params }
+    );
 
     const data = response.data;
 
@@ -40,12 +39,7 @@ export const copilotApi = {
       return data;
     }
 
-    if (
-      data &&
-      typeof data === 'object' &&
-      'results' in data &&
-      Array.isArray(data.results)
-    ) {
+    if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
       return data.results;
     }
 
@@ -55,13 +49,8 @@ export const copilotApi = {
   /**
    * Create a new conversation session.
    */
-  createSession: async (
-    payload: CreateSessionPayload = {}
-  ): Promise<ChatSession> => {
-    const response = await apiClient.post<ChatSession>(
-      '/copilot/sessions/',
-      payload
-    );
+  createSession: async (payload: CreateSessionPayload = {}): Promise<ChatSession> => {
+    const response = await apiClient.post<ChatSession>('/copilot/sessions/', payload);
 
     return response.data;
   },
@@ -70,9 +59,7 @@ export const copilotApi = {
    * Retrieve details of a specific conversation session.
    */
   getSession: async (sessionId: string): Promise<ChatSession> => {
-    const response = await apiClient.get<ChatSession>(
-      `/copilot/sessions/${sessionId}/`
-    );
+    const response = await apiClient.get<ChatSession>(`/copilot/sessions/${sessionId}/`);
 
     return response.data;
   },
@@ -80,14 +67,8 @@ export const copilotApi = {
   /**
    * Rename, pin/unpin, or archive a session.
    */
-  updateSession: async (
-    sessionId: string,
-    payload: UpdateSessionPayload
-  ): Promise<ChatSession> => {
-    const response = await apiClient.patch<ChatSession>(
-      `/copilot/sessions/${sessionId}/`,
-      payload
-    );
+  updateSession: async (sessionId: string, payload: UpdateSessionPayload): Promise<ChatSession> => {
+    const response = await apiClient.patch<ChatSession>(`/copilot/sessions/${sessionId}/`, payload);
 
     return response.data;
   },
@@ -103,9 +84,9 @@ export const copilotApi = {
    * Retrieve message history for a session.
    */
   getMessages: async (sessionId: string): Promise<ChatMessage[]> => {
-    const response = await apiClient.get<
-      ChatMessage[] | { results: ChatMessage[] }
-    >(`/copilot/sessions/${sessionId}/messages/`);
+    const response = await apiClient.get<ChatMessage[] | { results: ChatMessage[] }>(
+      `/copilot/sessions/${sessionId}/messages/`
+    );
 
     const data = response.data;
 
@@ -113,12 +94,7 @@ export const copilotApi = {
       return data;
     }
 
-    if (
-      data &&
-      typeof data === 'object' &&
-      'results' in data &&
-      Array.isArray(data.results)
-    ) {
+    if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
       return data.results;
     }
 
@@ -131,10 +107,7 @@ export const copilotApi = {
    * The backend returns CopilotResponseSerializer,
    * so the response type must be CopilotResponse rather than ChatMessage.
    */
-  sendChatMessageSync: async (
-    sessionId: string,
-    message: string
-  ): Promise<CopilotResponse> => {
+  sendChatMessageSync: async (sessionId: string, message: string): Promise<CopilotResponse> => {
     const response = await apiClient.post<CopilotResponse>('/copilot/chat/', {
       session_id: sessionId,
       message,
@@ -159,9 +132,7 @@ export const copilotApi = {
  *   data: 'Hello'
  * }
  */
-export function parseSSEBlock(
-  block: string
-): { eventType: string; data: unknown } | null {
+export function parseSSEBlock(block: string): { eventType: string; data: unknown } | null {
   const lines = block.split(/\r?\n/);
 
   let eventType = 'message';
@@ -260,10 +231,7 @@ function normalizeTokenPayload(data: unknown): string {
 /**
  * Process one complete SSE block.
  */
-function processSSEBlock(
-  block: string,
-  callbacks: StreamCallbacks
-): boolean {
+function processSSEBlock(block: string, callbacks: StreamCallbacks): boolean {
   const trimmed = block.trim();
 
   if (!trimmed) {
@@ -375,20 +343,14 @@ export async function streamCopilotChat(
     }
 
     try {
-      const token =
-        useAuthStore.getState().token ||
-        localStorage.getItem('access');
+      const token = useAuthStore.getState().token || localStorage.getItem('access');
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
       };
 
-      if (
-        token &&
-        !token.startsWith('mock-') &&
-        !token.includes('mock-jwt')
-      ) {
+      if (token && !token.startsWith('mock-') && !token.includes('mock-jwt')) {
         headers.Authorization = `Bearer ${token}`;
       }
 
@@ -409,10 +371,7 @@ export async function streamCopilotChat(
           const errJson = await response.json();
 
           if (errJson?.error?.message || errJson?.error) {
-            errMessage =
-              typeof errJson.error === 'string'
-                ? errJson.error
-                : errJson.error.message;
+            errMessage = typeof errJson.error === 'string' ? errJson.error : errJson.error.message;
           }
         } catch {
           // Keep HTTP status message.
@@ -424,9 +383,7 @@ export async function streamCopilotChat(
       const reader = response.body?.getReader();
 
       if (!reader) {
-        throw new Error(
-          'ReadableStream is not supported by this browser.'
-        );
+        throw new Error('ReadableStream is not supported by this browser.');
       }
 
       const decoder = new TextDecoder('utf-8');
@@ -450,10 +407,7 @@ export async function streamCopilotChat(
         buffer = parts.pop() || '';
 
         for (const part of parts) {
-          const shouldStop = processSSEBlock(
-            part,
-            callbacks
-          );
+          const shouldStop = processSSEBlock(part, callbacks);
 
           if (shouldStop) {
             completed = true;
@@ -500,19 +454,14 @@ export async function streamCopilotChat(
 
       return;
     } catch (err) {
-      if (
-        signal?.aborted ||
-        (err instanceof DOMException &&
-          err.name === 'AbortError')
-      ) {
+      if (signal?.aborted || (err instanceof DOMException && err.name === 'AbortError')) {
         return;
       }
 
       attempt += 1;
 
       if (attempt > maxRetries) {
-        const errorMsg =
-          err instanceof Error ? err.message : String(err);
+        const errorMsg = err instanceof Error ? err.message : String(err);
 
         callbacks.onError?.({
           error: `Stream disconnected: ${errorMsg}`,
@@ -524,10 +473,7 @@ export async function streamCopilotChat(
 
       const delay = Math.pow(2, attempt - 1) * 500;
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay)
-      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 }
-

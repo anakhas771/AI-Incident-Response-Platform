@@ -41,7 +41,10 @@ describe('copilotService', () => {
 
     const result = await copilotService.createSession('New Investigation', true);
 
-    expect(copilotApi.createSession).toHaveBeenCalledWith({ title: 'New Investigation', is_pinned: true });
+    expect(copilotApi.createSession).toHaveBeenCalledWith({
+      title: 'New Investigation',
+      is_pinned: true,
+    });
     expect(result).toEqual(mockData);
   });
 

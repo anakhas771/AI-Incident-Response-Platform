@@ -1,8 +1,4 @@
-
-import {
-  copilotApi,
-  streamCopilotChat,
-} from '../../../api/copilotApi';
+import { copilotApi, streamCopilotChat } from '../../../api/copilotApi';
 
 import type {
   ChatMessage,
@@ -68,10 +64,7 @@ export const copilotService = {
   /**
    * Create a new conversation session.
    */
-  async createSession(
-    title?: string,
-    isPinned = false,
-  ): Promise<ChatSession> {
+  async createSession(title?: string, isPinned = false): Promise<ChatSession> {
     return copilotApi.createSession({
       title,
       is_pinned: isPinned,
@@ -81,10 +74,7 @@ export const copilotService = {
   /**
    * Rename a conversation session.
    */
-  async renameSession(
-    sessionId: string,
-    title: string,
-  ): Promise<ChatSession> {
+  async renameSession(sessionId: string, title: string): Promise<ChatSession> {
     return copilotApi.updateSession(sessionId, {
       title,
     });
@@ -93,10 +83,7 @@ export const copilotService = {
   /**
    * Archive or unarchive a conversation session.
    */
-  async archiveSession(
-    sessionId: string,
-    isArchived: boolean,
-  ): Promise<ChatSession> {
+  async archiveSession(sessionId: string, isArchived: boolean): Promise<ChatSession> {
     return copilotApi.updateSession(sessionId, {
       is_archived: isArchived,
     });
@@ -105,10 +92,7 @@ export const copilotService = {
   /**
    * Pin or unpin a conversation session.
    */
-  async togglePinSession(
-    sessionId: string,
-    isPinned: boolean,
-  ): Promise<ChatSession> {
+  async togglePinSession(sessionId: string, isPinned: boolean): Promise<ChatSession> {
     return copilotApi.updateSession(sessionId, {
       is_pinned: isPinned,
     });
@@ -123,7 +107,7 @@ export const copilotService = {
       title?: string;
       is_pinned?: boolean;
       is_archived?: boolean;
-    },
+    }
   ): Promise<ChatSession> {
     return copilotApi.updateSession(sessionId, payload);
   },
@@ -159,14 +143,8 @@ export const copilotService = {
    * The API returns CopilotResponse, not ChatMessage.
    * We explicitly map the backend DTO into the frontend DTO.
    */
-  async sendMessage(
-    sessionId: string,
-    message: string,
-  ): Promise<ChatMessage> {
-    const response = await copilotApi.sendChatMessageSync(
-      sessionId,
-      message,
-    );
+  async sendMessage(sessionId: string, message: string): Promise<ChatMessage> {
+    const response = await copilotApi.sendChatMessageSync(sessionId, message);
 
     return toChatMessage(response);
   },
@@ -174,14 +152,8 @@ export const copilotService = {
   /**
    * Explicit synchronous API method.
    */
-  async sendChatMessageSync(
-    sessionId: string,
-    message: string,
-  ): Promise<ChatMessage> {
-    const response = await copilotApi.sendChatMessageSync(
-      sessionId,
-      message,
-    );
+  async sendChatMessageSync(sessionId: string, message: string): Promise<ChatMessage> {
+    const response = await copilotApi.sendChatMessageSync(sessionId, message);
 
     return toChatMessage(response);
   },
@@ -196,14 +168,9 @@ export const copilotService = {
     sessionId: string,
     message: string,
     callbacks: StreamCallbacks,
-    signal?: AbortSignal,
+    signal?: AbortSignal
   ): Promise<void> {
-    return streamCopilotChat(
-      sessionId,
-      message,
-      callbacks,
-      signal,
-    );
+    return streamCopilotChat(sessionId, message, callbacks, signal);
   },
 
   /**
@@ -213,14 +180,8 @@ export const copilotService = {
     sessionId: string,
     message: string,
     callbacks: StreamCallbacks,
-    signal?: AbortSignal,
+    signal?: AbortSignal
   ): Promise<void> {
-    return streamCopilotChat(
-      sessionId,
-      message,
-      callbacks,
-      signal,
-    );
+    return streamCopilotChat(sessionId, message, callbacks, signal);
   },
 };
-

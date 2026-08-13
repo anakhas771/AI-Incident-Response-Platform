@@ -16,7 +16,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const registeredMessage = (location.state as { registeredMessage?: string } | null)?.registeredMessage;
+  const registeredMessage = (location.state as { registeredMessage?: string } | null)
+    ?.registeredMessage;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,8 +111,12 @@ export const LoginPage: React.FC = () => {
             </span>
           </div>
           <div className="text-xs font-mono text-zinc-400 space-y-1 mb-3">
-            <div><span className="text-zinc-500">Email:</span> demo@incident.ai</div>
-            <div><span className="text-zinc-500">Password:</span> Demo@123456</div>
+            <div>
+              <span className="text-zinc-500">Email:</span> demo@incident.ai
+            </div>
+            <div>
+              <span className="text-zinc-500">Password:</span> Demo@123456
+            </div>
           </div>
           <button
             type="button"

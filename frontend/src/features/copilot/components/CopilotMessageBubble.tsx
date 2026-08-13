@@ -91,7 +91,7 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
         }`}
         role="article"
         aria-label={`${isUser ? 'User' : 'Assistant'} message at ${formatTimestamp(
-          message.created_at,
+          message.created_at
         )}`}
       >
         {/* Avatar */}
@@ -102,11 +102,7 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
               : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/20'
           }`}
         >
-          {isUser ? (
-            <User className="w-4 h-4" />
-          ) : (
-            <Shield className="w-4 h-4" />
-          )}
+          {isUser ? <User className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
         </div>
 
         {/* Main Content */}
@@ -167,20 +163,17 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
                 </button>
               )}
 
-              {!isUser &&
-                isLatestAssistant &&
-                !message.isStreaming &&
-                onRegenerate && (
-                  <button
-                    onClick={onRegenerate}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 text-xs transition-colors"
-                    aria-label="Regenerate response"
-                    title="Regenerate response"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Regenerate</span>
-                  </button>
-                )}
+              {!isUser && isLatestAssistant && !message.isStreaming && onRegenerate && (
+                <button
+                  onClick={onRegenerate}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 text-xs transition-colors"
+                  aria-label="Regenerate response"
+                  title="Regenerate response"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Regenerate</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -194,9 +187,7 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
 
               <div>
                 <p className="font-semibold">Response Error</p>
-                <p className="text-rose-200/80 mt-0.5">
-                  {message.error}
-                </p>
+                <p className="text-rose-200/80 mt-0.5">{message.error}</p>
               </div>
             </div>
           ) : message.isStreaming && !hasContent ? (
@@ -210,10 +201,7 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
             </div>
           ) : (
             <div className="text-zinc-200">
-              <CopilotMarkdown
-                content={message.content}
-                onCitationClick={handleCitationClick}
-              />
+              <CopilotMarkdown content={message.content} onCitationClick={handleCitationClick} />
 
               {message.isStreaming && (
                 <span
@@ -232,18 +220,14 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
                 <div className="flex items-center gap-1">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[11px] font-medium">
                     <Bookmark className="w-3 h-3 text-indigo-400" />
-                    <span>
-                      {message.citations.length} Verified Citations
-                    </span>
+                    <span>{message.citations.length} Verified Citations</span>
                   </span>
 
                   <div className="flex items-center gap-1">
                     {message.citations.map((citation, index) => (
                       <button
                         key={`${index}-${citation.document_id}`}
-                        onClick={() =>
-                          onCitationClick?.(citation)
-                        }
+                        onClick={() => onCitationClick?.(citation)}
                         className="px-1.5 py-0.5 rounded bg-zinc-800 hover:bg-indigo-600 text-[10px] font-bold text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
                         title={`Citation [${index + 1}]: ${citation.document_title} (Page ${citation.page})`}
                       >
@@ -283,9 +267,8 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
                   <Cpu className="w-3 h-3 text-zinc-500" />
 
                   <span>
-                    Tokens: {message.usage.total_tokens || 0} (
-                    {message.usage.prompt_tokens || 0} prompt +{' '}
-                    {message.usage.completion_tokens || 0} comp)
+                    Tokens: {message.usage.total_tokens || 0} ({message.usage.prompt_tokens || 0}{' '}
+                    prompt + {message.usage.completion_tokens || 0} comp)
                   </span>
                 </span>
               )}
@@ -306,7 +289,7 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
         </div>
       </div>
     );
-  },
+  }
 );
 
 CopilotMessageBubble.displayName = 'CopilotMessageBubble';

@@ -62,12 +62,10 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       set((state) => {
         const currentActive = state.activeSessionId;
 
-        const fallbackActive =
-          sessions.length > 0 ? sessions[0].id : null;
+        const fallbackActive = sessions.length > 0 ? sessions[0].id : null;
 
         const newActiveId =
-          currentActive &&
-          sessions.some((session) => session.id === currentActive)
+          currentActive && sessions.some((session) => session.id === currentActive)
             ? currentActive
             : fallbackActive;
 
@@ -85,9 +83,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       }
     } catch (err) {
       const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to load enterprise copilot sessions';
+        err instanceof Error ? err.message : 'Failed to load enterprise copilot sessions';
 
       set({
         error: message,
@@ -97,20 +93,14 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     }
   },
 
-  createSession: async (
-    title = 'New Investigation',
-    isPinned = false
-  ) => {
+  createSession: async (title = 'New Investigation', isPinned = false) => {
     set({
       error: null,
       errorCode: null,
     });
 
     try {
-      const newSession = await copilotService.createSession(
-        title,
-        isPinned
-      );
+      const newSession = await copilotService.createSession(title, isPinned);
 
       set((state) => ({
         sessions: [newSession, ...state.sessions],
@@ -129,10 +119,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
       return newSession;
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to create copilot session';
+      const message = err instanceof Error ? err.message : 'Failed to create copilot session';
 
       set({
         error: message,
@@ -159,15 +146,9 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     await get().loadMessages(sessionId, true);
   },
 
-  renameSession: async (
-    sessionId: string,
-    title: string
-  ) => {
+  renameSession: async (sessionId: string, title: string) => {
     try {
-      await copilotService.renameSession(
-        sessionId,
-        title
-      );
+      await copilotService.renameSession(sessionId, title);
 
       set((state) => ({
         sessions: state.sessions.map((session) =>
@@ -181,10 +162,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         ),
       }));
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to rename session';
+      const message = err instanceof Error ? err.message : 'Failed to rename session';
 
       set({
         error: message,
@@ -193,15 +171,9 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     }
   },
 
-  archiveSession: async (
-    sessionId: string,
-    isArchived = true
-  ) => {
+  archiveSession: async (sessionId: string, isArchived = true) => {
     try {
-      await copilotService.archiveSession(
-        sessionId,
-        isArchived
-      );
+      await copilotService.archiveSession(sessionId, isArchived);
 
       set((state) => ({
         sessions: state.sessions.map((session) =>
@@ -215,10 +187,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         ),
       }));
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to archive session';
+      const message = err instanceof Error ? err.message : 'Failed to archive session';
 
       set({
         error: message,
@@ -227,12 +196,8 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     }
   },
 
-  togglePinSession: async (
-    sessionId: string
-  ) => {
-    const session = get().sessions.find(
-      (item) => item.id === sessionId
-    );
+  togglePinSession: async (sessionId: string) => {
+    const session = get().sessions.find((item) => item.id === sessionId);
 
     if (!session) {
       return;
@@ -241,10 +206,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     const nextPinned = !session.is_pinned;
 
     try {
-      await copilotService.togglePinSession(
-        sessionId,
-        nextPinned
-      );
+      await copilotService.togglePinSession(sessionId, nextPinned);
 
       set((state) => ({
         sessions: state.sessions.map((item) =>
@@ -258,10 +220,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         ),
       }));
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to pin session';
+      const message = err instanceof Error ? err.message : 'Failed to pin session';
 
       set({
         error: message,
@@ -270,18 +229,12 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     }
   },
 
-  deleteSession: async (
-    sessionId: string
-  ) => {
+  deleteSession: async (sessionId: string) => {
     try {
-      await copilotService.deleteSession(
-        sessionId
-      );
+      await copilotService.deleteSession(sessionId);
 
       set((state) => {
-        const remaining = state.sessions.filter(
-          (session) => session.id !== sessionId
-        );
+        const remaining = state.sessions.filter((session) => session.id !== sessionId);
 
         const nextActiveId =
           state.activeSessionId === sessionId
@@ -311,10 +264,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         await get().loadMessages(nextId, true);
       }
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to delete session';
+      const message = err instanceof Error ? err.message : 'Failed to delete session';
 
       set({
         error: message,
@@ -327,24 +277,14 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // Messages
   // ---------------------------------------------------------------------------
 
-  loadMessages: async (
-    sessionId: string,
-    force = false
-  ) => {
-    if (
-      !force &&
-      get().messages[sessionId]?.length > 0
-    ) {
-      const msgs =
-        get().messages[sessionId] || [];
+  loadMessages: async (sessionId: string, force = false) => {
+    if (!force && get().messages[sessionId]?.length > 0) {
+      const msgs = get().messages[sessionId] || [];
 
-      const lastMsg =
-        msgs[msgs.length - 1];
+      const lastMsg = msgs[msgs.length - 1];
 
       set({
-        canRegenerate:
-          lastMsg?.role === 'assistant' &&
-          !get().isStreaming,
+        canRegenerate: lastMsg?.role === 'assistant' && !get().isStreaming,
         canRetry: Boolean(lastMsg?.error),
       });
 
@@ -357,10 +297,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
     });
 
     try {
-      const msgs =
-        await copilotService.loadMessages(
-          sessionId
-        );
+      const msgs = await copilotService.loadMessages(sessionId);
 
       set((state) => ({
         messages: {
@@ -368,19 +305,11 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
           [sessionId]: msgs,
         },
         isLoadingMessages: false,
-        canRegenerate:
-          msgs.length > 0 &&
-          msgs[msgs.length - 1]?.role ===
-            'assistant',
-        canRetry:
-          msgs.length > 0 &&
-          Boolean(msgs[msgs.length - 1]?.error),
+        canRegenerate: msgs.length > 0 && msgs[msgs.length - 1]?.role === 'assistant',
+        canRetry: msgs.length > 0 && Boolean(msgs[msgs.length - 1]?.error),
       }));
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to load messages';
+      const message = err instanceof Error ? err.message : 'Failed to load messages';
 
       set({
         error: message,
@@ -394,11 +323,8 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // Send / stream prompt
   // ---------------------------------------------------------------------------
 
-  sendPrompt: async (
-    promptText: string
-  ) => {
-    const activeId =
-      get().activeSessionId;
+  sendPrompt: async (promptText: string) => {
+    const activeId = get().activeSessionId;
 
     if (!activeId) {
       set({
@@ -413,14 +339,11 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       return;
     }
 
-    const controller =
-      new AbortController();
+    const controller = new AbortController();
 
-    const userMsgId =
-      `msg-user-${Date.now()}`;
+    const userMsgId = `msg-user-${Date.now()}`;
 
-    const asstMsgId =
-      `msg-asst-${Date.now() + 1}`;
+    const asstMsgId = `msg-asst-${Date.now() + 1}`;
 
     const userMessage: CopilotMessage = {
       id: userMsgId,
@@ -445,17 +368,12 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
     // Add optimistic messages immediately.
     set((state) => {
-      const currentMsgs =
-        state.messages[activeId] || [];
+      const currentMsgs = state.messages[activeId] || [];
 
       return {
         messages: {
           ...state.messages,
-          [activeId]: [
-            ...currentMsgs,
-            userMessage,
-            asstMessage,
-          ],
+          [activeId]: [...currentMsgs, userMessage, asstMessage],
         },
 
         isStreaming: true,
@@ -484,20 +402,18 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
           onStart: () => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            isStreaming: true,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          isStreaming: true,
+                        }
+                      : message
                   ),
                 },
               };
@@ -514,22 +430,18 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
             }
 
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            content:
-                              (message.content || '') +
-                              token,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          content: (message.content || '') + token,
+                        }
+                      : message
                   ),
                 },
               };
@@ -540,28 +452,20 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
           // Citations
           // ---------------------------------------------------------------
 
-          onCitation: (
-            citations: CopilotCitation[]
-          ) => {
+          onCitation: (citations: CopilotCitation[]) => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            citations: [
-                              ...(message.citations ||
-                                []),
-                              ...citations,
-                            ],
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          citations: [...(message.citations || []), ...citations],
+                        }
+                      : message
                   ),
                 },
               };
@@ -572,27 +476,22 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
           // Confidence
           // ---------------------------------------------------------------
 
-          onConfidence: (
-            confidence
-          ) => {
+          onConfidence: (confidence) => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
-                confidenceScore:
-                  confidence,
+                confidenceScore: confidence,
 
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            confidence,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          confidence,
+                        }
+                      : message
                   ),
                 },
               };
@@ -603,25 +502,20 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
           // Suggested questions
           // ---------------------------------------------------------------
 
-          onSuggestedQuestions: (
-            questions
-          ) => {
+          onSuggestedQuestions: (questions) => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            suggested_questions:
-                              questions,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          suggested_questions: questions,
+                        }
+                      : message
                   ),
                 },
               };
@@ -632,33 +526,26 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
           // Usage
           // ---------------------------------------------------------------
 
-          onUsage: (
-            usage
-          ) => {
+          onUsage: (usage) => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 tokenUsage: {
-                  prompt_tokens:
-                    usage.prompt_tokens || 0,
-                  completion_tokens:
-                    usage.completion_tokens || 0,
-                  total_tokens:
-                    usage.total_tokens || 0,
+                  prompt_tokens: usage.prompt_tokens || 0,
+                  completion_tokens: usage.completion_tokens || 0,
+                  total_tokens: usage.total_tokens || 0,
                 },
 
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            usage,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          usage,
+                        }
+                      : message
                   ),
                 },
               };
@@ -671,8 +558,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
           onDone: () => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 isStreaming: false,
@@ -684,15 +570,14 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            isStreaming: false,
-                            isOptimistic: false,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          isStreaming: false,
+                          isOptimistic: false,
+                        }
+                      : message
                   ),
                 },
               };
@@ -705,8 +590,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
           onError: (err) => {
             set((state) => {
-              const msgs =
-                state.messages[activeId] || [];
+              const msgs = state.messages[activeId] || [];
 
               return {
                 isStreaming: false,
@@ -714,23 +598,21 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
                 abortController: null,
 
                 error: err.error,
-                errorCode:
-                  err.code || 'STREAM_ERROR',
+                errorCode: err.code || 'STREAM_ERROR',
 
                 canRetry: true,
                 canRegenerate: false,
 
                 messages: {
                   ...state.messages,
-                  [activeId]: msgs.map(
-                    (message) =>
-                      message.id === asstMsgId
-                        ? {
-                            ...message,
-                            isStreaming: false,
-                            error: err.error,
-                          }
-                        : message
+                  [activeId]: msgs.map((message) =>
+                    message.id === asstMsgId
+                      ? {
+                          ...message,
+                          isStreaming: false,
+                          error: err.error,
+                        }
+                      : message
                   ),
                 },
               };
@@ -748,10 +630,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       // ---------------------------------------------------------------------
 
       try {
-        await get().loadMessages(
-          activeId,
-          true
-        );
+        await get().loadMessages(activeId, true);
       } catch {
         // Keep the already-rendered streamed response
         // if server reconciliation fails.
@@ -773,31 +652,26 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       // User manually stopped generation.
       if (controller.signal.aborted) {
         set((state) => {
-          const msgs =
-            state.messages[activeId] || [];
+          const msgs = state.messages[activeId] || [];
 
           return {
             isStreaming: false,
             streamingMessageId: null,
             abortController: null,
 
-            canRegenerate:
-              msgs.some(
-                (message) =>
-                  message.id === asstMsgId &&
-                  Boolean(message.content)
-              ),
+            canRegenerate: msgs.some(
+              (message) => message.id === asstMsgId && Boolean(message.content)
+            ),
 
             messages: {
               ...state.messages,
-              [activeId]: msgs.map(
-                (message) =>
-                  message.id === asstMsgId
-                    ? {
-                        ...message,
-                        isStreaming: false,
-                      }
-                    : message
+              [activeId]: msgs.map((message) =>
+                message.id === asstMsgId
+                  ? {
+                      ...message,
+                      isStreaming: false,
+                    }
+                  : message
               ),
             },
           };
@@ -806,14 +680,10 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         return;
       }
 
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Stream failed';
+      const message = err instanceof Error ? err.message : 'Stream failed';
 
       set((state) => {
-        const msgs =
-          state.messages[activeId] || [];
+        const msgs = state.messages[activeId] || [];
 
         return {
           isStreaming: false,
@@ -828,15 +698,14 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
           messages: {
             ...state.messages,
-            [activeId]: msgs.map(
-              (item) =>
-                item.id === asstMsgId
-                  ? {
-                      ...item,
-                      isStreaming: false,
-                      error: message,
-                    }
-                  : item
+            [activeId]: msgs.map((item) =>
+              item.id === asstMsgId
+                ? {
+                    ...item,
+                    isStreaming: false,
+                    error: message,
+                  }
+                : item
             ),
           },
         };
@@ -849,23 +718,18 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // ---------------------------------------------------------------------------
 
   stopGeneration: () => {
-    const controller =
-      get().abortController;
+    const controller = get().abortController;
 
     if (controller) {
       controller.abort();
     }
 
-    const activeId =
-      get().activeSessionId;
+    const activeId = get().activeSessionId;
 
-    const streamingId =
-      get().streamingMessageId;
+    const streamingId = get().streamingMessageId;
 
     set((state) => {
-      const msgs = activeId
-        ? state.messages[activeId] || []
-        : [];
+      const msgs = activeId ? state.messages[activeId] || [] : [];
 
       return {
         isStreaming: false,
@@ -877,14 +741,13 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
         messages: activeId
           ? {
               ...state.messages,
-              [activeId]: msgs.map(
-                (message) =>
-                  message.id === streamingId
-                    ? {
-                        ...message,
-                        isStreaming: false,
-                      }
-                    : message
+              [activeId]: msgs.map((message) =>
+                message.id === streamingId
+                  ? {
+                      ...message,
+                      isStreaming: false,
+                    }
+                  : message
               ),
             }
           : state.messages,
@@ -897,24 +760,15 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // ---------------------------------------------------------------------------
 
   regenerateResponse: async () => {
-    const activeId =
-      get().activeSessionId;
+    const activeId = get().activeSessionId;
 
     if (!activeId || get().isStreaming) {
       return;
     }
 
-    const msgs =
-      get().messages[activeId] || [];
+    const msgs = get().messages[activeId] || [];
 
-    const lastUserMsg = [
-      ...msgs,
-    ]
-      .reverse()
-      .find(
-        (message) =>
-          message.role === 'user'
-      );
+    const lastUserMsg = [...msgs].reverse().find((message) => message.role === 'user');
 
     if (!lastUserMsg) {
       return;
@@ -922,18 +776,11 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
 
     // Remove the last assistant message.
     set((state) => {
-      const updatedMsgs =
-        state.messages[activeId] || [];
+      const updatedMsgs = state.messages[activeId] || [];
 
-      const trimmed =
-        updatedMsgs.filter(
-          (message, index) =>
-            !(
-              index ===
-                updatedMsgs.length - 1 &&
-              message.role === 'assistant'
-            )
-        );
+      const trimmed = updatedMsgs.filter(
+        (message, index) => !(index === updatedMsgs.length - 1 && message.role === 'assistant')
+      );
 
       return {
         messages: {
@@ -949,9 +796,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
       };
     });
 
-    await get().sendPrompt(
-      lastUserMsg.content
-    );
+    await get().sendPrompt(lastUserMsg.content);
   },
 
   // ---------------------------------------------------------------------------
@@ -959,24 +804,15 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // ---------------------------------------------------------------------------
 
   retryResponse: async () => {
-    const activeId =
-      get().activeSessionId;
+    const activeId = get().activeSessionId;
 
     if (!activeId || get().isStreaming) {
       return;
     }
 
-    const msgs =
-      get().messages[activeId] || [];
+    const msgs = get().messages[activeId] || [];
 
-    const lastUserMsg = [
-      ...msgs,
-    ]
-      .reverse()
-      .find(
-        (message) =>
-          message.role === 'user'
-      );
+    const lastUserMsg = [...msgs].reverse().find((message) => message.role === 'user');
 
     if (!lastUserMsg) {
       return;
@@ -989,38 +825,28 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   // UI state
   // ---------------------------------------------------------------------------
 
-  setSearchQuery: (
-    searchQuery: string
-  ) => {
+  setSearchQuery: (searchQuery: string) => {
     set({ searchQuery });
   },
 
-  setFilter: (
-    filter: CopilotFilter
-  ) => {
+  setFilter: (filter: CopilotFilter) => {
     set({ filter });
   },
 
-  setSelectedCitation: (
-    citation: CopilotCitation | null
-  ) => {
+  setSelectedCitation: (citation: CopilotCitation | null) => {
     set({
       selectedCitation: citation,
-      isCitationDrawerOpen:
-        Boolean(citation),
+      isCitationDrawerOpen: Boolean(citation),
     });
   },
 
   toggleSidebar: () => {
     set((state) => ({
-      isSidebarOpen:
-        !state.isSidebarOpen,
+      isSidebarOpen: !state.isSidebarOpen,
     }));
   },
 
-  setCurrentModel: (
-    currentModel: CopilotModel
-  ) => {
+  setCurrentModel: (currentModel: CopilotModel) => {
     set({ currentModel });
   },
 
@@ -1032,8 +858,7 @@ export const useCopilotStore = create<CopilotStoreState>((set, get) => ({
   },
 
   reset: () => {
-    const controller =
-      get().abortController;
+    const controller = get().abortController;
 
     if (controller) {
       controller.abort();

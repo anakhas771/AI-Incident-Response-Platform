@@ -71,7 +71,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           errorMessage = respData.non_field_errors[0];
         } else if (respData.error) {
           errorMessage =
-            typeof respData.error === 'string' ? respData.error : respData.error.message || errorMessage;
+            typeof respData.error === 'string'
+              ? respData.error
+              : respData.error.message || errorMessage;
         }
       }
 
@@ -103,7 +105,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             fieldErrors.last_name ||
             fieldErrors.role;
           if (primaryField) {
-            errorMessage = Array.isArray(primaryField) ? primaryField.join(' ') : String(primaryField);
+            errorMessage = Array.isArray(primaryField)
+              ? primaryField.join(' ')
+              : String(primaryField);
           } else if (respData.detail) {
             errorMessage = String(respData.detail);
           }
@@ -131,7 +135,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const refresh = localStorage.getItem('refresh');
 
     if (!access) {
-      set({ user: null, organization: null, token: null, isAuthenticated: false, isLoading: false });
+      set({
+        user: null,
+        organization: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
       return false;
     }
 

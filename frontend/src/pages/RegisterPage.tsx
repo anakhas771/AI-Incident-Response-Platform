@@ -63,7 +63,9 @@ export const RegisterPage: React.FC = () => {
 
     // Redirect to login page with success notification state
     navigate('/login', {
-      state: { registeredMessage: 'Account created successfully! Please sign in with your credentials.' },
+      state: {
+        registeredMessage: 'Account created successfully! Please sign in with your credentials.',
+      },
     });
   };
 
@@ -125,7 +127,9 @@ export const RegisterPage: React.FC = () => {
                 />
               </div>
               {getFieldErrorText('first_name') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('first_name')}</p>
+                <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                  {getFieldErrorText('first_name')}
+                </p>
               )}
             </div>
             <div>
@@ -148,7 +152,9 @@ export const RegisterPage: React.FC = () => {
                 />
               </div>
               {getFieldErrorText('last_name') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('last_name')}</p>
+                <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                  {getFieldErrorText('last_name')}
+                </p>
               )}
             </div>
           </div>
@@ -172,7 +178,9 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
             {getFieldErrorText('organization_name') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('organization_name')}</p>
+              <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                {getFieldErrorText('organization_name')}
+              </p>
             )}
           </div>
 
@@ -196,7 +204,9 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
             {getFieldErrorText('email') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('email')}</p>
+              <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                {getFieldErrorText('email')}
+              </p>
             )}
           </div>
 
@@ -220,7 +230,9 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
             {getFieldErrorText('password') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('password')}</p>
+              <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                {getFieldErrorText('password')}
+              </p>
             )}
           </div>
 
@@ -244,7 +256,9 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
             {getFieldErrorText('password_confirm') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('password_confirm')}</p>
+              <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                {getFieldErrorText('password_confirm')}
+              </p>
             )}
           </div>
 
@@ -267,7 +281,9 @@ export const RegisterPage: React.FC = () => {
               <option value="VIEWER">VIEWER - Executive Read-Only</option>
             </select>
             {getFieldErrorText('role') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('role')}</p>
+              <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                {getFieldErrorText('role')}
+              </p>
             )}
           </div>
 
