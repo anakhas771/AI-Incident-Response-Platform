@@ -15,89 +15,15 @@ describe('IncidentWorkspaceService', () => {
     vi.clearAllMocks();
   });
 
-  describe('loadRecommendations', () => {
-    it('should return mapped recommendations on successful AI analysis', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce({
-        data: {
-          status: 'completed',
-          confidence_score: 0.95,
-          recommended_actions: ['Restart pod', 'Check logs'],
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      });
-
-      const result = await incidentWorkspaceService.loadRecommendations('inc-123');
-      expect(result).toHaveLength(2);
-      expect(result[0].title).toBe('Restart pod');
-      expect(result[0].confidence).toBe(95);
-      expect(result[0].action_type).toBe('MANUAL');
-      expect(result[1].title).toBe('Check logs');
-    });
-
-    it('should return empty array when status is pending', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce({
-        data: { status: 'pending' },
-      });
-      const result = await incidentWorkspaceService.loadRecommendations('inc-123');
-      expect(result).toEqual([]);
-    });
-
-    it('should handle missing data gracefully', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce({
-        data: { status: 'completed' }, // No recommended_actions
-      });
-      const result = await incidentWorkspaceService.loadRecommendations('inc-123');
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array on failure', async () => {
-      vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Network error'));
-      const result = await incidentWorkspaceService.loadRecommendations('inc-123');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('loadRCA', () => {
-    it('should return mapped RCA on successful AI analysis', async () => {
+  describe('loadAIAnalysis', () => {
+    it('should return mapped analysis data on successful AI analysis', async () => {
       vi.mocked(apiClient.get).mockResolvedValueOnce({
         data: {
           status: 'completed',
           summary: 'DB Outage',
           root_cause_analysis: 'OOM Killed',
-          confidence_score: 0.88,
-          recommended_actions: ['Scale memory'],
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      });
-
-      const result = await incidentWorkspaceService.loadRCA('inc-123');
-      expect(result).not.toBeNull();
-      expect(result!.summary).toBe('DB Outage');
-      expect(result!.ai_explanation).toBe('OOM Killed');
-      expect(result!.confidence).toBe(88);
-      expect(result!.recommended_remediation).toEqual(['Scale memory']);
-    });
-
-    it('should return null when status is pending', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce({
-        data: { status: 'pending' },
-      });
-      const result = await incidentWorkspaceService.loadRCA('inc-123');
-      expect(result).toBeNull();
-    });
-
-    it('should return null on failure', async () => {
-      vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Network error'));
-      const result = await incidentWorkspaceService.loadRCA('inc-123');
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('loadSimilarIncidents', () => {
-    it('should return mapped similar incidents on successful AI analysis', async () => {
-      vi.mocked(apiClient.get).mockResolvedValueOnce({
-        data: {
-          status: 'completed',
+          confidence_score: 0.95,
+          recommended_actions: ['Restart pod', 'Check logs'],
           similar_incidents: [
             {
               id: 'inc-999',
@@ -109,27 +35,48 @@ describe('IncidentWorkspaceService', () => {
               root_cause_summary: 'Scaled up DB instance',
             },
           ],
+          updated_at: '2024-01-01T00:00:00Z',
         },
       });
 
-      const result = await incidentWorkspaceService.loadSimilarIncidents('inc-123');
-      expect(result).toHaveLength(1);
-      expect(result[0].title).toBe('Previous DB Outage');
-      expect(result[0].similarity_score).toBe(91); // Math.round(0.9123 * 100)
+      const result = await incidentWorkspaceService.loadAIAnalysis('inc-123');
+      expect(result.status).toBe('completed');
+      expect(result.summary).toBe('DB Outage');
+      expect(result.rca?.ai_explanation).toBe('OOM Killed');
+      expect(result.recommendations).toHaveLength(2);
+      expect(result.recommendations[0].title).toBe('Restart pod');
+      expect(result.similarIncidents).toHaveLength(1);
+      expect(result.similarIncidents[0].title).toBe('Previous DB Outage');
     });
 
-    it('should return empty array when similar_incidents is missing or empty', async () => {
+    it('should return empty data when status is pending', async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({
+        data: { status: 'pending' },
+      });
+      const result = await incidentWorkspaceService.loadAIAnalysis('inc-123');
+      expect(result.status).toBe('pending');
+      expect(result.rca).toBeNull();
+      expect(result.recommendations).toEqual([]);
+      expect(result.similarIncidents).toEqual([]);
+    });
+
+    it('should handle missing data gracefully', async () => {
       vi.mocked(apiClient.get).mockResolvedValueOnce({
         data: { status: 'completed' },
       });
-      const result = await incidentWorkspaceService.loadSimilarIncidents('inc-123');
-      expect(result).toEqual([]);
+      const result = await incidentWorkspaceService.loadAIAnalysis('inc-123');
+      expect(result.status).toBe('completed');
+      expect(result.recommendations).toEqual([]);
+      expect(result.similarIncidents).toEqual([]);
     });
 
-    it('should return empty array on failure', async () => {
+    it('should return empty data on failure', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Network error'));
-      const result = await incidentWorkspaceService.loadSimilarIncidents('inc-123');
-      expect(result).toEqual([]);
+      const result = await incidentWorkspaceService.loadAIAnalysis('inc-123');
+      expect(result.status).toBe('failed');
+      expect(result.rca).toBeNull();
+      expect(result.recommendations).toEqual([]);
+      expect(result.similarIncidents).toEqual([]);
     });
   });
 });

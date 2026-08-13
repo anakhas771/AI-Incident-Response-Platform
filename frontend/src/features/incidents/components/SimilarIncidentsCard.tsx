@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom';
 export interface SimilarIncidentsCardProps {
   similarIncidents: SimilarIncidentCard[];
   onSelectIncident?: (id: string) => void;
+  aiStatus?: 'idle' | 'pending' | 'processing' | 'completed' | 'failed';
+  onRetry?: () => void;
 }
 
 export const SimilarIncidentsCard: React.FC<SimilarIncidentsCardProps> = React.memo(
-  ({ similarIncidents, onSelectIncident }) => {
+  ({ similarIncidents, onSelectIncident, aiStatus, onRetry }) => {
     const navigate = useNavigate();
 
     const handleClick = (id: string) => {
@@ -33,7 +35,28 @@ export const SimilarIncidentsCard: React.FC<SimilarIncidentsCardProps> = React.m
         </div>
 
         <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-800">
-          {similarIncidents.length === 0 ? (
+          {aiStatus === 'failed' ? (
+            <div className="py-8 text-center space-y-3">
+              <p className="text-xs text-rose-400 font-mono italic">
+                Failed to find similar incidents.
+              </p>
+              {onRetry && (
+                <button
+                  onClick={onRetry}
+                  className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 rounded text-xs transition-colors"
+                >
+                  Retry Analysis
+                </button>
+              )}
+            </div>
+          ) : aiStatus === 'pending' || aiStatus === 'processing' ? (
+            <div className="py-8 text-center space-y-3">
+              <Layers className="w-6 h-6 text-purple-500/50 mx-auto animate-pulse" />
+              <p className="text-xs text-zinc-400 font-mono italic">
+                AI Engine is searching historical incidents...
+              </p>
+            </div>
+          ) : similarIncidents.length === 0 ? (
             <div className="py-8 text-center text-xs text-zinc-500 font-mono italic">
               No matching historical incidents found.
             </div>

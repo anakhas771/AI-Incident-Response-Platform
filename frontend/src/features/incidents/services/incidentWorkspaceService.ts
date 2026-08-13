@@ -91,21 +91,49 @@ class IncidentWorkspaceService {
   }
 
   /**
-   * Load AI Recommendations from Django Backend: GET /api/v1/ai/incidents/{id}/analysis/
+   * Load Full AI Analysis (RCA, Recommendations, Similar Incidents, Status): GET /api/v1/ai/incidents/{id}/analysis/
    */
-  async loadRecommendations(id: string): Promise<IncidentRecommendation[]> {
+  async loadAIAnalysis(id: string): Promise<{
+    status: 'idle' | 'pending' | 'processing' | 'completed' | 'failed';
+    summary: string | null;
+    rca: IncidentRCA | null;
+    recommendations: IncidentRecommendation[];
+    similarIncidents: SimilarIncidentCard[];
+  }> {
     try {
       const response = await apiClient.get<IncidentAnalysisPayload>(
         `/ai/incidents/${id}/analysis/`
       );
 
-      if (
-        response.data &&
-        response.data.status !== 'pending' &&
-        response.data.status !== 'processing'
-      ) {
+      const status =
+        (response.data?.status?.toLowerCase() as
+          'pending' | 'processing' | 'completed' | 'failed') || 'idle';
+      const summary = response.data?.summary || null;
+
+      let rca: IncidentRCA | null = null;
+      let recommendations: IncidentRecommendation[] = [];
+      let similarIncidents: SimilarIncidentCard[] = [];
+
+      if (status !== 'pending' && status !== 'processing') {
+        // Build RCA
+        rca = {
+          id: `rca-${id}`,
+          incident_id: id,
+          summary: response.data.summary || 'Summary pending',
+          contributing_factors: [],
+          affected_systems: [],
+          confidence: response.data.confidence_score
+            ? Math.round(response.data.confidence_score * 100)
+            : 94,
+          ai_explanation: response.data.root_cause_analysis || 'AI explanation pending',
+          recommended_remediation: response.data.recommended_actions || [],
+          suggested_code_fix: undefined,
+          generated_at: response.data.updated_at || new Date().toISOString(),
+        };
+
+        // Build Recommendations
         const rawRecs = response.data.recommended_actions || [];
-        return rawRecs.map((rec, index) => ({
+        recommendations = rawRecs.map((rec, index) => ({
           id: `rec-${id}-${index}`,
           incident_id: id,
           title: rec,
@@ -120,72 +148,31 @@ class IncidentWorkspaceService {
           code_snippet: undefined,
           created_at: response.data.updated_at || new Date().toISOString(),
         }));
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  }
 
-  /**
-   * Load Enterprise Root Cause Analysis (RCA): GET /api/v1/ai/incidents/{id}/analysis/
-   */
-  async loadRCA(id: string): Promise<IncidentRCA | null> {
-    try {
-      const response = await apiClient.get<IncidentAnalysisPayload>(
-        `/ai/incidents/${id}/analysis/`
-      );
-      if (
-        response.data &&
-        response.data.status !== 'pending' &&
-        response.data.status !== 'processing'
-      ) {
-        return {
-          id: `rca-${id}`,
-          incident_id: id,
-          summary: response.data.summary || 'Summary pending',
-          contributing_factors: [],
-          affected_systems: [],
-          confidence: response.data.confidence_score
-            ? Math.round(response.data.confidence_score * 100)
-            : 94,
-          ai_explanation: response.data.root_cause_analysis || 'AI explanation pending',
-          recommended_remediation: response.data.recommended_actions || [],
-          suggested_code_fix: undefined,
-          generated_at: response.data.updated_at || new Date().toISOString(),
-        };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Load Similar Historical Incidents: GET /api/v1/ai/incidents/{id}/analysis/
-   */
-  async loadSimilarIncidents(id: string): Promise<SimilarIncidentCard[]> {
-    try {
-      const response = await apiClient.get<IncidentAnalysisPayload>(
-        `/ai/incidents/${id}/analysis/`
-      );
-
-      if (response.data?.similar_incidents && response.data.similar_incidents.length > 0) {
-        return response.data.similar_incidents.map((item) => ({
-          id: item.id,
-          title: item.title,
-          similarity_score: item.similarity ? Math.round(item.similarity * 100) : 0,
-          resolved_in_mins: item.resolved_in_mins || 0,
-          severity: item.severity || 'HIGH',
-          status: item.status || 'RESOLVED',
-          root_cause_summary: item.root_cause_summary || 'Resolved',
-          created_at: item.created_at || new Date().toISOString(),
-        }));
+        // Build Similar Incidents
+        if (response.data?.similar_incidents && response.data.similar_incidents.length > 0) {
+          similarIncidents = response.data.similar_incidents.map((item) => ({
+            id: item.id,
+            title: item.title,
+            similarity_score: item.similarity ? Math.round(item.similarity * 100) : 0,
+            resolved_in_mins: item.resolved_in_mins || 0,
+            severity: item.severity || 'HIGH',
+            status: item.status || 'RESOLVED',
+            root_cause_summary: item.root_cause_summary || 'Resolved',
+            created_at: item.created_at || new Date().toISOString(),
+          }));
+        }
       }
 
-      return [];
+      return { status, summary, rca, recommendations, similarIncidents };
     } catch {
-      return [];
+      return {
+        status: 'failed',
+        summary: null,
+        rca: null,
+        recommendations: [],
+        similarIncidents: [],
+      };
     }
   }
 

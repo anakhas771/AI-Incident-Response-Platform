@@ -5,16 +5,33 @@ export interface TimelineEventItemProps {
   item: IncidentTimelineItem;
   icon: React.ReactNode;
   iconBg: string;
+  variant?: 'default' | 'system' | 'ai' | 'user';
   children?: React.ReactNode;
 }
 
 export const TimelineEventItem: React.FC<TimelineEventItemProps> = React.memo(
-  ({ item, icon, iconBg, children }) => {
+  ({ item, icon, iconBg, variant = 'default', children }) => {
+    let containerClasses =
+      'group relative flex gap-x-4 p-3 rounded-lg border transition-all focus:outline-none focus:ring-1 focus:ring-indigo-500/50 ';
+    switch (variant) {
+      case 'system':
+        containerClasses += 'border-transparent bg-transparent hover:bg-zinc-900/50 opacity-90';
+        break;
+      case 'user':
+        containerClasses += 'bg-surface-elevated border-subtle hover:border-zinc-700 shadow-sm';
+        break;
+      case 'ai':
+        containerClasses += 'bg-cyan-950/10 border-cyan-900/30 hover:border-cyan-800/50';
+        break;
+      default:
+        containerClasses += 'border-transparent hover:border-subtle hover:bg-surface-elevated/50';
+    }
+
     return (
       <div
         tabIndex={0}
         aria-label={`Timeline event: ${item.title} at ${new Date(item.timestamp).toLocaleTimeString()}`}
-        className="group relative flex gap-x-4 p-3 rounded-lg border border-transparent hover:border-subtle hover:bg-surface-elevated/50 transition-all focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+        className={containerClasses}
       >
         {/* Timeline Connecting Line */}
         <div className="relative flex items-center justify-center">

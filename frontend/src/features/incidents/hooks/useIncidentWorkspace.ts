@@ -46,9 +46,7 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
       const results = await Promise.allSettled([
         incidentWorkspaceService.loadIncident(id),
         incidentWorkspaceService.loadTimeline(id),
-        incidentWorkspaceService.loadRecommendations(id),
-        incidentWorkspaceService.loadRCA(id),
-        incidentWorkspaceService.loadSimilarIncidents(id),
+        incidentWorkspaceService.loadAIAnalysis(id),
         incidentWorkspaceService.loadAuditTrail(id),
         incidentWorkspaceService.loadAttachments(id),
         incidentWorkspaceService.loadComments(id),
@@ -56,24 +54,26 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
         incidentWorkspaceService.loadSystemMetadata(id),
       ]);
 
-      const [
-        incidentRes,
-        timelineRes,
-        recRes,
-        rcaRes,
-        similarRes,
-        auditRes,
-        attRes,
-        commentsRes,
-        riskRes,
-        sysRes,
-      ] = results;
+      const [incidentRes, timelineRes, aiRes, auditRes, attRes, commentsRes, riskRes, sysRes] =
+        results;
 
       if (incidentRes.status === 'fulfilled') workspaceState.setIncident(incidentRes.value);
       if (timelineRes.status === 'fulfilled') workspaceState.setTimeline(timelineRes.value);
-      if (recRes.status === 'fulfilled') aiState.setRecommendations(recRes.value);
-      if (rcaRes.status === 'fulfilled') aiState.setRootCause(rcaRes.value);
-      if (similarRes.status === 'fulfilled') aiState.setSimilarIncidents(similarRes.value);
+      if (aiRes.status === 'fulfilled') {
+        const { status, summary, rca, recommendations, similarIncidents } = aiRes.value;
+        aiState.setStatus(status);
+        aiState.setSummary(summary);
+        aiState.setRootCause(rca);
+        aiState.setRecommendations(recommendations);
+        aiState.setSimilarIncidents(similarIncidents);
+
+        // Auto-stop polling if AI is completed or failed
+        if (status === 'completed' || status === 'failed') {
+          if (pollingState.enabled) {
+            pollingState.togglePolling(); // This turns it off
+          }
+        }
+      }
       if (auditRes.status === 'fulfilled') workspaceState.setAuditTrail(auditRes.value);
       if (attRes.status === 'fulfilled') workspaceState.setAttachments(attRes.value);
       if (commentsRes.status === 'fulfilled') workspaceState.setComments(commentsRes.value);
@@ -83,9 +83,9 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
       uiState.setError({
         incident: incidentRes.status === 'rejected' ? 'Failed to load incident details' : null,
         timeline: timelineRes.status === 'rejected' ? 'Failed to load timeline' : null,
-        recommendations: recRes.status === 'rejected' ? 'Failed to load recommendations' : null,
-        rca: rcaRes.status === 'rejected' ? 'Failed to load RCA' : null,
-        similar: similarRes.status === 'rejected' ? 'Failed to load similar incidents' : null,
+        recommendations: aiRes.status === 'rejected' ? 'Failed to load recommendations' : null,
+        rca: aiRes.status === 'rejected' ? 'Failed to load RCA' : null,
+        similar: aiRes.status === 'rejected' ? 'Failed to load similar incidents' : null,
         audit: auditRes.status === 'rejected' ? 'Failed to load audit trail' : null,
         attachments: attRes.status === 'rejected' ? 'Failed to load attachments' : null,
         comments: commentsRes.status === 'rejected' ? 'Failed to load comments' : null,
@@ -117,14 +117,20 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
   useEffect(() => {
     if (!incidentId) return;
 
+    // Clear old state before loading new incident
+    useIncidentWorkspaceStore.getState().resetWorkspaceData();
+    useIncidentAIStore.getState().resetAIState();
+
     loadAll(incidentId, false);
 
     const unsubscribe = manager.subscribe(async (id) => {
       await loadAll(id, true);
     });
 
-    if (pollingStore.enabled) {
-      manager.start(incidentId, pollingStore.intervalMs);
+    const pollingState = useIncidentPollingStore.getState();
+
+    if (pollingState.enabled) {
+      manager.start(incidentId, pollingState.intervalMs);
     } else {
       manager.stop();
     }
@@ -132,12 +138,18 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
     return () => {
       unsubscribe();
       manager.stop();
+
+      const currentPollingState = useIncidentPollingStore.getState();
+
+      if (currentPollingState.enabled) {
+        currentPollingState.togglePolling();
+      }
     };
-  }, [incidentId, pollingStore.enabled, pollingStore.intervalMs, manager, loadAll]);
+  }, [incidentId, manager, loadAll]);
 
   const togglePolling = useCallback(() => {
-    pollingStore.togglePolling();
-  }, [pollingStore]);
+    useIncidentPollingStore.getState().togglePolling();
+  }, []);
 
   const manualRefresh = useCallback(() => {
     if (incidentId) {
@@ -158,6 +170,8 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
     rootCause: aiStore.rootCause,
     recommendations: aiStore.recommendations,
     similarIncidents: aiStore.similarIncidents,
+    aiStatus: aiStore.status,
+    aiSummary: aiStore.summary,
 
     selectedTab: uiStore.selectedTab,
     filters: uiStore.filters,
