@@ -515,8 +515,6 @@ class IncidentWorkspaceService {
     ];
   }
 
-
-
   private getFallbackAuditTrail(id: string): IncidentAuditLog[] {
     const now = Date.now();
     return [
