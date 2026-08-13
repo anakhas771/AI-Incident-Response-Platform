@@ -14,3 +14,5 @@ coverage>=7.5.1
 # Debugging
 django-debug-toolbar>=4.4.2
 ipdb>=0.13.13
+# ASGI server for streaming
+uvicorn>=0.30.0

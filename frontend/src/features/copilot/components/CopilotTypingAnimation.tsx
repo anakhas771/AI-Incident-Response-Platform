@@ -1,29 +1,48 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export interface CopilotTypingAnimationProps {
   label?: string;
 }
 
-/**
- * Smooth typing animation with blinking cursor for incremental token rendering.
- */
-export const CopilotTypingAnimation: React.FC<CopilotTypingAnimationProps> = React.memo(
-  ({ label = 'Copilot is analyzing...' }) => {
-    return (
-      <div
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium"
-        role="status"
-        aria-live="polite"
-      >
-        <div className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.3s]" />
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.15s]" />
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" />
-        </div>
-        <span>{label}</span>
-      </div>
-    );
-  }
-);
+export const CopilotTypingAnimation: React.FC<CopilotTypingAnimationProps> = ({
+  label = 'Analyzing your question...',
+}) => {
+  return (
+    <div
+      className="inline-flex items-center gap-2 text-xs text-zinc-400"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="flex items-center gap-1">
+        <motion.span
+          className="w-1.5 h-1.5 rounded-full bg-indigo-400"
+          animate={{ opacity: [0.35, 1, 0.35] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+        <motion.span
+          className="w-1.5 h-1.5 rounded-full bg-indigo-400"
+          animate={{ opacity: [0.35, 1, 0.35] }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            delay: 0.15,
+          }}
+        />
+        <motion.span
+          className="w-1.5 h-1.5 rounded-full bg-indigo-400"
+          animate={{ opacity: [0.35, 1, 0.35] }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            delay: 0.3,
+          }}
+        />
+      </span>
+
+      <span>{label}</span>
+    </div>
+  );
+};
 
 CopilotTypingAnimation.displayName = 'CopilotTypingAnimation';

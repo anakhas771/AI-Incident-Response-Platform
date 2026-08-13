@@ -101,27 +101,41 @@ class OpenAILLMGateway(BaseLLMGateway):
                 }
             )
 
-        if prompt.context_text:
+        if prompt.raw_history:
+            for turn in prompt.raw_history:
+                messages.append(
+                    {
+                        "role": turn.role,
+                        "content": turn.content,
+                    }
+                )
+
+        if prompt.raw_user_message:
+            final_user_content = prompt.raw_user_message
+            if prompt.context_text and prompt.context_text != "No relevant knowledge base documents found.":
+                final_user_content = f"RETRIEVED KNOWLEDGE BASE CONTEXT:\n{prompt.context_text}\n\nCURRENT USER MESSAGE:\n{final_user_content}"
             messages.append(
                 {
-                    "role": "system",
-                    "content": (
-                        f"Enterprise Knowledge Context:\n{prompt.context_text}"
-                    ),
+                    "role": "user",
+                    "content": final_user_content,
                 }
             )
-
-        if prompt.history_text:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": (
-                        f"Previous Conversation History:\n{prompt.history_text}"
-                    ),
-                }
-            )
-
-        if prompt.user_prompt:
+        elif prompt.user_prompt:
+            # Fallback to flattened prompt
+            if prompt.context_text:
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": f"Enterprise Knowledge Context:\n{prompt.context_text}",
+                    }
+                )
+            if prompt.history_text:
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": f"Previous Conversation History:\n{prompt.history_text}",
+                    }
+                )
             messages.append(
                 {
                     "role": "user",

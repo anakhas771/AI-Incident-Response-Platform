@@ -17,3 +17,5 @@ class PromptContextDTO:
     history_text: str
     estimated_tokens: int
     template_version: str
+    raw_history: list = None
+    raw_user_message: str = ""

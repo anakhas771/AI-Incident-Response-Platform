@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { CopilotSession, CopilotMessage, CopilotModel, CopilotCitation } from '../types';
 import { CopilotMessageBubble } from './CopilotMessageBubble';
 import { CopilotComposer } from './CopilotComposer';
-import { CopilotTypingAnimation } from './CopilotTypingAnimation';
 import { CopilotCitationDrawer } from './CopilotCitationDrawer';
 import { Shield, Sparkles, RefreshCw, AlertCircle, Cpu, Award } from 'lucide-react';
 
@@ -224,13 +223,6 @@ export const CopilotChatWindow: React.FC<CopilotChatWindowProps> = React.memo(
                   />
                 );
               })}
-
-              {/* Typing / Streaming Indicator */}
-              {isStreaming && (
-                <div className="pt-2">
-                  <CopilotTypingAnimation />
-                </div>
-              )}
 
               <div ref={messagesEndRef} className="h-1" />
             </div>

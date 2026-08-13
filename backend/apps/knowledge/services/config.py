@@ -2,6 +2,7 @@
 Configuration settings and constants for Enterprise AI Copilot services.
 """
 
+import os
 from typing import Final
 
 
@@ -38,6 +39,9 @@ class CopilotSettings:
 
     # Memory settings
     SUMMARY_PLACEHOLDER: Final[str] = "[Previous conversation summarized]"
+    MAX_HISTORY_MESSAGES: Final[int] = int(
+        os.environ.get("COPILOT_MAX_HISTORY_MESSAGES", 10)
+    )
 
     # Streaming & API defaults (Task 5)
     ENABLE_STREAMING: Final[bool] = True

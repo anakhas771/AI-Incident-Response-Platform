@@ -102,6 +102,7 @@ class RetryPolicy:
         jitter = float(random.uniform(0.0, self.jitter))
 
         return float(min(exponential_delay + jitter, self.max_backoff))
+
     def execute(
         self,
         func: Callable[..., T],

@@ -56,7 +56,32 @@ class ConversationMemoryService:
         """
         Load conversation history for a ChatSession and truncate it if it exceeds max_tokens.
         """
-        messages = list(session.messages.order_by("created_at"))
+        raw_messages = list(session.messages.order_by("created_at"))
+        
+        # Filter out contaminated legacy assistant messages
+        messages = []
+        for msg in raw_messages:
+            if msg.role == "assistant":
+                if not msg.metadata.get("is_clean_response", False):
+                    continue
+            messages.append(msg)
+
+        # Enforce MAX_HISTORY_MESSAGES limit
+        dropped_turns_by_count = []
+        max_messages = CopilotSettings.MAX_HISTORY_MESSAGES
+        if max_messages > 0 and len(messages) > max_messages:
+            dropped_messages = messages[:-max_messages]
+            messages = messages[-max_messages:]
+            for msg in dropped_messages:
+                content = msg.content or ""
+                tokens = (
+                    msg.tokens
+                    if msg.tokens > 0
+                    else self.token_counter.count_tokens(content)
+                )
+                dropped_turns_by_count.append(
+                    MessageTurnDTO(role=msg.role, content=content, tokens=tokens)
+                )
 
         # Convert to MessageTurnDTO with calculated tokens
         turns = []
@@ -82,6 +107,11 @@ class ConversationMemoryService:
             else:
                 is_truncated = True
                 dropped_turns.append(turn)
+
+        # Also include messages dropped by the count limit
+        if dropped_turns_by_count:
+            is_truncated = True
+            dropped_turns.extend(reversed(dropped_turns_by_count))
 
         # Restore chronological order
         included_turns.reverse()

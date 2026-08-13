@@ -45,6 +45,7 @@ class TestConversationMemoryService:
             role=MessageRole.ASSISTANT,
             content="Hi there",
             tokens=10,
+            metadata={"is_clean_response": True},
         )
 
         service = ConversationMemoryService()
@@ -77,6 +78,7 @@ class TestConversationMemoryService:
             role=MessageRole.ASSISTANT,
             content="M2 middle",
             tokens=50,
+            metadata={"is_clean_response": True},
         )
         ChatMessage.objects.create(
             session=session,

@@ -413,17 +413,29 @@ class TestVectorSearchService:
 
 @pytest.mark.django_db
 class TestPromptBuilder:
-    def test_build_rag_prompt(self):
+    def test_build_copilot_prompt(self):
+        from apps.knowledge.services.dtos.memory_dto import ConversationContextDTO
+        from apps.knowledge.services.dtos.retrieval_dto import RetrievedChunkDTO
+        
         chunks = [
-            {
-                "document_title": "DDoS Runbook",
-                "page_number": 2,
-                "content": "Enable Cloudflare under attack mode.",
-            }
+            RetrievedChunkDTO(
+                chunk_id="1",
+                document_id="doc1",
+                document_title="DDoS Runbook",
+                page_number=2,
+                content="Enable Cloudflare under attack mode.",
+                chunk_index=0,
+                similarity_score=1.0,
+            )
         ]
-        prompt_payload = PromptBuilder.build_rag_prompt("How to handle DDoS?", chunks)
-        assert "DDoS Runbook" in prompt_payload["context_text"]
-        assert "USER QUESTION" in prompt_payload["user_prompt"]
+        context = ConversationContextDTO(session_id="none", messages=[])
+        prompt_ctx = PromptBuilder().build_copilot_prompt(
+            context=context,
+            retrieved_chunks=chunks,
+            user_message="How to handle DDoS?"
+        )
+        assert "DDoS Runbook" in prompt_ctx.context_text
+        assert "How to handle DDoS?" in prompt_ctx.user_prompt
 
 
 @pytest.mark.django_db

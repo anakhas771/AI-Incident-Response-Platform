@@ -1,103 +1,226 @@
-import { copilotApi, streamCopilotChat } from '../../../api/copilotApi';
+
 import {
-  CopilotSession,
-  CopilotMessage,
-  CopilotStreamCallbacks,
-} from '../types';
+  copilotApi,
+  streamCopilotChat,
+} from '../../../api/copilotApi';
 
-class CopilotService {
+import type {
+  ChatMessage,
+  ChatSession,
+  StreamCallbacks,
+  CopilotResponse,
+} from '../../../types/chat';
+
+/**
+ * Convert the backend CopilotResponse DTO into the frontend ChatMessage DTO.
+ *
+ * Backend:
+ *   message_id
+ *
+ * Frontend:
+ *   id
+ *
+ * The backend response does not currently expose created_at,
+ * so the client creates it when the response is received.
+ */
+function toChatMessage(response: CopilotResponse): ChatMessage {
+  return {
+    id: response.message_id,
+    created_at: new Date().toISOString(),
+    session_id: response.session_id,
+    role: response.role,
+    content: response.content,
+    tokens: response.tokens,
+    prompt_tokens: response.prompt_tokens,
+    completion_tokens: response.completion_tokens,
+    citations: response.citations ?? [],
+    confidence: response.confidence,
+    suggested_questions: response.suggested_questions ?? [],
+    usage: response.usage ?? undefined,
+  };
+}
+
+export const copilotService = {
   /**
-   * List conversation sessions
+   * List Copilot conversation sessions.
+   *
+   * Kept as listSessions because the existing store/tests
+   * depend on this public service method.
    */
-  async listSessions(isArchived = false): Promise<CopilotSession[]> {
-    const sessions = await copilotApi.getSessions(isArchived);
-    return sessions as CopilotSession[];
-  }
+  async listSessions(isArchived?: boolean): Promise<ChatSession[]> {
+    return copilotApi.getSessions(isArchived);
+  },
 
   /**
-   * Create a new chat session
+   * Alias for listSessions.
    */
-  async createSession(title = 'New Investigation', isPinned = false): Promise<CopilotSession> {
-    const session = await copilotApi.createSession({ title, is_pinned: isPinned });
-    return session as CopilotSession;
-  }
+  async getSessions(isArchived?: boolean): Promise<ChatSession[]> {
+    return copilotApi.getSessions(isArchived);
+  },
 
   /**
-   * Rename an existing session
+   * Get a single conversation session.
    */
-  async renameSession(sessionId: string, title: string): Promise<CopilotSession> {
-    const session = await copilotApi.updateSession(sessionId, { title });
-    return session as CopilotSession;
-  }
+  async getSession(sessionId: string): Promise<ChatSession> {
+    return copilotApi.getSession(sessionId);
+  },
 
   /**
-   * Archive or unarchive a session
+   * Create a new conversation session.
    */
-  async archiveSession(sessionId: string, isArchived = true): Promise<CopilotSession> {
-    const session = await copilotApi.updateSession(sessionId, { is_archived: isArchived });
-    return session as CopilotSession;
-  }
+  async createSession(
+    title?: string,
+    isPinned = false,
+  ): Promise<ChatSession> {
+    return copilotApi.createSession({
+      title,
+      is_pinned: isPinned,
+    });
+  },
 
   /**
-   * Toggle pin status on a session
+   * Rename a conversation session.
    */
-  async togglePinSession(sessionId: string, isPinned: boolean): Promise<CopilotSession> {
-    const session = await copilotApi.updateSession(sessionId, { is_pinned: isPinned });
-    return session as CopilotSession;
-  }
+  async renameSession(
+    sessionId: string,
+    title: string,
+  ): Promise<ChatSession> {
+    return copilotApi.updateSession(sessionId, {
+      title,
+    });
+  },
 
   /**
-   * Delete a session
+   * Archive or unarchive a conversation session.
+   */
+  async archiveSession(
+    sessionId: string,
+    isArchived: boolean,
+  ): Promise<ChatSession> {
+    return copilotApi.updateSession(sessionId, {
+      is_archived: isArchived,
+    });
+  },
+
+  /**
+   * Pin or unpin a conversation session.
+   */
+  async togglePinSession(
+    sessionId: string,
+    isPinned: boolean,
+  ): Promise<ChatSession> {
+    return copilotApi.updateSession(sessionId, {
+      is_pinned: isPinned,
+    });
+  },
+
+  /**
+   * Update a conversation session.
+   */
+  async updateSession(
+    sessionId: string,
+    payload: {
+      title?: string;
+      is_pinned?: boolean;
+      is_archived?: boolean;
+    },
+  ): Promise<ChatSession> {
+    return copilotApi.updateSession(sessionId, payload);
+  },
+
+  /**
+   * Delete a conversation session.
    */
   async deleteSession(sessionId: string): Promise<void> {
-    await copilotApi.deleteSession(sessionId);
-  }
+    return copilotApi.deleteSession(sessionId);
+  },
 
   /**
-   * Load message history for a session
+   * Load message history.
+   *
+   * Kept as loadMessages because the existing store/tests
+   * depend on this method name.
    */
-  async loadMessages(sessionId: string): Promise<CopilotMessage[]> {
-    const messages = await copilotApi.getMessages(sessionId);
-    return messages as CopilotMessage[];
-  }
+  async loadMessages(sessionId: string): Promise<ChatMessage[]> {
+    return copilotApi.getMessages(sessionId);
+  },
 
   /**
-   * Synchronous fallback prompt execution
+   * Alias for loadMessages.
    */
-  async sendPrompt(sessionId: string, prompt: string): Promise<CopilotMessage> {
-    const message = await copilotApi.sendChatMessageSync(sessionId, prompt);
-    return message as CopilotMessage;
-  }
+  async getMessages(sessionId: string): Promise<ChatMessage[]> {
+    return copilotApi.getMessages(sessionId);
+  },
 
   /**
-   * Regenerate response for the latest turn
+   * Send a synchronous Copilot message.
+   *
+   * IMPORTANT:
+   * The API returns CopilotResponse, not ChatMessage.
+   * We explicitly map the backend DTO into the frontend DTO.
    */
-  async regenerateResponse(sessionId: string): Promise<CopilotMessage> {
-    return this.sendPrompt(
+  async sendMessage(
+    sessionId: string,
+    message: string,
+  ): Promise<ChatMessage> {
+    const response = await copilotApi.sendChatMessageSync(
       sessionId,
-      'Please regenerate and elaborate on the previous analysis with technical specifics.'
+      message,
     );
-  }
+
+    return toChatMessage(response);
+  },
 
   /**
-   * Retry sending prompt after an error
+   * Explicit synchronous API method.
    */
-  async retryResponse(sessionId: string, prompt: string): Promise<CopilotMessage> {
-    return this.sendPrompt(sessionId, prompt);
-  }
+  async sendChatMessageSync(
+    sessionId: string,
+    message: string,
+  ): Promise<ChatMessage> {
+    const response = await copilotApi.sendChatMessageSync(
+      sessionId,
+      message,
+    );
+
+    return toChatMessage(response);
+  },
 
   /**
-   * Stream assistant response token-by-token with Server-Sent Events (SSE).
+   * Stream Copilot response.
+   *
+   * Kept as streamResponse because the existing store depends
+   * on this method name.
    */
   async streamResponse(
     sessionId: string,
-    messageText: string,
-    callbacks: CopilotStreamCallbacks,
+    message: string,
+    callbacks: StreamCallbacks,
     signal?: AbortSignal,
-    maxRetries = 2
   ): Promise<void> {
-    await streamCopilotChat(sessionId, messageText, callbacks, signal, maxRetries);
-  }
-}
+    return streamCopilotChat(
+      sessionId,
+      message,
+      callbacks,
+      signal,
+    );
+  },
 
-export const copilotService = new CopilotService();
+  /**
+   * Alias for streamResponse.
+   */
+  async streamMessage(
+    sessionId: string,
+    message: string,
+    callbacks: StreamCallbacks,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return streamCopilotChat(
+      sessionId,
+      message,
+      callbacks,
+      signal,
+    );
+  },
+};
+

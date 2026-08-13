@@ -7,7 +7,9 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from apps.accounts.models import Organization
-from apps.knowledge.services.prompt_builder import PromptBuilder
+from apps.knowledge.services.dtos.memory_dto import ConversationContextDTO
+from apps.knowledge.services.dtos.retrieval_dto import RetrievedChunkDTO
+from apps.knowledge.services.prompts.prompt_builder import PromptBuilder
 from apps.knowledge.services.vector_search_service import VectorSearchService
 
 logger = logging.getLogger(__name__)
@@ -19,8 +21,13 @@ class KnowledgeRetrievalService:
     to retrieve knowledge chunks and prepare LLM execution contexts.
     """
 
-    def __init__(self, vector_search_service: Optional[VectorSearchService] = None):
+    def __init__(
+        self,
+        vector_search_service: Optional[VectorSearchService] = None,
+        prompt_builder: Optional[PromptBuilder] = None,
+    ):
         self.vector_search = vector_search_service or VectorSearchService()
+        self.prompt_builder = prompt_builder or PromptBuilder()
 
     def retrieve_context(
         self,
@@ -50,10 +57,36 @@ class KnowledgeRetrievalService:
             min_similarity=min_similarity,
         )
 
-        prompt_payload = PromptBuilder.build_rag_prompt(
-            question=query,
-            chunks=chunks,
+        # Map chunks to DTOs
+        retrieved_dtos = [
+            RetrievedChunkDTO(
+                chunk_id=str(c.get("chunk_id", f"chunk-{c.get('chunk_index', 0)}")),
+                document_id=str(c.get("document_id", "")),
+                document_title=str(c.get("document_title", "Unknown Document")),
+                page_number=int(c.get("page_number", 1)),
+                content=str(c.get("content", "")),
+                similarity_score=float(c.get("similarity", 0.0)),
+                chunk_index=int(c.get("chunk_index", 0)),
+            )
+            for c in chunks
+        ]
+
+        # Use new PromptBuilder
+        prompt_ctx = self.prompt_builder.build_copilot_prompt(
+            context=ConversationContextDTO(
+                session_id="none",
+                messages=[]
+            ),  # No history for pure retrieval
+            retrieved_chunks=retrieved_dtos,
+            user_message=query,
+            version="v1",
         )
+
+        prompt_payload = {
+            "system_prompt": prompt_ctx.system_prompt,
+            "user_prompt": prompt_ctx.user_prompt,
+            "context_text": prompt_ctx.context_text,
+        }
 
         return {
             "chunks": chunks,

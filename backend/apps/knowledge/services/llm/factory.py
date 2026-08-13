@@ -7,6 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from apps.knowledge.services.llm.base import BaseLLMGateway
 from apps.knowledge.services.llm.mock_gateway import MockLLMGateway
+from apps.knowledge.services.llm.ollama_gateway import OllamaLLMGateway
 from apps.knowledge.services.llm.openai_gateway import OpenAILLMGateway
 from apps.knowledge.services.llm.retry_policy import RetryPolicy
 
@@ -21,6 +22,30 @@ def get_llm_gateway() -> BaseLLMGateway:
 
     if provider == "mock":
         return MockLLMGateway()
+
+    if provider == "ollama":
+        return OllamaLLMGateway(
+            base_url=str(
+                config.get(
+                    "BASE_URL",
+                    "http://host.docker.internal:11434/v1",
+                )
+            ).strip(),
+            model=str(
+                config.get(
+                    "MODEL",
+                    "qwen3:4b",
+                )
+            ).strip(),
+            temperature=float(str(config.get("TEMPERATURE", "0.2"))),
+            max_tokens=int(str(config.get("MAX_TOKENS", "256"))),
+            timeout=int(str(config.get("TIMEOUT", "180"))),
+            retry_policy=RetryPolicy(
+                max_retries=int(str(config.get("MAX_RETRIES", "1"))),
+                base_backoff=float(str(config.get("BASE_BACKOFF", "1.0"))),
+                max_backoff=float(str(config.get("MAX_BACKOFF", "30.0"))),
+            ),
+        )
 
     if provider == "openai":
         api_key = config.get("API_KEY")

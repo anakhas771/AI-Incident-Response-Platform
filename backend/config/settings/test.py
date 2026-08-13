@@ -2,6 +2,7 @@ import os
 
 from .base import *
 
+
 DEBUG = False
 TESTING = True
 
@@ -22,7 +23,9 @@ CACHES = {
     }
 }
 
-if "POSTGRES_HOST" not in os.environ or os.environ.get("POSTGRES_HOST") == "db":
+# Use PostgreSQL when running inside Docker.
+# Fall back to in-memory SQLite only when PostgreSQL is unavailable.
+if not os.environ.get("POSTGRES_HOST"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
