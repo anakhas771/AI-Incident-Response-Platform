@@ -349,7 +349,7 @@ class CopilotStreamView(generics.GenericAPIView):
             suitable for Django's ASGI/Uvicorn streaming response.
             """
             orchestrator = CopilotOrchestrator()
-            stream_iterator = orchestrator.stream(
+            stream_iterator: Iterator[StreamEventDTO] = orchestrator.stream(
                 session=session,
                 message=message,
             )
@@ -363,6 +363,11 @@ class CopilotStreamView(generics.GenericAPIView):
 
                     if event_dto is _STREAM_END:
                         break
+
+                    if not isinstance(event_dto, StreamEventDTO):
+                        raise TypeError(
+                            f"Unexpected SSE event type: {type(event_dto).__name__}"
+                        )
 
                     yield format_sse_event(event_dto)
 
@@ -385,7 +390,7 @@ class CopilotStreamView(generics.GenericAPIView):
                         ),
                     }
 
-                yield (f"id: 0\nevent: error\ndata: {json.dumps(err_payload)}\n\n")
+                yield f"id: 0\nevent: error\ndata: {json.dumps(err_payload)}\n\n"
 
         response = StreamingHttpResponse(
             event_stream(),
