@@ -74,8 +74,7 @@ class KnowledgeRetrievalService:
         # Use new PromptBuilder
         prompt_ctx = self.prompt_builder.build_copilot_prompt(
             context=ConversationContextDTO(
-                session_id="none",
-                messages=[]
+                session_id="none", messages=[]
             ),  # No history for pure retrieval
             retrieved_chunks=retrieved_dtos,
             user_message=query,

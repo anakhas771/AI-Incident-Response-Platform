@@ -85,35 +85,20 @@ class CopilotOrchestrator:
         llm_gateway: Optional[BaseLLMGateway] = None,
         citation_service: Optional[CitationService] = None,
         confidence_engine: Optional[ConfidenceEngine] = None,
-        suggested_questions_service: Optional[
-            SuggestedQuestionsService
-        ] = None,
+        suggested_questions_service: Optional[SuggestedQuestionsService] = None,
         telemetry_logger: Optional[TelemetryLogger] = None,
     ) -> None:
-        self.memory_service = (
-            memory_service or ConversationMemoryService()
-        )
-        self.retriever_service = (
-            retriever_service or HybridRetrieverService()
-        )
-        self.reranker_service = (
-            reranker_service or ReRankerService()
-        )
+        self.memory_service = memory_service or ConversationMemoryService()
+        self.retriever_service = retriever_service or HybridRetrieverService()
+        self.reranker_service = reranker_service or ReRankerService()
         self.prompt_builder = prompt_builder or PromptBuilder()
         self.llm_gateway = llm_gateway or get_llm_gateway()
-        self.citation_service = (
-            citation_service or CitationService()
-        )
-        self.confidence_engine = (
-            confidence_engine or ConfidenceEngine()
-        )
+        self.citation_service = citation_service or CitationService()
+        self.confidence_engine = confidence_engine or ConfidenceEngine()
         self.suggested_questions_service = (
-            suggested_questions_service
-            or SuggestedQuestionsService()
+            suggested_questions_service or SuggestedQuestionsService()
         )
-        self.telemetry_logger = (
-            telemetry_logger or TelemetryLogger()
-        )
+        self.telemetry_logger = telemetry_logger or TelemetryLogger()
 
     def _validate_request(
         self,
@@ -208,11 +193,7 @@ class CopilotOrchestrator:
 
         pipeline_start = time.perf_counter()
 
-        prompt_text = (
-            message
-            or question
-            or kwargs.get("user_message", "")
-        ).strip()
+        prompt_text = (message or question or kwargs.get("user_message", "")).strip()
 
         self._validate_request(
             session,
@@ -227,11 +208,9 @@ class CopilotOrchestrator:
         with self.telemetry_logger.timer("memory"):
             context = self.memory_service.load_history(session)
 
-        latency_metrics["memory_ms"] = (
-            self.telemetry_logger.stage_timings.get(
-                "memory",
-                0.0,
-            )
+        latency_metrics["memory_ms"] = self.telemetry_logger.stage_timings.get(
+            "memory",
+            0.0,
         )
 
         # --------------------------------------------------------------
@@ -243,46 +222,36 @@ class CopilotOrchestrator:
                 session.organization,
             )
 
-        latency_metrics["retrieval_ms"] = (
-            self.telemetry_logger.stage_timings.get(
-                "retrieval",
-                0.0,
-            )
+        latency_metrics["retrieval_ms"] = self.telemetry_logger.stage_timings.get(
+            "retrieval",
+            0.0,
         )
 
         # --------------------------------------------------------------
         # 3. Reranking
         # --------------------------------------------------------------
         with self.telemetry_logger.timer("reranking"):
-            reranked_chunks = self.reranker_service.rerank(
-                chunks
-            )
+            reranked_chunks = self.reranker_service.rerank(chunks)
 
-        latency_metrics["reranking_ms"] = (
-            self.telemetry_logger.stage_timings.get(
-                "reranking",
-                0.0,
-            )
+        latency_metrics["reranking_ms"] = self.telemetry_logger.stage_timings.get(
+            "reranking",
+            0.0,
         )
 
         # --------------------------------------------------------------
         # 4. Prompt construction
         # --------------------------------------------------------------
         with self.telemetry_logger.timer("prompt"):
-            prompt_ctx = (
-                self.prompt_builder.build_copilot_prompt(
-                    context=context,
-                    retrieved_chunks=reranked_chunks,
-                    user_message=prompt_text,
-                    version="v1",
-                )
+            prompt_ctx = self.prompt_builder.build_copilot_prompt(
+                context=context,
+                retrieved_chunks=reranked_chunks,
+                user_message=prompt_text,
+                version="v1",
             )
 
-        latency_metrics["prompt_building_ms"] = (
-            self.telemetry_logger.stage_timings.get(
-                "prompt",
-                0.0,
-            )
+        latency_metrics["prompt_building_ms"] = self.telemetry_logger.stage_timings.get(
+            "prompt",
+            0.0,
         )
 
         # --------------------------------------------------------------
@@ -321,9 +290,7 @@ class CopilotOrchestrator:
         )
 
         with self.telemetry_logger.timer("llm"):
-            llm_response = self.llm_gateway.generate(
-                prompt_ctx
-            )
+            llm_response = self.llm_gateway.generate(prompt_ctx)
 
         llm_ms = self.telemetry_logger.stage_timings.get(
             "llm",
@@ -335,9 +302,7 @@ class CopilotOrchestrator:
         logger.info(
             "COPILOT LLM STAGE: elapsed_ms=%.2f output_chars=%s",
             llm_ms,
-            len(llm_response.content)
-            if llm_response and llm_response.content
-            else 0,
+            len(llm_response.content) if llm_response and llm_response.content else 0,
         )
 
         if not llm_response or not llm_response.content:
@@ -356,17 +321,11 @@ class CopilotOrchestrator:
                 llm_response.content,
             )
 
-            confidence = (
-                self.confidence_engine.calculate_confidence(
-                    reranked_chunks
-                )
-            )
+            confidence = self.confidence_engine.calculate_confidence(reranked_chunks)
 
-            suggested_questions = (
-                self.suggested_questions_service.generate_questions(
-                    context,
-                    reranked_chunks,
-                )
+            suggested_questions = self.suggested_questions_service.generate_questions(
+                context,
+                reranked_chunks,
             )
 
             cost = self._calculate_cost(
@@ -385,18 +344,13 @@ class CopilotOrchestrator:
                         self._get_provider(),
                     )
                 ),
-                model=str(
-                    llm_response.model
-                    or self._get_model()
-                ),
+                model=str(llm_response.model or self._get_model()),
                 latency_ms=llm_response.latency_ms,
             )
 
-        latency_metrics["post_processing_ms"] = (
-            self.telemetry_logger.stage_timings.get(
-                "postprocess",
-                0.0,
-            )
+        latency_metrics["post_processing_ms"] = self.telemetry_logger.stage_timings.get(
+            "postprocess",
+            0.0,
         )
 
         # --------------------------------------------------------------
@@ -415,14 +369,9 @@ class CopilotOrchestrator:
                 },
             )
 
-            session.last_message_preview = (
-                llm_response.content[:255]
-            )
+            session.last_message_preview = llm_response.content[:255]
             session.last_message_at = timezone.now()
-            session.token_count = (
-                F("token_count")
-                + llm_response.total_tokens
-            )
+            session.token_count = F("token_count") + llm_response.total_tokens
 
             session.save(
                 update_fields=[
@@ -432,23 +381,17 @@ class CopilotOrchestrator:
                 ]
             )
 
-        assistant_persist_ms = (
-            self.telemetry_logger.stage_timings.get(
-                "persist",
-                0.0,
-            )
+        assistant_persist_ms = self.telemetry_logger.stage_timings.get(
+            "persist",
+            0.0,
         )
 
-        latency_metrics["persist_ms"] = (
-            user_persist_ms + assistant_persist_ms
-        )
+        latency_metrics["persist_ms"] = user_persist_ms + assistant_persist_ms
 
         # --------------------------------------------------------------
         # 9. Telemetry
         # --------------------------------------------------------------
-        total_latency = (
-            time.perf_counter() - pipeline_start
-        ) * 1000.0
+        total_latency = (time.perf_counter() - pipeline_start) * 1000.0
 
         latency_metrics["total_latency_ms"] = round(
             total_latency,
@@ -474,9 +417,7 @@ class CopilotOrchestrator:
             session_id=str(session.id),
             message_id=str(assistant_msg.id),
             usage=dataclasses.asdict(usage_dto),
-            stage_timings=dict(
-                self.telemetry_logger.stage_timings
-            ),
+            stage_timings=dict(self.telemetry_logger.stage_timings),
         )
 
         # --------------------------------------------------------------
@@ -520,11 +461,7 @@ class CopilotOrchestrator:
 
         pipeline_start = time.perf_counter()
 
-        prompt_text = (
-            message
-            or question
-            or kwargs.get("user_message", "")
-        ).strip()
+        prompt_text = (message or question or kwargs.get("user_message", "")).strip()
 
         event_id = 1
 
@@ -555,9 +492,7 @@ class CopilotOrchestrator:
             # 1. Memory
             # ----------------------------------------------------------
             with self.telemetry_logger.timer("memory"):
-                context = self.memory_service.load_history(
-                    session
-                )
+                context = self.memory_service.load_history(session)
 
             # ----------------------------------------------------------
             # 2. Retrieval
@@ -572,21 +507,17 @@ class CopilotOrchestrator:
             # 3. Reranking
             # ----------------------------------------------------------
             with self.telemetry_logger.timer("reranking"):
-                reranked_chunks = self.reranker_service.rerank(
-                    chunks
-                )
+                reranked_chunks = self.reranker_service.rerank(chunks)
 
             # ----------------------------------------------------------
             # 4. Prompt construction
             # ----------------------------------------------------------
             with self.telemetry_logger.timer("prompt"):
-                prompt_ctx = (
-                    self.prompt_builder.build_copilot_prompt(
-                        context=context,
-                        retrieved_chunks=reranked_chunks,
-                        user_message=prompt_text,
-                        version="v1",
-                    )
+                prompt_ctx = self.prompt_builder.build_copilot_prompt(
+                    context=context,
+                    retrieved_chunks=reranked_chunks,
+                    user_message=prompt_text,
+                    version="v1",
                 )
 
             # ----------------------------------------------------------
@@ -602,11 +533,9 @@ class CopilotOrchestrator:
                     completion_tokens=0,
                 )
 
-            user_persist_ms = (
-                self.telemetry_logger.stage_timings.get(
-                    "persist",
-                    0.0,
-                )
+            user_persist_ms = self.telemetry_logger.stage_timings.get(
+                "persist",
+                0.0,
             )
 
             # ----------------------------------------------------------
@@ -640,9 +569,7 @@ class CopilotOrchestrator:
             last_heartbeat = time.time()
 
             with self.telemetry_logger.timer("llm"):
-                for chunk_text in self.llm_gateway.stream(
-                    prompt_ctx
-                ):
+                for chunk_text in self.llm_gateway.stream(prompt_ctx):
                     if chunk_text is None:
                         continue
 
@@ -660,9 +587,7 @@ class CopilotOrchestrator:
 
                         last_heartbeat = time.time()
 
-                    accumulated_content.append(
-                        chunk_text
-                    )
+                    accumulated_content.append(chunk_text)
 
                     yield StreamEventDTO(
                         event_id=event_id,
@@ -677,13 +602,10 @@ class CopilotOrchestrator:
                 0.0,
             )
 
-            full_content = "".join(
-                accumulated_content
-            ).strip()
+            full_content = "".join(accumulated_content).strip()
 
             logger.info(
-                "COPILOT LLM STAGE: "
-                "elapsed_ms=%.2f output_chars=%s chunks=%s",
+                "COPILOT LLM STAGE: elapsed_ms=%.2f output_chars=%s chunks=%s",
                 llm_ms,
                 len(full_content),
                 len(accumulated_content),
@@ -699,20 +621,14 @@ class CopilotOrchestrator:
             # ----------------------------------------------------------
             # 7. Post-processing
             # ----------------------------------------------------------
-            with self.telemetry_logger.timer(
-                "postprocess"
-            ):
-                citations = (
-                    self.citation_service.extract_citations(
-                        reranked_chunks,
-                        full_content,
-                    )
+            with self.telemetry_logger.timer("postprocess"):
+                citations = self.citation_service.extract_citations(
+                    reranked_chunks,
+                    full_content,
                 )
 
-                confidence = (
-                    self.confidence_engine.calculate_confidence(
-                        reranked_chunks
-                    )
+                confidence = self.confidence_engine.calculate_confidence(
+                    reranked_chunks
                 )
 
                 suggested_questions = (
@@ -732,9 +648,7 @@ class CopilotOrchestrator:
                     prompt_ctx.estimated_tokens,
                 )
 
-                total_tokens = (
-                    prompt_tokens + completion_tokens
-                )
+                total_tokens = prompt_tokens + completion_tokens
 
                 cost = self._calculate_cost(
                     prompt_tokens=prompt_tokens,
@@ -828,9 +742,7 @@ class CopilotOrchestrator:
             yield StreamEventDTO(
                 event_id=event_id,
                 event_type="usage",
-                payload=dataclasses.asdict(
-                    usage_dto
-                ),
+                payload=dataclasses.asdict(usage_dto),
             )
 
             event_id += 1
@@ -838,9 +750,7 @@ class CopilotOrchestrator:
             # ----------------------------------------------------------
             # 12. Persist assistant response
             # ----------------------------------------------------------
-            with self.telemetry_logger.timer(
-                "persist"
-            ):
+            with self.telemetry_logger.timer("persist"):
                 ChatMessage.objects.create(
                     session=session,
                     role=MessageRole.ASSISTANT,
@@ -853,13 +763,9 @@ class CopilotOrchestrator:
                     },
                 )
 
-                session.last_message_preview = (
-                    full_content[:255]
-                )
+                session.last_message_preview = full_content[:255]
                 session.last_message_at = timezone.now()
-                session.token_count = (
-                    F("token_count") + total_tokens
-                )
+                session.token_count = F("token_count") + total_tokens
 
                 session.save(
                     update_fields=[
@@ -869,23 +775,17 @@ class CopilotOrchestrator:
                     ]
                 )
 
-            assistant_persist_ms = (
-                self.telemetry_logger.stage_timings.get(
-                    "persist",
-                    0.0,
-                )
+            assistant_persist_ms = self.telemetry_logger.stage_timings.get(
+                "persist",
+                0.0,
             )
 
             # ----------------------------------------------------------
             # 13. Final telemetry
             # ----------------------------------------------------------
-            total_latency_ms = (
-                time.perf_counter() - pipeline_start
-            ) * 1000.0
+            total_latency_ms = (time.perf_counter() - pipeline_start) * 1000.0
 
-            stage_timings = dict(
-                self.telemetry_logger.stage_timings
-            )
+            stage_timings = dict(self.telemetry_logger.stage_timings)
 
             stage_timings["total"] = round(
                 total_latency_ms,
@@ -949,9 +849,7 @@ class CopilotOrchestrator:
                         2,
                     ),
                     "output_chars": len(full_content),
-                    "token_chunks": len(
-                        accumulated_content
-                    ),
+                    "token_chunks": len(accumulated_content),
                     "model": self._get_model(),
                     "provider": self._get_provider(),
                 },
@@ -970,15 +868,11 @@ class CopilotOrchestrator:
             )
 
         except GeneratorExit:
-            logger.warning(
-                "Streaming cancelled by client disconnect."
-            )
+            logger.warning("Streaming cancelled by client disconnect.")
             raise
 
         except Exception as exc:
-            logger.exception(
-                "Copilot streaming failed."
-            )
+            logger.exception("Copilot streaming failed.")
 
             if hasattr(exc, "to_dict"):
                 err_payload = exc.to_dict()

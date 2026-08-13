@@ -51,6 +51,7 @@ class TestProductionHardening:
             )
 
         from apps.knowledge.services.llm.mock_gateway import MockLLMGateway
+
         monkeypatch.setattr(MockLLMGateway, "generate", mock_generate)
 
         url = reverse("copilot:copilot-chat")
@@ -69,7 +70,9 @@ class TestProductionHardening:
         assert messages[0].role == MessageRole.USER
         assert messages[0].content == "Trigger empty"
 
-    def test_stream_empty_llm_response_returns_error_event(self, setup_data, monkeypatch):
+    def test_stream_empty_llm_response_returns_error_event(
+        self, setup_data, monkeypatch
+    ):
         client = setup_data["client"]
         session = setup_data["session"]
 
@@ -78,6 +81,7 @@ class TestProductionHardening:
             return iter([])
 
         from apps.knowledge.services.llm.mock_gateway import MockLLMGateway
+
         monkeypatch.setattr(MockLLMGateway, "stream", mock_stream)
 
         url = reverse("copilot:copilot-stream")
@@ -90,12 +94,14 @@ class TestProductionHardening:
         assert response.status_code == 200
         if getattr(response, "is_async", False):
             from asgiref.sync import async_to_sync
+
             async def consume():
                 return b"".join([chunk async for chunk in response.streaming_content])
+
             content = async_to_sync(consume)().decode("utf-8")
         else:
             content = b"".join(response.streaming_content).decode("utf-8")
-        
+
         # Should contain 'start' and 'error' events, not 'done'
         assert "event: start" in content
         assert "event: error" in content

@@ -57,7 +57,7 @@ class ConversationMemoryService:
         Load conversation history for a ChatSession and truncate it if it exceeds max_tokens.
         """
         raw_messages = list(session.messages.order_by("created_at"))
-        
+
         # Filter out contaminated legacy assistant messages
         messages = []
         for msg in raw_messages:

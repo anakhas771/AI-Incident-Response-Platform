@@ -112,7 +112,10 @@ class OpenAILLMGateway(BaseLLMGateway):
 
         if prompt.raw_user_message:
             final_user_content = prompt.raw_user_message
-            if prompt.context_text and prompt.context_text != "No relevant knowledge base documents found.":
+            if (
+                prompt.context_text
+                and prompt.context_text != "No relevant knowledge base documents found."
+            ):
                 final_user_content = f"RETRIEVED KNOWLEDGE BASE CONTEXT:\n{prompt.context_text}\n\nCURRENT USER MESSAGE:\n{final_user_content}"
             messages.append(
                 {

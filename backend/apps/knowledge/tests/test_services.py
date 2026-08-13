@@ -416,7 +416,7 @@ class TestPromptBuilder:
     def test_build_copilot_prompt(self):
         from apps.knowledge.services.dtos.memory_dto import ConversationContextDTO
         from apps.knowledge.services.dtos.retrieval_dto import RetrievedChunkDTO
-        
+
         chunks = [
             RetrievedChunkDTO(
                 chunk_id="1",
@@ -430,9 +430,7 @@ class TestPromptBuilder:
         ]
         context = ConversationContextDTO(session_id="none", messages=[])
         prompt_ctx = PromptBuilder().build_copilot_prompt(
-            context=context,
-            retrieved_chunks=chunks,
-            user_message="How to handle DDoS?"
+            context=context, retrieved_chunks=chunks, user_message="How to handle DDoS?"
         )
         assert "DDoS Runbook" in prompt_ctx.context_text
         assert "How to handle DDoS?" in prompt_ctx.user_prompt

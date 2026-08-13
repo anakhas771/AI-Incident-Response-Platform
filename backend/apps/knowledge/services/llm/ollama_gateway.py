@@ -147,8 +147,6 @@ class OllamaLLMGateway(BaseLLMGateway):
 
         return text.strip()
 
-
-
     def generate(self, prompt: PromptContextDTO) -> LLMResponseDTO:
         """
         Generate a non-streaming response from local Ollama.
@@ -218,18 +216,18 @@ class OllamaLLMGateway(BaseLLMGateway):
         )
 
     def stream(self, prompt: PromptContextDTO) -> Iterator[str]:
-    # """
-    # Stream generated text from local Ollama.
+        # """
+        # Stream generated text from local Ollama.
 
-    # Measures:
-    # - request/connection latency
-    # - time to first visible token
-    # - number of chunks
-    # - output size
-    # - Ollama performance metadata
+        # Measures:
+        # - request/connection latency
+        # - time to first visible token
+        # - number of chunks
+        # - output size
+        # - Ollama performance metadata
 
-    # Only message.content is yielded.
-    # """
+        # Only message.content is yielded.
+        # """
 
         messages = self._build_messages(prompt)
 
