@@ -19,6 +19,7 @@ from apps.accounts.models import User
 from apps.knowledge.models import DocumentStatus, DocumentTag, KnowledgeDocument
 from apps.knowledge.permissions import IsKnowledgeOrganizationMember
 from apps.knowledge.serializers import (
+    DocumentChunkSerializer,
     DocumentStatusSerializer,
     KnowledgeChatRequestSerializer,
     KnowledgeChatResponseSerializer,
@@ -31,7 +32,10 @@ from apps.knowledge.serializers import (
 from apps.knowledge.services.file_hash_service import FileHashService
 from apps.knowledge.services.knowledge_chat_service import KnowledgeChatService
 from apps.knowledge.services.vector_search_service import VectorSearchService
-from apps.knowledge.tasks import process_document_task
+from apps.knowledge.tasks import (
+    process_document_task,
+    reindex_document_task,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -274,3 +278,86 @@ class KnowledgeDocumentStatusView(generics.RetrieveAPIView):
             return KnowledgeDocument.objects.none()
         user = cast(User, self.request.user)
         return KnowledgeDocument.objects.filter(organization=user.organization)
+
+
+class KnowledgeDocumentChunksView(generics.ListAPIView):
+    """
+    Retrieve document chunks for a given document with organization isolation.
+    """
+
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    serializer_class = DocumentChunkSerializer
+    pagination_class = None
+
+    def get_queryset(self) -> QuerySet:
+        if getattr(self, "swagger_fake_view", False):
+            return KnowledgeDocument.objects.none()
+
+        user = cast(User, self.request.user)
+        document_id = self.kwargs.get("pk")
+
+        # Verify organization ownership of the document
+        try:
+            doc = KnowledgeDocument.objects.get(
+                id=document_id, organization=user.organization
+            )
+        except KnowledgeDocument.DoesNotExist:
+            return KnowledgeDocument.objects.none()
+
+        return doc.chunks.all().order_by("chunk_index")
+
+
+class KnowledgeDocumentRetryView(APIView):
+    """
+    Trigger retry of processing for a failed document.
+    """
+
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+
+    def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
+        try:
+            doc = KnowledgeDocument.objects.get(id=pk, organization=user.organization)
+        except KnowledgeDocument.DoesNotExist:
+            return Response(
+                {"error": "Document not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if doc.status != DocumentStatus.FAILED:
+            return Response(
+                {"error": "Only failed documents can be retried."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        doc.status = DocumentStatus.PROCESSING
+        doc.processing_error = ""
+        doc.save(update_fields=["status", "processing_error", "updated_at"])
+
+        process_document_task.delay(str(doc.id))
+
+        return Response({"status": "Retry task queued."}, status=status.HTTP_200_OK)
+
+
+class KnowledgeDocumentReindexView(APIView):
+    """
+    Trigger full re-indexing of a document.
+    """
+
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+
+    def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
+        try:
+            doc = KnowledgeDocument.objects.get(id=pk, organization=user.organization)
+        except KnowledgeDocument.DoesNotExist:
+            return Response(
+                {"error": "Document not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        doc.status = DocumentStatus.PROCESSING
+        doc.processing_error = ""
+        doc.save(update_fields=["status", "processing_error", "updated_at"])
+
+        reindex_document_task.delay(str(doc.id))
+
+        return Response({"status": "Re-index task queued."}, status=status.HTTP_200_OK)
