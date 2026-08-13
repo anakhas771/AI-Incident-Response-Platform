@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 from typing import Any, AsyncIterator, Iterator, cast
+
 from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
 from django.http import StreamingHttpResponse
@@ -34,11 +35,10 @@ from apps.knowledge.serializers import (
     CopilotResponseSerializer,
 )
 from apps.knowledge.services.dtos import StreamEventDTO
-from apps.knowledge.services.exceptions import ValidationException, LLMException
+from apps.knowledge.services.exceptions import LLMException, ValidationException
 from apps.knowledge.services.orchestration.copilot_orchestrator import (
     CopilotOrchestrator,
 )
-
 
 logger = logging.getLogger(__name__)
 

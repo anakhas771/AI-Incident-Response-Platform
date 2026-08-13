@@ -40,7 +40,6 @@ from apps.knowledge.services.retrieval.hybrid_retriever_service import (
 )
 from apps.knowledge.services.retrieval.reranker_service import ReRankerService
 
-
 logger = logging.getLogger(__name__)
 
 

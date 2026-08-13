@@ -13,7 +13,8 @@ select = [
     "B", # flake8-bugbear
 ]
 ignore = [
-    "E501", # line too long, handled by ruff format
+    "E501",
+    "C901", # line too long, handled by ruff format
 ]
 
 [tool.ruff.format]
