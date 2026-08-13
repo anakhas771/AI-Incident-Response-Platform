@@ -11,12 +11,27 @@ export interface WorkspaceHeaderProps {
   pollingEnabled: boolean;
   isRefreshing: boolean;
   lastUpdated: string | null;
+  aiStatus: 'idle' | 'pending' | 'processing' | 'completed' | 'failed';
+  isCopilotOpen: boolean;
   onTogglePolling: () => void;
   onManualRefresh: () => void;
+  onStartAnalysis: () => void;
+  onToggleCopilot: () => void;
 }
 
 export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
-  ({ incident, pollingEnabled, isRefreshing, lastUpdated, onTogglePolling, onManualRefresh }) => {
+  ({
+    incident,
+    pollingEnabled,
+    isRefreshing,
+    lastUpdated,
+    aiStatus,
+    isCopilotOpen,
+    onTogglePolling,
+    onManualRefresh,
+    onStartAnalysis,
+    onToggleCopilot,
+  }) => {
     const navigate = useNavigate();
 
     const handleCopyShareLink = () => {
@@ -83,6 +98,15 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
             <Button variant="secondary" size="sm" onClick={handleCopyShareLink}>
               <Share2 className="w-3.5 h-3.5" /> Share Command Center
             </Button>
+
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onToggleCopilot}
+              className={`transition-colors ${isCopilotOpen ? 'bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+            >
+              {isCopilotOpen ? 'Close Copilot' : 'Open Copilot'}
+            </Button>
           </div>
         </div>
 
@@ -97,6 +121,31 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
             <span className="text-xs font-mono text-zinc-400 bg-zinc-900/60 border border-zinc-800 px-2 py-0.5 rounded">
               {incident.category}
             </span>
+            <div className="flex items-center ml-2 border-l border-zinc-800 pl-4 gap-2">
+              <span className="text-xs font-mono text-zinc-500">AI Status:</span>
+              <span
+                className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                  aiStatus === 'completed'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : aiStatus === 'processing'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse'
+                      : aiStatus === 'failed'
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                }`}
+              >
+                {aiStatus.toUpperCase()}
+              </span>
+
+              {(aiStatus === 'idle' || aiStatus === 'failed') && (
+                <button
+                  onClick={onStartAnalysis}
+                  className="text-[10px] uppercase font-bold tracking-wider text-indigo-400 hover:text-indigo-300 ml-1 transition-colors"
+                >
+                  Start Analysis
+                </button>
+              )}
+            </div>
           </div>
 
           <h1 className="text-xl sm:text-2xl font-bold text-zinc-100 tracking-tight leading-snug">

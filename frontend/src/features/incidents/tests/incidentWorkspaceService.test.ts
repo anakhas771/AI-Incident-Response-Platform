@@ -15,8 +15,8 @@ describe('incidentWorkspaceService', () => {
   });
 
   it('loads RCA hypothesis with confidence score', async () => {
-    const rca = await incidentWorkspaceService.loadRCA('INC-8902-771');
-    expect(rca).toBeNull();
+    const analysis = await incidentWorkspaceService.loadAIAnalysis('INC-8902-771');
+    expect(analysis.rca).toBeNull();
   });
 
   it('loads risk score metrics breakdown', async () => {

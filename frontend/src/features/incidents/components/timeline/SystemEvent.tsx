@@ -20,6 +20,7 @@ export const SystemEvent: React.FC<SystemEventProps> = React.memo(({ item }) => 
         )
       }
       iconBg={isAlert ? 'bg-red-950/80' : 'bg-amber-950/80'}
+      variant="system"
     />
   );
 });

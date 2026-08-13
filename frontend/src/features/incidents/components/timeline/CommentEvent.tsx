@@ -11,8 +11,9 @@ export const CommentEvent: React.FC<CommentEventProps> = React.memo(({ item }) =
   return (
     <TimelineEventItem
       item={item}
-      icon={<MessageSquare className="w-4 h-4 text-indigo-400" />}
-      iconBg="bg-indigo-950/80"
+      icon={<MessageSquare className="w-4 h-4 text-emerald-400" />}
+      iconBg="bg-emerald-950/80"
+      variant="user"
     />
   );
 });

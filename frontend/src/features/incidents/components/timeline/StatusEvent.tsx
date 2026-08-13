@@ -13,6 +13,7 @@ export const StatusEvent: React.FC<StatusEventProps> = React.memo(({ item }) => 
       item={item}
       icon={<CheckCircle2 className="w-4 h-4 text-emerald-400" />}
       iconBg="bg-zinc-900"
+      variant="user"
     />
   );
 });

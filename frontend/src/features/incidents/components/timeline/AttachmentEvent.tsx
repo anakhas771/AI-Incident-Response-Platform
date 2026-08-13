@@ -11,8 +11,9 @@ export const AttachmentEvent: React.FC<AttachmentEventProps> = React.memo(({ ite
   return (
     <TimelineEventItem
       item={item}
-      icon={<Paperclip className="w-4 h-4 text-emerald-400" />}
-      iconBg="bg-emerald-950/80"
+      icon={<Paperclip className="w-4 h-4 text-zinc-400" />}
+      iconBg="bg-zinc-900"
+      variant="user"
     />
   );
 });
