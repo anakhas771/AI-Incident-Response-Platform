@@ -1,5 +1,5 @@
 import apiClient from '../../../api/client';
-import { Comment, Incident, Status, User } from '../../../types';
+import { Comment, Incident, Severity, Status, User } from '../../../types';
 import { mockIncidents, mockUsers } from '../../../services/mockData';
 import {
   IncidentAttachment,
@@ -11,7 +11,32 @@ import {
   SimilarIncidentCard,
   SystemMetadata,
 } from '../types';
+interface IncidentAnalysisPayload {
+  status?: string;
+  summary?: string;
+  severity_prediction?: string;
+  risk_score?: number;
+  confidence_score?: number;
+  incident_category?: string;
+  root_cause_analysis?: string;
+  impact_analysis?: string;
+  recommended_actions?: string[];
+  similar_incidents?: SimilarIncidentPayload[];
+  previous_resolutions?: unknown[];
+  knowledge_citations?: unknown[];
+  updated_at?: string;
+}
 
+interface SimilarIncidentPayload {
+  id: string;
+  title: string;
+  similarity?: number;
+  resolved_in_mins?: number;
+  severity?: Severity;
+  status?: Status;
+  root_cause_summary?: string;
+  created_at?: string;
+}
 /**
  * Service layer for Enterprise Incident Workspace.
  * Clean Architecture principle: UI components never call axios directly.
@@ -70,7 +95,9 @@ class IncidentWorkspaceService {
    */
   async loadRecommendations(id: string): Promise<IncidentRecommendation[]> {
     try {
-      const response = await apiClient.get<any>(`/ai/incidents/${id}/analysis/`);
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
 
       if (
         response.data &&
@@ -78,7 +105,7 @@ class IncidentWorkspaceService {
         response.data.status !== 'processing'
       ) {
         const rawRecs = response.data.recommended_actions || [];
-        return rawRecs.map((rec: string, index: number) => ({
+        return rawRecs.map((rec, index) => ({
           id: `rec-${id}-${index}`,
           incident_id: id,
           title: rec,
@@ -105,8 +132,9 @@ class IncidentWorkspaceService {
    */
   async loadRCA(id: string): Promise<IncidentRCA | null> {
     try {
-      const response = await apiClient.get<any>(`/ai/incidents/${id}/analysis/`);
-
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
       if (
         response.data &&
         response.data.status !== 'pending' &&
@@ -138,10 +166,12 @@ class IncidentWorkspaceService {
    */
   async loadSimilarIncidents(id: string): Promise<SimilarIncidentCard[]> {
     try {
-      const response = await apiClient.get<any>(`/ai/incidents/${id}/analysis/`);
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
 
       if (response.data?.similar_incidents && response.data.similar_incidents.length > 0) {
-        return response.data.similar_incidents.map((item: any) => ({
+        return response.data.similar_incidents.map((item) => ({
           id: item.id,
           title: item.title,
           similarity_score: item.similarity ? Math.round(item.similarity * 100) : 0,
@@ -152,6 +182,7 @@ class IncidentWorkspaceService {
           created_at: item.created_at || new Date().toISOString(),
         }));
       }
+
       return [];
     } catch {
       return [];
