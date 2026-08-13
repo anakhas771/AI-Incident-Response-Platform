@@ -243,17 +243,27 @@ class IncidentAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncidentAnalysis
         fields = [
+            "id",
             "incident_id",
             "status",
+            "summary",
             "severity_prediction",
             "risk_score",
+            "confidence_score",
+            "incident_category",
+            "root_cause_analysis",
+            "impact_analysis",
+            "recommended_actions",
+            "similar_incidents",
+            "previous_resolutions",
+            "knowledge_citations",
+            "created_at",
+            "updated_at",
+            # Backward compatibility aliases
             "category",
             "root_cause",
             "impact",
             "recommendations",
-            "confidence_score",
-            "created_at",
-            "updated_at",
         ]
         read_only_fields = fields
 
