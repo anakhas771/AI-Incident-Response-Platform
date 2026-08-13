@@ -10,7 +10,8 @@ import {
   Calendar,
   User,
 } from 'lucide-react';
-import { KnowledgeDocument } from '../../types/knowledge';
+import { KnowledgeDocument, DocumentChunk } from '../../types/knowledge';
+import { getKnowledgeDocumentChunks } from '../../services/knowledgeApi';
 import { Button } from '../ui/Button';
 
 interface DocumentViewerProps {
@@ -31,6 +32,22 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'chunks' | 'metadata'>('chunks');
 
+  const [chunks, setChunks] = React.useState<DocumentChunk[]>([]);
+  const [isLoadingChunks, setIsLoadingChunks] = React.useState(false);
+
+  React.useEffect(() => {
+    if (activeTab === 'chunks' && document?.id) {
+      setIsLoadingChunks(true);
+      getKnowledgeDocumentChunks(document.id)
+        .then((fetchedChunks) => {
+          setChunks(fetchedChunks);
+        })
+        .finally(() => {
+          setIsLoadingChunks(false);
+        });
+    }
+  }, [activeTab, document?.id]);
+
   if (!isOpen || !document) return null;
 
   const getFileIcon = () => {
@@ -47,22 +64,11 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     }
   };
 
-  // Realistic mock chunks for previewing document structure
-  const sampleChunks = Array.from({ length: Math.min(document.chunk_count || 5, 12) }, (_, i) => ({
-    index: i + 1,
-    page: Math.floor(i / 3) + 1,
-    tokens: 180 + ((i * 17) % 40),
-    content:
-      i === 0
-        ? `# ${document.title}\n\nStandard procedure and automated security workflows for enterprise incident mitigation across multi-tenant environments.`
-        : i === 1
-          ? `## Section ${i + 1}: Containment Protocols\nImmediate VLAN isolation and BGP traffic scrubbing must be triggered within 5 minutes of high-severity alert verification.`
-          : `## Section ${i + 1}: Operational Guidelines\nEnsure memory dump and forensic snapshot retention before executing remediation scripts. Record all audit trails in PostgreSQL.`,
-  })).filter(
+  const filteredChunks = chunks.filter(
     (chunk) =>
       !searchTerm ||
       chunk.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `section ${chunk.index}`.includes(searchTerm.toLowerCase())
+      `section ${chunk.chunk_index}`.includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -195,31 +201,51 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'chunks' ? (
             <div className="space-y-3">
-              {sampleChunks.length === 0 ? (
+              {isLoadingChunks ? (
+                <div className="py-12 text-center text-xs text-slate-500 animate-pulse">
+                  Loading chunks...
+                </div>
+              ) : filteredChunks.length === 0 ? (
                 <div className="py-12 text-center text-xs text-slate-500">
                   No chunks match your filter term.
                 </div>
               ) : (
-                sampleChunks.map((chunk) => (
-                  <div
-                    key={chunk.index}
-                    className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 transition-colors hover:border-slate-700"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-800/60 pb-2 text-xs">
-                      <div className="flex items-center gap-2 font-mono font-bold text-cyan-400">
-                        <span>Chunk #{chunk.index}</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-slate-400">Page {chunk.page}</span>
+                filteredChunks.map((chunk) => {
+                  const pageNumber =
+                    typeof chunk.metadata?.page_number === 'number'
+                      ? chunk.metadata.page_number
+                      : typeof chunk.metadata?.page === 'number'
+                        ? chunk.metadata.page
+                        : null;
+
+                  return (
+                    <div
+                      key={chunk.id}
+                      className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 transition-colors hover:border-slate-700"
+                    >
+                      <div className="flex items-center justify-between border-b border-slate-800/60 pb-2 text-xs">
+                        <div className="flex items-center gap-2 font-mono font-bold text-cyan-400">
+                          <span>Chunk #{chunk.chunk_index}</span>
+
+                          {pageNumber !== null && (
+                            <>
+                              <span className="text-slate-600">•</span>
+                              <span className="text-slate-400">Page {pageNumber}</span>
+                            </>
+                          )}
+                        </div>
+
+                        <span className="rounded bg-slate-900 px-2 py-0.5 font-mono text-[11px] text-slate-400">
+                          ~{chunk.token_count} tokens
+                        </span>
                       </div>
-                      <span className="rounded bg-slate-900 px-2 py-0.5 font-mono text-[11px] text-slate-400">
-                        ~{chunk.tokens} tokens
-                      </span>
+
+                      <pre className="mt-3 whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-300">
+                        {chunk.content}
+                      </pre>
                     </div>
-                    <pre className="mt-3 whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-300">
-                      {chunk.content}
-                    </pre>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           ) : (

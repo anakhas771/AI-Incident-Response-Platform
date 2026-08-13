@@ -6,8 +6,11 @@ from django.urls import path
 
 from apps.knowledge.api.views import (
     KnowledgeChatView,
+    KnowledgeDocumentChunksView,
     KnowledgeDocumentDetailView,
     KnowledgeDocumentListView,
+    KnowledgeDocumentReindexView,
+    KnowledgeDocumentRetryView,
     KnowledgeDocumentStatusView,
     KnowledgeDocumentUploadView,
     KnowledgeSearchView,
@@ -29,5 +32,20 @@ urlpatterns = [
         "status/<uuid:pk>/",
         KnowledgeDocumentStatusView.as_view(),
         name="knowledge-status",
+    ),
+    path(
+        "<uuid:pk>/chunks/",
+        KnowledgeDocumentChunksView.as_view(),
+        name="knowledge-chunks",
+    ),
+    path(
+        "<uuid:pk>/retry/",
+        KnowledgeDocumentRetryView.as_view(),
+        name="knowledge-retry",
+    ),
+    path(
+        "<uuid:pk>/reindex/",
+        KnowledgeDocumentReindexView.as_view(),
+        name="knowledge-reindex",
     ),
 ]

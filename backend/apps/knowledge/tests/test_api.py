@@ -262,3 +262,77 @@ class TestKnowledgeAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "INDEXED"
         assert response.data["id"] == str(alpha_doc.id)
+
+    def test_document_chunks_endpoint(
+        self, api_client, user_alpha, user_beta, alpha_doc
+    ):
+        DocumentChunk.objects.create(
+            document=alpha_doc, chunk_index=1, content="Chunk 1"
+        )
+        DocumentChunk.objects.create(
+            document=alpha_doc, chunk_index=2, content="Chunk 2"
+        )
+
+        url = reverse("knowledge:knowledge-chunks", kwargs={"pk": str(alpha_doc.id)})
+
+        # User alpha can see chunks
+        api_client.force_authenticate(user=user_alpha)
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 2
+        assert response.data[0]["content"] == "Chunk 1"
+
+        # User beta cannot see chunks (isolation)
+        api_client.force_authenticate(user=user_beta)
+        response_beta = api_client.get(url)
+        # We handle this by returning empty list / none in view, or 404
+        assert (
+            response_beta.data == []
+        )  # or 403 depending on implementation, but our implementation returns empty array
+
+    @patch("apps.knowledge.api.views.process_document_task.delay")
+    def test_document_retry_endpoint(
+        self, mock_delay, api_client, user_alpha, user_beta, alpha_doc
+    ):
+        alpha_doc.status = DocumentStatus.FAILED
+        alpha_doc.save()
+
+        url = reverse("knowledge:knowledge-retry", kwargs={"pk": str(alpha_doc.id)})
+
+        # User alpha can retry
+        api_client.force_authenticate(user=user_alpha)
+        response = api_client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "Retry task queued."
+        alpha_doc.refresh_from_db()
+        assert alpha_doc.status == DocumentStatus.PROCESSING
+        mock_delay.assert_called_once_with(str(alpha_doc.id))
+
+        # Reset for beta test
+        alpha_doc.status = DocumentStatus.FAILED
+        alpha_doc.save()
+
+        # User beta cannot retry
+        api_client.force_authenticate(user=user_beta)
+        response_beta = api_client.post(url)
+        assert response_beta.status_code == status.HTTP_404_NOT_FOUND
+
+    @patch("apps.knowledge.api.views.reindex_document_task.delay")
+    def test_document_reindex_endpoint(
+        self, mock_delay, api_client, user_alpha, user_beta, alpha_doc
+    ):
+        url = reverse("knowledge:knowledge-reindex", kwargs={"pk": str(alpha_doc.id)})
+
+        # User alpha can reindex
+        api_client.force_authenticate(user=user_alpha)
+        response = api_client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "Re-index task queued."
+        alpha_doc.refresh_from_db()
+        assert alpha_doc.status == DocumentStatus.PROCESSING
+        mock_delay.assert_called_once_with(str(alpha_doc.id))
+
+        # User beta cannot reindex
+        api_client.force_authenticate(user=user_beta)
+        response_beta = api_client.post(url)
+        assert response_beta.status_code == status.HTTP_404_NOT_FOUND

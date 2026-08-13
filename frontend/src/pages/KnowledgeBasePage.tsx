@@ -29,6 +29,8 @@ import {
   searchKnowledgeBase,
   chatWithKnowledgeBase,
   getKnowledgeDocumentStatus,
+  reindexKnowledgeDocument,
+  retryKnowledgeDocument,
 } from '../services/knowledgeApi';
 
 interface ChatMessage {
@@ -128,11 +130,43 @@ export const KnowledgeBasePage: React.FC = () => {
   };
 
   const handleReindex = async (id: string) => {
-    toast.success(`Re-indexing task triggered for document ${id}`);
-    setTimeout(() => {
-      setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'INDEXED' } : d)));
-      toast.success('Vector re-indexing completed successfully');
-    }, 2000);
+    try {
+      await reindexKnowledgeDocument(id);
+      toast.success(`Re-indexing task triggered for document ${id}`);
+      setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'PROCESSING' } : d)));
+
+      // Poll status
+      setTimeout(async () => {
+        try {
+          const statusRes = await getKnowledgeDocumentStatus(id);
+          setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, ...statusRes } : d)));
+        } catch {
+          // ignore
+        }
+      }, 3000);
+    } catch {
+      toast.error('Failed to trigger re-index');
+    }
+  };
+
+  const handleRetry = async (id: string) => {
+    try {
+      await retryKnowledgeDocument(id);
+      toast.success(`Retry task triggered for document ${id}`);
+      setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'PROCESSING' } : d)));
+
+      // Poll status
+      setTimeout(async () => {
+        try {
+          const statusRes = await getKnowledgeDocumentStatus(id);
+          setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, ...statusRes } : d)));
+        } catch {
+          // ignore
+        }
+      }, 3000);
+    } catch {
+      toast.error('Failed to trigger retry');
+    }
   };
 
   const handleSearch = async (query: string, minSimilarity: number, topK: number) => {
@@ -388,6 +422,7 @@ export const KnowledgeBasePage: React.FC = () => {
                   }}
                   onDelete={handleDelete}
                   onReindex={handleReindex}
+                  onRetry={handleRetry}
                 />
               ))}
             </div>

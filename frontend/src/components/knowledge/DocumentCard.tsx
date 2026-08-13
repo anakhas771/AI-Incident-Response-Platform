@@ -20,6 +20,7 @@ interface DocumentCardProps {
   onView: (doc: KnowledgeDocument) => void;
   onDelete: (id: string) => void;
   onReindex?: (id: string) => void;
+  onRetry?: (id: string) => void;
   isDeleting?: boolean;
 }
 
@@ -28,6 +29,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   onView,
   onDelete,
   onReindex,
+  onRetry,
   isDeleting = false,
 }) => {
   const getFileIcon = () => {
@@ -144,7 +146,17 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
-          {onReindex && (
+          {document.status === 'FAILED' && onRetry ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRetry(document.id)}
+              className="h-7 w-7 p-0 border-rose-500/30 text-rose-400 hover:bg-rose-500/20"
+              title="Retry processing"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          ) : onReindex ? (
             <Button
               variant="outline"
               size="sm"
@@ -154,7 +166,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             >
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
-          )}
+          ) : null}
           <Button
             variant="outline"
             size="sm"
