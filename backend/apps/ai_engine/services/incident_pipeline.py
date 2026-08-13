@@ -128,6 +128,9 @@ class IncidentPipeline:
             "summary": summary,
             "root_cause": root_cause_analysis,
             "recommendations": recommended_actions,
+            "similar_incidents": raw_result.get("similar_incidents", []),
+            "previous_resolutions": raw_result.get("previous_resolutions", []),
+            "knowledge_citations": raw_result.get("knowledge_citations", []),
         }
 
     def process_incident(self, incident: Incident) -> Dict[str, Any]:
@@ -148,6 +151,44 @@ class IncidentPipeline:
             impact=context["impact"],
             logs=context["logs"],
         )
+
+        try:
+            from apps.knowledge.services.similar_incident_service import (
+                SimilarIncidentService,
+            )
+
+            sim_data = SimilarIncidentService().find_similar_for_incident(incident)
+
+            raw_result["similar_incidents"] = sim_data.get("similar_incidents", [])
+            raw_result["previous_resolutions"] = sim_data.get(
+                "previous_resolutions", []
+            )
+            raw_result["knowledge_citations"] = sim_data.get("knowledge_citations", [])
+
+            recs = (
+                raw_result.get("recommendations")
+                or raw_result.get("recommended_actions")
+                or []
+            )
+            if not isinstance(recs, list):
+                recs = [str(recs)]
+
+            for action in sim_data.get("recommended_actions", []):
+                if action and action not in recs:
+                    recs.append(f"[Knowledge RAG] {action}")
+            for res in sim_data.get("previous_resolutions", []):
+                if res and res not in recs:
+                    recs.append(f"[Similar Incident] {res}")
+
+            raw_result["recommendations"] = recs
+            raw_result["recommended_actions"] = recs
+
+        except Exception as exc:
+            logger.info(
+                "SimilarIncidentService not available or error during RAG enrichment in pipeline: %s",
+                exc,
+            )
+
         return self.validate_result(
             raw_result,
             default_severity=context["severity"],

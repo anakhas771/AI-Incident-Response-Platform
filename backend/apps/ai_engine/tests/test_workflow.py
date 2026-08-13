@@ -141,10 +141,23 @@ class TestAIIncidentWorkflow:
 
         data = response.json()
         expected_keys = {
+            "id",
             "incident_id",
             "status",
+            "summary",
             "severity_prediction",
             "risk_score",
+            "confidence_score",
+            "incident_category",
+            "root_cause_analysis",
+            "impact_analysis",
+            "recommended_actions",
+            "similar_incidents",
+            "previous_resolutions",
+            "knowledge_citations",
+            "created_at",
+            "updated_at",
+            # Aliases
             "category",
             "root_cause",
             "impact",

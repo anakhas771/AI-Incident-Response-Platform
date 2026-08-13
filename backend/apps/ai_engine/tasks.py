@@ -69,6 +69,9 @@ def analyze_incident_task(self, incident_id: str) -> Dict[str, Any]:
                 "root_cause": analysis.root_cause_analysis,
                 "impact": analysis.impact_analysis,
                 "recommendations": analysis.recommended_actions,
+                "similar_incidents": analysis.similar_incidents,
+                "previous_resolutions": analysis.previous_resolutions,
+                "knowledge_citations": analysis.knowledge_citations,
             }
 
         if analysis.status != AnalysisStatus.PROCESSING:
@@ -88,6 +91,9 @@ def analyze_incident_task(self, incident_id: str) -> Dict[str, Any]:
             analysis.recommended_actions = result.get("recommended_actions", [])
             analysis.confidence_score = result.get("confidence_score", 0.0)
             analysis.summary = result.get("summary", "")
+            analysis.similar_incidents = result.get("similar_incidents", [])
+            analysis.previous_resolutions = result.get("previous_resolutions", [])
+            analysis.knowledge_citations = result.get("knowledge_citations", [])
             analysis.status = AnalysisStatus.COMPLETED
             analysis.save()
 
@@ -106,6 +112,9 @@ def analyze_incident_task(self, incident_id: str) -> Dict[str, Any]:
             "root_cause": analysis.root_cause_analysis,
             "impact": analysis.impact_analysis,
             "recommendations": analysis.recommended_actions,
+            "similar_incidents": analysis.similar_incidents,
+            "previous_resolutions": analysis.previous_resolutions,
+            "knowledge_citations": analysis.knowledge_citations,
         }
     except Exception as exc:
         retries = getattr(self.request, "retries", 0)

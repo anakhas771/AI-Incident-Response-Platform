@@ -11,7 +11,32 @@ import {
   SimilarIncidentCard,
   SystemMetadata,
 } from '../types';
+interface IncidentAnalysisPayload {
+  status?: string;
+  summary?: string;
+  severity_prediction?: string;
+  risk_score?: number;
+  confidence_score?: number;
+  incident_category?: string;
+  root_cause_analysis?: string;
+  impact_analysis?: string;
+  recommended_actions?: string[];
+  similar_incidents?: SimilarIncidentPayload[];
+  previous_resolutions?: unknown[];
+  knowledge_citations?: unknown[];
+  updated_at?: string;
+}
 
+interface SimilarIncidentPayload {
+  id: string;
+  title: string;
+  similarity?: number;
+  resolved_in_mins?: number;
+  severity?: Severity;
+  status?: Status;
+  root_cause_summary?: string;
+  created_at?: string;
+}
 /**
  * Service layer for Enterprise Incident Workspace.
  * Clean Architecture principle: UI components never call axios directly.
@@ -70,75 +95,69 @@ class IncidentWorkspaceService {
    */
   async loadRecommendations(id: string): Promise<IncidentRecommendation[]> {
     try {
-      const response = await apiClient.get<{
-        recommendations?: Array<{
-          id?: string;
-          title: string;
-          description: string;
-          priority?: string;
-          category?: string;
-          confidence?: number;
-          estimated_impact?: string;
-          action_type?: string;
-          code_snippet?: string;
-        }>;
-      }>(`/ai/incidents/${id}/analysis/`);
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
 
-      if (response.data?.recommendations && response.data.recommendations.length > 0) {
-        return response.data.recommendations.map((rec, index) => ({
-          id: rec.id || `rec-${id}-${index}`,
+      if (
+        response.data &&
+        response.data.status !== 'pending' &&
+        response.data.status !== 'processing'
+      ) {
+        const rawRecs = response.data.recommended_actions || [];
+        return rawRecs.map((rec, index) => ({
+          id: `rec-${id}-${index}`,
           incident_id: id,
-          title: rec.title,
-          description: rec.description,
-          priority: (rec.priority as IncidentRecommendation['priority']) || 'P2',
-          category: rec.category || 'Infrastructure Security',
-          confidence: rec.confidence || 92,
-          estimated_impact: rec.estimated_impact || 'Reduces recurrence probability by ~85%',
-          action_type: (rec.action_type as IncidentRecommendation['action_type']) || 'AUTOMATE',
-          code_snippet: rec.code_snippet,
-          created_at: new Date().toISOString(),
+          title: rec,
+          description: rec,
+          priority: 'P2',
+          category: 'Remediation',
+          confidence: response.data.confidence_score
+            ? Math.round(response.data.confidence_score * 100)
+            : 92,
+          estimated_impact: 'Mitigates identified issue',
+          action_type: 'MANUAL',
+          code_snippet: undefined,
+          created_at: response.data.updated_at || new Date().toISOString(),
         }));
       }
-      return this.getFallbackRecommendations(id);
+      return [];
     } catch {
-      return this.getFallbackRecommendations(id);
+      return [];
     }
   }
 
   /**
    * Load Enterprise Root Cause Analysis (RCA): GET /api/v1/ai/incidents/{id}/analysis/
    */
-  async loadRCA(id: string): Promise<IncidentRCA> {
+  async loadRCA(id: string): Promise<IncidentRCA | null> {
     try {
-      const response = await apiClient.get<{
-        rca?: {
-          summary: string;
-          contributing_factors?: string[];
-          affected_systems?: string[];
-          confidence?: number;
-          ai_explanation: string;
-          recommended_remediation?: string[];
-          suggested_code_fix?: string;
-        };
-      }>(`/ai/incidents/${id}/analysis/`);
-
-      if (response.data?.rca) {
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
+      if (
+        response.data &&
+        response.data.status !== 'pending' &&
+        response.data.status !== 'processing'
+      ) {
         return {
           id: `rca-${id}`,
           incident_id: id,
-          summary: response.data.rca.summary,
-          contributing_factors: response.data.rca.contributing_factors || [],
-          affected_systems: response.data.rca.affected_systems || [],
-          confidence: response.data.rca.confidence || 94,
-          ai_explanation: response.data.rca.ai_explanation,
-          recommended_remediation: response.data.rca.recommended_remediation || [],
-          suggested_code_fix: response.data.rca.suggested_code_fix,
-          generated_at: new Date().toISOString(),
+          summary: response.data.summary || 'Summary pending',
+          contributing_factors: [],
+          affected_systems: [],
+          confidence: response.data.confidence_score
+            ? Math.round(response.data.confidence_score * 100)
+            : 94,
+          ai_explanation: response.data.root_cause_analysis || 'AI explanation pending',
+          recommended_remediation: response.data.recommended_actions || [],
+          suggested_code_fix: undefined,
+          generated_at: response.data.updated_at || new Date().toISOString(),
         };
       }
-      return this.getFallbackRCA(id);
+      return null;
     } catch {
-      return this.getFallbackRCA(id);
+      return null;
     }
   }
 
@@ -147,33 +166,26 @@ class IncidentWorkspaceService {
    */
   async loadSimilarIncidents(id: string): Promise<SimilarIncidentCard[]> {
     try {
-      const response = await apiClient.get<{
-        similar_incidents?: Array<{
-          id: string;
-          title: string;
-          similarity_score: number;
-          resolved_in_mins: number;
-          severity?: Severity;
-          status?: Status;
-          root_cause_summary?: string;
-        }>;
-      }>(`/ai/incidents/${id}/analysis/`);
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
 
       if (response.data?.similar_incidents && response.data.similar_incidents.length > 0) {
         return response.data.similar_incidents.map((item) => ({
           id: item.id,
           title: item.title,
-          similarity_score: item.similarity_score,
-          resolved_in_mins: item.resolved_in_mins,
+          similarity_score: item.similarity ? Math.round(item.similarity * 100) : 0,
+          resolved_in_mins: item.resolved_in_mins || 0,
           severity: item.severity || 'HIGH',
           status: item.status || 'RESOLVED',
-          root_cause_summary:
-            item.root_cause_summary || 'Resolved via automated firewall rule mitigation.',
+          root_cause_summary: item.root_cause_summary || 'Resolved',
+          created_at: item.created_at || new Date().toISOString(),
         }));
       }
-      return this.getFallbackSimilarIncidents(id);
+
+      return [];
     } catch {
-      return this.getFallbackSimilarIncidents(id);
+      return [];
     }
   }
 
@@ -530,140 +542,6 @@ class IncidentWorkspaceService {
         actor: mockUsers[1],
         timestamp: new Date(baseTime - 1000 * 60 * 15).toISOString(),
         icon_type: 'comment',
-      },
-    ];
-  }
-
-  private getFallbackRCA(id: string): IncidentRCA {
-    return {
-      id: `rca-fallback-${id}`,
-      incident_id: id,
-      summary:
-        'A Layer 7 application-level SYN flood from 4,120 rotating ASNs overwhelmed upstream ingress Envoy proxies, causing thread pool exhaustion and elevated HTTP 502/504 gateway timeouts.',
-      contributing_factors: [
-        'Ingress Envoy worker thread queue concurrency limit reached (max_connections=1024 exceeded).',
-        'Cloudflare rate-limiting rule #4092 was set to log-only rather than challenge/block mode.',
-        'Downstream authentication microservice lacked circuit-breaking header validation.',
-      ],
-      affected_systems: [
-        'k8s-ingress-controller (prod-us-east-1a)',
-        'auth-jwt-service (pod-group-secondary)',
-        'redis-session-store-replica-02',
-      ],
-      confidence: 94,
-      ai_explanation:
-        'The AI Engine correlated 4,120 distinct IPs initiating TLS handshakes without completing HTTP payload exchange. Spectral frequency analysis matches known botnet signatures from CVE-2024-3094 vectors.',
-      recommended_remediation: [
-        'Switch Cloudflare WAF Managed Rule #4092 from Log to Managed Challenge mode.',
-        'Scale Kubernetes ingress replicas from 4 to 12 via Horizontal Pod Autoscaler emergency override.',
-        'Enable SYN cookie mitigation on perimeter firewall gateways.',
-      ],
-      suggested_code_fix: `// Emergency Envoy Proxy Ingress Rate Limiting Patch
-apiVersion: networking.istio.io/v1alpha3
-kind: EnvoyFilter
-metadata:
-  name: syn-flood-rate-limit
-  namespace: ingress-sec
-spec:
-  configPatches:
-    - applyTo: HTTP_FILTER
-      match:
-        context: GATEWAY
-      patch:
-        operation: INSERT_BEFORE
-        value:
-          name: envoy.filters.http.local_ratelimit
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
-            stat_prefix: http_local_rate_limiter
-            token_bucket:
-              max_tokens: 1000
-              tokens_per_fill: 1000
-              fill_interval: 1s`,
-      generated_at: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    };
-  }
-
-  private getFallbackRecommendations(id: string): IncidentRecommendation[] {
-    return [
-      {
-        id: `rec-1-${id}`,
-        incident_id: id,
-        title: 'Apply Cloudflare Managed Challenge Rule #4092',
-        description:
-          'Immediately challenge all unverified requests originating from ASNs associated with anomalous SYN handshake volume.',
-        priority: 'P1',
-        category: 'Perimeter Defense',
-        confidence: 97,
-        estimated_impact: 'Mitigates ~91% of synthetic attack traffic within 15 seconds.',
-        action_type: 'AUTOMATE',
-        code_snippet: `// Cloudflare API Custom Rule Execution
-curl -X PATCH "https://api.cloudflare.com/client/v4/zones/{zone_id}/firewall/rules/4092" \\
-     -H "Authorization: Bearer $CF_API_TOKEN" \\
-     -H "Content-Type: application/json" \\
-     --data '{"action":"managed_challenge","enabled":true}'`,
-        created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      },
-      {
-        id: `rec-2-${id}`,
-        incident_id: id,
-        title: 'Scale Ingress Controller Replicas to 12',
-        description:
-          'Temporarily expand Kubernetes ingress pod pool to absorb remaining legitimate traffic backlog during mitigation.',
-        priority: 'P2',
-        category: 'Infrastructure Scalability',
-        confidence: 89,
-        estimated_impact: 'Restores HTTP gateway latency to <180ms SLA.',
-        action_type: 'CONFIG',
-        code_snippet: `kubectl scale deployment ingress-nginx-controller -n ingress-sec --replicas=12`,
-        created_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-      },
-      {
-        id: `rec-3-${id}`,
-        incident_id: id,
-        title: 'Enable Aggressive Redis Connection Pooling',
-        description:
-          'Prevent connection socket exhaustion on the authentication cache tier by adjusting max active connections.',
-        priority: 'P3',
-        category: 'Database Optimization',
-        confidence: 84,
-        estimated_impact: 'Prevents cascade timeout failures across downstream API workers.',
-        action_type: 'MANUAL',
-        created_at: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-      },
-    ];
-  }
-
-  private getFallbackSimilarIncidents(_id: string): SimilarIncidentCard[] {
-    return [
-      {
-        id: 'inc-9012-01',
-        title: 'SYN Flood on Edge Gateway Proxy cluster',
-        similarity_score: 94,
-        severity: 'CRITICAL',
-        resolved_in_mins: 28,
-        status: 'RESOLVED',
-        root_cause_summary:
-          'Resolved by applying Cloudflare Managed Challenge and scaling Envoy pods.',
-      },
-      {
-        id: 'inc-8841-04',
-        title: 'Auth Microservice Connection Exhaustion under Spike',
-        similarity_score: 87,
-        severity: 'HIGH',
-        resolved_in_mins: 42,
-        status: 'RESOLVED',
-        root_cause_summary:
-          'Resolved via Redis connection pool resizing and circuit breaker tuning.',
-      },
-      {
-        id: 'inc-8520-09',
-        title: 'DNS Amplification Ingress Degradation',
-        similarity_score: 76,
-        severity: 'MEDIUM',
-        resolved_in_mins: 35,
-        status: 'RESOLVED',
-        root_cause_summary: 'Resolved with upstream Anycast route filtering.',
       },
     ];
   }
