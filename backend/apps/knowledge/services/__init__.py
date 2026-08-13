@@ -52,8 +52,7 @@ from apps.knowledge.services.orchestration import (
     CopilotOrchestrator,
     SuggestedQuestionsService,
 )
-from apps.knowledge.services.prompt_builder import PromptBuilder
-from apps.knowledge.services.prompts import PromptBuilder as CopilotPromptBuilder
+from apps.knowledge.services.prompts import PromptBuilder
 from apps.knowledge.services.retrieval import (
     HybridRetrieverService,
     ReRankerService,
@@ -90,7 +89,6 @@ __all__ = [
     "ConversationMemoryService",
     "SummaryStrategy",
     "PlaceholderSummaryStrategy",
-    "CopilotPromptBuilder",
     # Task 3
     "BaseLLMGateway",
     "MockLLMGateway",

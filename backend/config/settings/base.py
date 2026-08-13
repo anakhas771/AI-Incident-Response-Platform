@@ -3,6 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dotenv
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subfolder'
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -12,7 +13,7 @@ env_path = BASE_DIR / ".env"
 if env_path.exists():
     dotenv.load_dotenv(env_path)
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-key-change-me")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-this-key")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
@@ -122,7 +123,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
@@ -211,7 +211,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173",
 ).split(",")
-
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-client-request-time",
+]
 # Standard Logging Configuration
 LOGGING = {
     "version": 1,
@@ -263,4 +265,19 @@ KNOWLEDGE_RAG_CONFIG = {
     "VECTOR_SIMILARITY_THRESHOLD": float(
         os.environ.get("VECTOR_SIMILARITY_THRESHOLD", "0.7")
     ),
+}
+
+COPILOT_LLM_CONFIG = {
+    "PROVIDER": os.environ.get("COPILOT_LLM_PROVIDER", "ollama").strip().lower(),
+    "API_KEY": os.environ.get("COPILOT_LLM_API_KEY", "ollama"),
+    "BASE_URL": os.environ.get(
+        "COPILOT_LLM_BASE_URL", "http://host.docker.internal:11434/v1"
+    ).strip(),
+    "MODEL": os.environ.get("COPILOT_LLM_MODEL", "qwen3:4b").strip(),
+    "TEMPERATURE": float(os.environ.get("COPILOT_LLM_TEMPERATURE", "0.2")),
+    "MAX_TOKENS": int(os.environ.get("COPILOT_LLM_MAX_TOKENS", "256")),
+    "TIMEOUT": int(os.environ.get("COPILOT_LLM_TIMEOUT", "180")),
+    "MAX_RETRIES": int(os.environ.get("COPILOT_LLM_MAX_RETRIES", "1")),
+    "BASE_BACKOFF": float(os.environ.get("COPILOT_LLM_BASE_BACKOFF", "1.0")),
+    "MAX_BACKOFF": float(os.environ.get("COPILOT_LLM_MAX_BACKOFF", "30.0")),
 }

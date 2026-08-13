@@ -44,9 +44,11 @@ def test_prompt_builder_compilation():
 
     # Assertions
     assert "Incident Guide" in prompt_context.context_text
-    assert "Page 4" in prompt_context.context_text
-    assert "USER: Question 1" in prompt_context.history_text
-    assert "ASSISTANT: Answer 1" in prompt_context.history_text
+    assert "Page: 4" in prompt_context.context_text
+    assert "[Historical Message 1 | Role: user]" in prompt_context.history_text
+    assert "Question 1" in prompt_context.history_text
+    assert "[Historical Message 2 | Role: assistant]" in prompt_context.history_text
+    assert "Answer 1" in prompt_context.history_text
     assert "My database is down!" in prompt_context.user_prompt
     assert prompt_context.estimated_tokens > 0
     assert prompt_context.template_version == "v1"

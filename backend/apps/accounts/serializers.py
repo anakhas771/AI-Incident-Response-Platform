@@ -2,11 +2,14 @@ from typing import Any, Dict, cast
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Organization, User
+from .models import Organization, Role, User
 
 UserModel = get_user_model()
 
@@ -88,6 +91,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(
         write_only=True, required=True, style={"input_type": "password"}
     )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    role = serializers.ChoiceField(choices=Role.choices, required=True)
     organization_name = serializers.CharField(
         write_only=True, required=False, allow_blank=True
     )
@@ -112,18 +118,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate_email(self, value: str) -> str:
         value = value.lower().strip()
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError(
-                "A user with this email address already exists."
-            )
+            raise serializers.ValidationError("Account already exists")
         return value
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         password = attrs.get("password")
         password_confirm = attrs.get("password_confirm")
 
+        if not password_confirm:
+            raise serializers.ValidationError(
+                {"password_confirm": ["password_confirm required"]}
+            )
+
         if password != password_confirm:
             raise serializers.ValidationError(
-                {"password_confirm": "Passwords do not match."}
+                {"password_confirm": ["Passwords do not match."]}
+            )
+
+        role = attrs.get("role")
+        org_name = attrs.get("organization_name")
+        if role == Role.ADMIN and not org_name:
+            raise serializers.ValidationError(
+                {
+                    "role": [
+                        "Cannot register as ADMIN without creating a new organization."
+                    ]
+                }
             )
 
         # Validate password strength
@@ -132,7 +152,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             first_name=attrs.get("first_name", ""),
             last_name=attrs.get("last_name", ""),
         )
-        validate_password(str(password), user=user_temp)
+        try:
+            validate_password(str(password), user=user_temp)
+        except DjangoValidationError as err:
+            raise serializers.ValidationError({"password": list(err.messages)}) from err
 
         return attrs
 
@@ -172,6 +195,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
 
     username_field = User.USERNAME_FIELD
+    default_error_messages = {"no_active_account": _("Invalid email or password")}
 
     @classmethod
     def get_token(cls, user: Any) -> Any:
@@ -188,7 +212,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        data = super().validate(attrs)
+        email_key = self.username_field
+        if email_key in attrs and isinstance(attrs[email_key], str):
+            attrs[email_key] = attrs[email_key].lower().strip()
+
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed as err:
+            raise AuthenticationFailed(_("Invalid email or password")) from err
+        except Exception as err:
+            # Let standard validation errors bubble up
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(err, ValidationError):
+                raise err
+            raise AuthenticationFailed(_("Invalid email or password")) from err
+
         # Append user metadata to login response body
         data["user"] = cast(Any, UserDetailSerializer(self.user).data)
         return data

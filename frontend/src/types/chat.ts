@@ -22,6 +22,20 @@ export interface ChatCitation {
   similarity: number;
   snippet: string;
 }
+export interface CopilotResponse {
+  session_id: string;
+  message_id: string;
+  content: string;
+  role: MessageRole;
+  tokens: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  citations: ChatCitation[];
+  confidence: ChatConfidence;
+  metadata: Record<string, unknown>;
+  suggested_questions?: string[];
+  usage?: ChatUsage | null;
+}
 
 export type Citation = ChatCitation;
 

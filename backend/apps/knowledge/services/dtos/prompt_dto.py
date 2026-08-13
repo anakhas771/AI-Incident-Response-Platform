@@ -2,7 +2,8 @@
 DTO representing synthesized LLM prompt contexts.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any, List
 
 
 @dataclass
@@ -17,3 +18,5 @@ class PromptContextDTO:
     history_text: str
     estimated_tokens: int
     template_version: str
+    raw_history: List[Any] = field(default_factory=list)
+    raw_user_message: str = ""

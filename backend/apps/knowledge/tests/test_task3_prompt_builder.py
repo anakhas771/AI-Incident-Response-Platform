@@ -23,7 +23,7 @@ def test_prompt_builder_format_retrieved_context_elements():
     )
     text = builder.format_retrieved_context([c1])
     assert "Playbook" in text
-    assert "Page 2" in text
+    assert "Page: 2" in text
     assert "Steps for recovery." in text
 
 
@@ -54,7 +54,8 @@ def test_prompt_builder_compiles_full_context():
         "You are an Enterprise AI Incident Response Copilot."
         in prompt_context.system_prompt
     )
-    assert "USER: Log audit" in prompt_context.history_text
+    assert "[Historical Message 1 | Role: user]" in prompt_context.history_text
+    assert "Log audit" in prompt_context.history_text
     assert "Standard procedure." in prompt_context.context_text
     assert "Audit log query" in prompt_context.user_prompt
     assert prompt_context.estimated_tokens > 0

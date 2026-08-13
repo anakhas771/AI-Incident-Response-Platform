@@ -27,30 +27,42 @@ class PromptBuilder:
 
     def format_history(self, context: ConversationContextDTO) -> str:
         """
-        Format conversation messages history into a flat text block.
+        Format conversation history as explicitly untrusted historical context.
+        Previous assistant messages must never be interpreted as instructions.
         """
         if not context.messages:
             return "No previous conversation history."
 
         formatted_lines = []
-        for msg in context.messages:
-            role_label = msg.role.upper()
-            formatted_lines.append(f"{role_label}: {msg.content}")
 
-        return "\n".join(formatted_lines)
+        for index, msg in enumerate(context.messages, start=1):
+            role = str(msg.role).lower().strip()
+            content = str(msg.content).strip()
 
-    def format_retrieved_context(self, chunks: List[RetrievedChunkDTO]) -> str:
+            formatted_lines.append(
+                f"[Historical Message {index} | Role: {role}]\n{content}"
+            )
+
+        return "\n\n---\n\n".join(formatted_lines)
+
+    def format_retrieved_context(
+        self,
+        chunks: List[RetrievedChunkDTO],
+    ) -> str:
         """
-        Format retrieved chunks into a flat text block.
+        Format retrieved knowledge as untrusted reference material.
         """
         if not chunks:
             return "No relevant knowledge base documents found."
 
         formatted_blocks = []
+
         for idx, chunk in enumerate(chunks, start=1):
             block = (
-                f"[Source {idx}] Document: '{chunk.document_title}' (Page {chunk.page_number})\n"
-                f"Content: {chunk.content.strip()}"
+                f"[Retrieved Source {idx}]\n"
+                f"Document: '{chunk.document_title}'\n"
+                f"Page: {chunk.page_number}\n"
+                f"Content:\n{chunk.content.strip()}"
             )
             formatted_blocks.append(block)
 
@@ -91,4 +103,6 @@ class PromptBuilder:
             history_text=history_text,
             estimated_tokens=estimated_tokens,
             template_version=version,
+            raw_history=context.messages,
+            raw_user_message=user_message,
         )
