@@ -3,6 +3,7 @@ from typing import Any, ClassVar
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.common.models import TimeStampedUUIDModel
@@ -125,3 +126,61 @@ class User(AbstractUser):
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip() or self.email
+
+
+class PasswordResetToken(TimeStampedUUIDModel):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="password_reset_tokens"
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Password Reset Token")
+        verbose_name_plural = _("Password Reset Tokens")
+
+    @property
+    def is_valid(self) -> bool:
+        return not self.used and self.expires_at > timezone.now()
+
+
+class InvitationStatus(models.TextChoices):
+    PENDING = "PENDING", _("Pending")
+    ACCEPTED = "ACCEPTED", _("Accepted")
+    REVOKED = "REVOKED", _("Revoked")
+
+
+class OrganizationInvitation(TimeStampedUUIDModel):
+    email = models.EmailField(db_index=True)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="invitations"
+    )
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.VIEWER)
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="created_invitations"
+    )
+    expires_at = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=InvitationStatus.choices,
+        default=InvitationStatus.PENDING,
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Organization Invitation")
+        verbose_name_plural = _("Organization Invitations")
+        unique_together = [("email", "organization", "status")]
+
+    @property
+    def is_valid(self) -> bool:
+        return (
+            self.status == InvitationStatus.PENDING and self.expires_at > timezone.now()
+        )
+
+    def __str__(self) -> str:
+        return f"Invite for {self.email} to {self.organization.name}"

@@ -1,12 +1,22 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 from .views import (
     ChangePasswordView,
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
+    InvitationAcceptView,
     OrganizationDetailView,
+    OrganizationInvitationViewSet,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
     UserProfileView,
+)
+
+router = DefaultRouter()
+router.register(
+    r"auth/invitations", OrganizationInvitationViewSet, basename="invitations"
 )
 
 urlpatterns = [
@@ -24,4 +34,19 @@ urlpatterns = [
         OrganizationDetailView.as_view(),
         name="organization-detail",
     ),
-]
+    path(
+        "auth/password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="auth-password-reset",
+    ),
+    path(
+        "auth/password-reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="auth-password-reset-confirm",
+    ),
+    path(
+        "auth/invitations/accept/",
+        InvitationAcceptView.as_view(),
+        name="invitations-accept",
+    ),
+] + router.urls

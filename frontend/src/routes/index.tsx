@@ -10,6 +10,8 @@ const SplashPage = lazy(() => import('../pages/SplashPage'));
 const LoginPage = lazy(() => import('../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
+const AcceptInvitationPage = lazy(() => import('../pages/AcceptInvitationPage'));
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const IncidentsPage = lazy(() => import('../pages/IncidentsPage'));
 const IncidentDetailPage = lazy(() => import('../pages/IncidentDetailPage'));
@@ -62,8 +64,22 @@ const router = createBrowserRouter([
             element: <ForgotPasswordPage />,
           },
           {
+            path: 'reset-password',
+            element: <ResetPasswordPage />,
+          },
+          {
             path: 'splash',
             element: <SplashPage />,
+          },
+        ],
+      },
+      // Unrestricted Auth Routes (can be logged in or not)
+      {
+        element: <AuthLayout />,
+        children: [
+          {
+            path: 'invite/accept',
+            element: <AcceptInvitationPage />,
           },
         ],
       },

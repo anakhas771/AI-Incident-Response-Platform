@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   BookOpen,
-  Plus,
   Search,
   MessageSquare,
   Database,
@@ -12,8 +11,11 @@ import {
   Send,
   Bot,
   User,
+  Upload,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { EmptyState } from '../components/ui/EmptyState';
+import { usePermissions } from '../hooks/usePermissions';
 import { Button } from '../components/ui/Button';
 import { DocumentCard } from '../components/knowledge/DocumentCard';
 import { UploadModal } from '../components/knowledge/UploadModal';
@@ -51,6 +53,7 @@ export const KnowledgeBasePage: React.FC = () => {
   const [selectedDoc, setSelectedDoc] = useState<KnowledgeDocument | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const { canManageKnowledge } = usePermissions();
 
   // Filter state for documents tab
   const [docFilterType, setDocFilterType] = useState<string>('ALL');
@@ -261,16 +264,18 @@ export const KnowledgeBasePage: React.FC = () => {
             <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoadingDocs ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            variant="default"
-            size="sm"
-            disabled={isUploading}
-            onClick={() => setIsUploadModalOpen(true)}
-            className="text-xs font-bold"
-          >
-            <Plus className="mr-1.5 h-4 w-4" />
-            {isUploading ? 'Uploading...' : 'Upload Document'}
-          </Button>
+          {canManageKnowledge && (
+            <Button
+              variant="default"
+              size="sm"
+              disabled={isUploading}
+              onClick={() => setIsUploadModalOpen(true)}
+              className="shrink-0"
+            >
+              <Upload className="w-4 h-4 mr-1.5" />
+              {isUploading ? 'Uploading...' : 'Upload Document'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -392,24 +397,28 @@ export const KnowledgeBasePage: React.FC = () => {
               <p className="mt-3 text-sm text-slate-400">Loading enterprise knowledge base...</p>
             </div>
           ) : filteredDocs.length === 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-12 text-center">
-              <BookOpen className="mx-auto h-12 w-12 text-slate-600" />
-              <h3 className="mt-4 text-base font-bold text-slate-200">No documents found</h3>
-              <p className="mt-1 text-xs text-slate-400">
-                {docSearchQuery || docFilterType !== 'ALL'
+            <EmptyState
+              icon={BookOpen}
+              title="No documents found"
+              description={
+                docSearchQuery || docFilterType !== 'ALL'
                   ? 'Try adjusting your format or title filter.'
-                  : 'Get started by uploading your organization’s standard security runbooks and policies.'}
-              </p>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setIsUploadModalOpen(true)}
-                className="mt-5 text-xs font-bold"
-              >
-                <Plus className="mr-1.5 h-4 w-4" />
-                Upload Knowledge Document
-              </Button>
-            </div>
+                  : 'Get started by uploading your organization’s standard security runbooks and policies.'
+              }
+              action={
+                !docSearchQuery && docFilterType === 'ALL' && canManageKnowledge ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="mt-2"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Knowledge Document
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredDocs.map((doc) => (
