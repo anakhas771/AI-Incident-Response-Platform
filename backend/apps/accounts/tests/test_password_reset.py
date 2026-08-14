@@ -27,7 +27,9 @@ def test_password_reset_request_stores_only_token_hash(
         sent.update(kwargs)
 
     monkeypatch.setattr("apps.accounts.views.send_async_email.delay", fake_delay)
-    monkeypatch.setattr("apps.accounts.views.get_random_string", lambda length: "r" * length)
+    monkeypatch.setattr(
+        "apps.accounts.views.get_random_string", lambda length: "r" * length
+    )
 
     with django_capture_on_commit_callbacks(execute=True):
         response = APIClient().post(
