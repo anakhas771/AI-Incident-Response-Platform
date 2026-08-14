@@ -4,6 +4,7 @@ import { Search, Plus, MoreVertical, MessageSquare, Paperclip } from 'lucide-rea
 import { useIncidentStore } from '../stores/useIncidentStore';
 import { useCommandStore } from '../stores/useCommandStore';
 import { useAuthStore } from '../stores/useAuthStore';
+import { usePermissions } from '../hooks/usePermissions';
 import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Category, Severity, Status } from '../types';
@@ -12,6 +13,7 @@ export const IncidentsPage: React.FC = () => {
   const { incidents, filters, setFilters, setSelectedIncident, updateStatus } = useIncidentStore();
   const { setCreateModalOpen } = useCommandStore();
   const { user } = useAuthStore();
+  const { canUpdateIncidents } = usePermissions();
   const navigate = useNavigate();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -72,10 +74,12 @@ export const IncidentsPage: React.FC = () => {
           </p>
         </div>
 
-        <Button variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
-          <Plus className="w-4 h-4" />
-          <span>Report Incident</span>
-        </Button>
+        {canUpdateIncidents && (
+          <Button variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
+            <Plus className="w-4 h-4" />
+            <span>Report Incident</span>
+          </Button>
+        )}
       </div>
 
       <div className="p-4 rounded-xl bg-surface border border-subtle space-y-3">
@@ -137,7 +141,7 @@ export const IncidentsPage: React.FC = () => {
           </div>
         </div>
 
-        {selectedIds.length > 0 && (
+        {selectedIds.length > 0 && canUpdateIncidents && (
           <div className="flex items-center justify-between p-2.5 rounded-lg bg-indigo-950/60 border border-indigo-800/60 text-xs text-indigo-200">
             <span className="font-semibold">{selectedIds.length} incidents selected</span>
             <div className="flex items-center gap-2">

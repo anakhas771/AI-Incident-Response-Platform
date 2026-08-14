@@ -16,8 +16,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
+from apps.accounts.permissions import IsResponder
 from apps.knowledge.models import DocumentStatus, DocumentTag, KnowledgeDocument
-from apps.knowledge.permissions import IsKnowledgeOrganizationMember
+from apps.knowledge.permissions import (
+    IsKnowledgeOrganizationMember,
+    IsKnowledgeUser,
+    IsKnowledgeViewer,
+)
 from apps.knowledge.serializers import (
     DocumentChunkSerializer,
     DocumentStatusSerializer,
@@ -52,6 +57,7 @@ class KnowledgeDocumentUploadView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsKnowledgeOrganizationMember,
+        IsResponder,
     ]
 
     parser_classes = [
@@ -138,7 +144,11 @@ class KnowledgeDocumentListView(generics.ListAPIView):
     List all knowledge documents within the authenticated user's organization.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = KnowledgeDocumentListSerializer
 
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
@@ -168,9 +178,20 @@ class KnowledgeDocumentDetailView(generics.RetrieveDestroyAPIView):
     Retrieve or delete a specific knowledge document in the organization.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = KnowledgeDocumentDetailSerializer
     lookup_field = "pk"
+
+    def delete(self, request, *args, **kwargs):
+        if not IsResponder().has_permission(request, self):
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied("You do not have permission to delete documents.")
+        return super().delete(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
         if getattr(self, "swagger_fake_view", False):
@@ -186,7 +207,11 @@ class KnowledgeSearchView(APIView):
     Perform Top-K semantic similarity search across the organization's knowledge base.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeUser,
+    ]
 
     @extend_schema(
         request=KnowledgeSearchRequestSerializer,
@@ -231,7 +256,11 @@ class KnowledgeChatView(APIView):
     Execute enterprise RAG AI chat answering user questions with citations and evidence.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeUser,
+    ]
 
     @extend_schema(
         request=KnowledgeChatRequestSerializer,
@@ -269,7 +298,11 @@ class KnowledgeDocumentStatusView(generics.RetrieveAPIView):
     Retrieve document processing status, chunk count, and embedding count.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = DocumentStatusSerializer
     lookup_field = "pk"
 
@@ -285,7 +318,11 @@ class KnowledgeDocumentChunksView(generics.ListAPIView):
     Retrieve document chunks for a given document with organization isolation.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = DocumentChunkSerializer
     pagination_class = None
 
@@ -312,7 +349,7 @@ class KnowledgeDocumentRetryView(APIView):
     Trigger retry of processing for a failed document.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember, IsResponder]
 
     def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
         user = cast(User, request.user)
@@ -343,7 +380,7 @@ class KnowledgeDocumentReindexView(APIView):
     Trigger full re-indexing of a document.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember, IsResponder]
 
     def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
         user = cast(User, request.user)
