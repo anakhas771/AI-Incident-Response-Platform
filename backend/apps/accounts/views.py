@@ -151,7 +151,7 @@ class OrganizationInvitationViewSet(viewsets.ModelViewSet):
         expires_at = timezone.now() + timedelta(days=7)
         with transaction.atomic():
             invitation = serializer.save(organization=org, created_by=user, token=hash_lifecycle_token(raw_token), expires_at=expires_at, status=InvitationStatus.PENDING)
-            invitation_url = f"{settings.FRONTEND_BASE_URL.rstrip('/')}/accept-invitation?token={raw_token}"
+            invitation_url = f"{settings.FRONTEND_BASE_URL.rstrip('/')}/invite/accept?token={raw_token}"
             context = {"invitation_url": invitation_url, "email": invitation.email, "role": invitation.role, "org_name": org.name, "inviter_name": user.full_name}
             transaction.on_commit(lambda: send_async_email.delay(subject=f"Invitation to join {org.name}", template_name="emails/invitation.html", context=context, recipient_list=[invitation.email]))
             AuditLogger.log_event(action=AuditAction.USER_INVITED, user=user, organization=org, ip_address=request.META.get("REMOTE_ADDR"), metadata={"invited_email": invitation.email, "role": invitation.role})
