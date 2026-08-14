@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -35,7 +38,7 @@ def test_password_reset_request_stores_only_token_hash(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_password_reset_confirm_accepts_raw_token_and_consumes_it(monkeypatch):
+def test_password_reset_confirm_accepts_raw_token_and_consumes_it():
     user = User.objects.create_user(
         email="confirm@test.com",
         password="OldPassword123!",
@@ -47,8 +50,7 @@ def test_password_reset_confirm_accepts_raw_token_and_consumes_it(monkeypatch):
     reset_token = PasswordResetToken.objects.create(
         user=user,
         token=hash_lifecycle_token(raw_token),
-        expires_at=__import__("django.utils.timezone", fromlist=["timezone"]).timezone.now()
-        + __import__("datetime").timedelta(hours=24),
+        expires_at=timezone.now() + timedelta(hours=24),
     )
 
     response = APIClient().post(
