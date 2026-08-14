@@ -11,6 +11,13 @@ from apps.accounts.models import PasswordResetToken, Role, User
 from apps.accounts.token_utils import hash_lifecycle_token
 
 
+@pytest.fixture(autouse=True)
+def clear_throttle_cache():
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.mark.django_db
 def test_password_reset_request_stores_only_token_hash(
     monkeypatch, django_capture_on_commit_callbacks
