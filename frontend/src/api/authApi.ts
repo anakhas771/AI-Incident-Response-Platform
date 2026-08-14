@@ -22,6 +22,7 @@ export interface RegisterPayload {
   organization_id?: string;
   role?: Role;
   phone_number?: string;
+  invitation_token?: string;
 }
 
 export interface RefreshTokenResponse {
@@ -47,6 +48,35 @@ export const authApi = {
 
   getProfile: async (): Promise<User> => {
     const response = await apiClient.get<User>('/auth/me/');
+    return response.data;
+  },
+
+  requestPasswordReset: async (email: string): Promise<{ detail: string }> => {
+    const response = await apiClient.post<{ detail: string }>('/auth/password-reset/', { email });
+    return response.data;
+  },
+
+  confirmPasswordReset: async (payload: {
+    token: string;
+    new_password: string;
+    new_password_confirm: string;
+  }): Promise<{ detail: string }> => {
+    const response = await apiClient.post<{ detail: string }>(
+      '/auth/password-reset/confirm/',
+      payload
+    );
+    return response.data;
+  },
+
+  acceptInvitation: async (token: string): Promise<{ detail: string }> => {
+    const response = await apiClient.post<{ detail: string }>('/auth/invitations/accept/', {
+      token,
+    });
+    return response.data;
+  },
+
+  sendInvitation: async (payload: { email: string; role: Role }): Promise<unknown> => {
+    const response = await apiClient.post('/auth/invitations/', payload);
     return response.data;
   },
 };

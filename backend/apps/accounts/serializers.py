@@ -3,13 +3,21 @@ from typing import Any, Dict, cast
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Organization, Role, User
+from .models import (
+    InvitationStatus,
+    Organization,
+    OrganizationInvitation,
+    PasswordResetToken,
+    Role,
+    User,
+)
 
 UserModel = get_user_model()
 
@@ -100,6 +108,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     organization_id = serializers.UUIDField(
         write_only=True, required=False, allow_null=True
     )
+    invitation_token = serializers.CharField(
+        write_only=True, required=False, allow_blank=True
+    )
 
     class Meta:
         model = User
@@ -112,6 +123,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "role",
             "organization_name",
             "organization_id",
+            "invitation_token",
             "phone_number",
         ]
 
@@ -137,11 +149,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         role = attrs.get("role")
         org_name = attrs.get("organization_name")
-        if role == Role.ADMIN and not org_name:
+        inv_token = attrs.get("invitation_token")
+
+        if role == Role.ADMIN and not org_name and not inv_token:
             raise serializers.ValidationError(
                 {
                     "role": [
-                        "Cannot register as ADMIN without creating a new organization."
+                        "Cannot register as ADMIN without creating a new organization or using an invitation."
                     ]
                 }
             )
@@ -164,9 +178,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password")
         org_name = validated_data.pop("organization_name", None)
         org_id = validated_data.pop("organization_id", None)
+        inv_token = validated_data.pop("invitation_token", None)
 
         organization = None
-        if org_id:
+        role = validated_data.get("role")
+
+        if inv_token:
+            try:
+                invitation = OrganizationInvitation.objects.get(
+                    token=inv_token, status=InvitationStatus.PENDING
+                )
+                if invitation.expires_at < timezone.now():
+                    raise serializers.ValidationError(
+                        {"invitation_token": "Invitation has expired."}
+                    )
+                if invitation.email.lower() != validated_data["email"].lower():
+                    raise serializers.ValidationError(
+                        {"email": "Email does not match invitation."}
+                    )
+                organization = invitation.organization
+                role = invitation.role
+                validated_data["role"] = role
+            except OrganizationInvitation.DoesNotExist as err:
+                raise serializers.ValidationError(
+                    {"invitation_token": "Invalid or expired invitation token."}
+                ) from err
+        elif org_id:
             try:
                 organization = Organization.objects.get(id=org_id)
             except Organization.DoesNotExist as err:
@@ -253,4 +290,87 @@ class ChangePasswordSerializer(serializers.Serializer):
                 {"old_password": "Old password is incorrect."}
             )
         validate_password(attrs["new_password"], user=user)
+        return attrs
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Passwords do not match."}
+            )
+
+        try:
+            reset_token = PasswordResetToken.objects.select_related("user").get(
+                token=attrs["token"]
+            )
+        except PasswordResetToken.DoesNotExist:
+            raise serializers.ValidationError(
+                {"token": "Invalid or expired reset token."}
+            ) from None
+
+        if not reset_token.is_valid:
+            raise serializers.ValidationError(
+                {"token": "Invalid or expired reset token."}
+            )
+
+        # Basic password validation against the user object
+        try:
+            validate_password(attrs["new_password"], user=reset_token.user)
+        except DjangoValidationError as err:
+            raise serializers.ValidationError(
+                {"new_password": list(err.messages)}
+            ) from err
+        attrs["user"] = reset_token.user
+        attrs["reset_token_obj"] = reset_token
+        return attrs
+
+
+class OrganizationInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationInvitation
+        fields = [
+            "id",
+            "email",
+            "organization",
+            "role",
+            "status",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+        ]
+        read_only_fields = [
+            "id",
+            "organization",
+            "status",
+            "created_at",
+            "expires_at",
+            "accepted_at",
+        ]
+
+
+class InvitationAcceptSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            invitation = OrganizationInvitation.objects.get(
+                token=attrs["token"], status=InvitationStatus.PENDING
+            )
+        except OrganizationInvitation.DoesNotExist:
+            raise serializers.ValidationError(
+                {"token": "Invalid or expired invitation."}
+            ) from None
+        if invitation.expires_at < timezone.now():
+            raise serializers.ValidationError({"token": "Invitation has expired."})
+
+        attrs["invitation"] = invitation
         return attrs

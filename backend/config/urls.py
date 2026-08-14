@@ -8,14 +8,18 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # API v1 Endpoint Routing
     path("api/v1/", include("apps.common.urls")),
+    # Legacy/global names
     path("api/v1/", include("apps.accounts.urls")),
+    # Namespaced names
+    path(
+        "api/v1/",
+        include(("apps.accounts.urls", "accounts"), namespace="accounts"),
+    ),
     path("api/v1/", include("apps.incidents.urls")),
     path("api/v1/ai/", include("apps.ai_engine.urls")),
     path("api/v1/knowledge/", include("apps.knowledge.urls")),
     path("api/v1/copilot/", include("apps.knowledge.api.copilot_urls")),
-    # OpenAPI 3 Schema & Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/schema/swagger-ui/",
@@ -24,7 +28,7 @@ urlpatterns = [
     ),
     path(
         "api/schema/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
+        SpectacularRedocView.as_view(),
         name="redoc",
     ),
 ]

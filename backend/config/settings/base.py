@@ -57,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.common.middleware.RequestLogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -127,6 +128,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/minute",
+        "user": "100/minute",
+        "auth": "5/minute",
+    },
 }
 
 # SimpleJWT Authentication Settings
@@ -227,11 +237,21 @@ LOGGING = {
             "format": "{levelname} {message}",
             "style": "{",
         },
+        "structured": {
+            "format": '{{"level": "{levelname}", "timestamp": "{asctime}", "module": "{module}", "message": "{message}", "request_id": "{request_id}", "user_id": "{user_id}", "org_id": "{org_id}"}}',
+            "style": "{",
+        },
+    },
+    "filters": {
+        "request_context": {
+            "()": "apps.common.middleware.RequestContextFilter",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "verbose",
+            "formatter": "structured",
+            "filters": ["request_context"],
         },
     },
     "root": {
@@ -244,8 +264,25 @@ LOGGING = {
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },
+        "audit": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
+
+# Email Configuration
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 1025))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False") == "True"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
+FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000")
 
 # AI Engine & Knowledge RAG Settings
 AI_ENGINE_CONFIG = {
