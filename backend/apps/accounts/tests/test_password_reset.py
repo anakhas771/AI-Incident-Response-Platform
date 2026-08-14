@@ -23,10 +23,10 @@ def test_password_reset_request_stores_only_token_hash(
     )
     sent = {}
 
-    def fake_delay(**kwargs):
+    def fake_enqueue(**kwargs):
         sent.update(kwargs)
 
-    monkeypatch.setattr("apps.accounts.views.send_async_email.delay", fake_delay)
+    monkeypatch.setattr("apps.accounts.views.enqueue_async_email", fake_enqueue)
     monkeypatch.setattr(
         "apps.accounts.views.get_random_string", lambda length: "r" * length
     )
