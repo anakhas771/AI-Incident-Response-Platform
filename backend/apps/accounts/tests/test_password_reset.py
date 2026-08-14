@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -75,3 +76,19 @@ def test_password_reset_confirm_accepts_raw_token_and_consumes_it():
     assert reset_token.used is True
     user.refresh_from_db()
     assert user.check_password("NewSecurePassword123!")
+
+
+@pytest.mark.django_db
+def test_password_reset_request_is_rate_limited():
+    cache.clear()
+
+    client = APIClient()
+    url = reverse("accounts:auth-password-reset")
+
+    for _ in range(5):
+        response = client.post(url, {"email": "unknown@example.com"})
+        assert response.status_code == status.HTTP_200_OK
+
+    response = client.post(url, {"email": "unknown@example.com"})
+
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
