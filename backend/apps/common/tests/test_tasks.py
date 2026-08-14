@@ -7,7 +7,10 @@ from apps.common.tasks import enqueue_async_email
 
 @pytest.mark.django_db
 def test_enqueue_async_email_swallows_broker_failure():
-    with patch("apps.common.tasks.send_async_email.delay", side_effect=ConnectionError("broker down")) as delay:
+    with patch(
+        "apps.common.tasks.send_async_email.delay",
+        side_effect=ConnectionError("broker down"),
+    ) as delay:
         # Email enqueue is best-effort: API/database work must not fail because
         # the Celery broker is unavailable.
         enqueue_async_email(
