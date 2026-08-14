@@ -131,9 +131,7 @@ class TestOrganizationInvitations:
             expires_at=timezone.now() + timedelta(days=7),
             status=InvitationStatus.PENDING,
         )
-        user = User.objects.create_user(
-            email="reused@test.com", password="password123"
-        )
+        user = User.objects.create_user(email="reused@test.com", password="password123")
         api_client.force_authenticate(user=user)
         url = reverse("accounts:invitations-accept")
 
@@ -171,7 +169,9 @@ class TestOrganizationInvitations:
     def test_send_invitation_rejects_duplicate_pending_invitation(
         self, api_client, admin_user, monkeypatch
     ):
-        monkeypatch.setattr("apps.accounts.views.enqueue_async_email", lambda **kwargs: None)
+        monkeypatch.setattr(
+            "apps.accounts.views.enqueue_async_email", lambda **kwargs: None
+        )
         api_client.force_authenticate(user=admin_user)
         url = reverse("accounts:invitations-list")
         payload = {"email": "duplicate@test.com", "role": "ANALYST"}
