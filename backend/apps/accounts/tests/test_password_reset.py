@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import pytest
-from django.db import connection
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
@@ -12,7 +11,9 @@ from apps.accounts.token_utils import hash_lifecycle_token
 
 
 @pytest.mark.django_db
-def test_password_reset_request_stores_only_token_hash(monkeypatch):
+def test_password_reset_request_stores_only_token_hash(
+    monkeypatch, django_capture_on_commit_callbacks
+):
     user = User.objects.create_user(
         email="reset@test.com",
         password="OldPassword123!",
@@ -30,12 +31,10 @@ def test_password_reset_request_stores_only_token_hash(monkeypatch):
         "apps.accounts.views.get_random_string", lambda length: "r" * length
     )
 
-    with connection.on_commit:
-        pass
-
-    response = APIClient().post(
-        reverse("accounts:auth-password-reset"), {"email": user.email}
-    )
+    with django_capture_on_commit_callbacks(execute=True):
+        response = APIClient().post(
+            reverse("accounts:auth-password-reset"), {"email": user.email}
+        )
 
     assert response.status_code == status.HTTP_200_OK
     token = PasswordResetToken.objects.get(user=user)
