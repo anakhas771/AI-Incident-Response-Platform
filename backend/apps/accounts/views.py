@@ -14,7 +14,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from apps.common.tasks import send_async_email
+from apps.common.tasks import enqueue_async_email
 from apps.logs.models import AuditAction
 from apps.logs.services import AuditLogger
 
@@ -167,7 +167,7 @@ class PasswordResetRequestView(APIView):
                 "name": user.first_name,
             }
             transaction.on_commit(
-                lambda: send_async_email.delay(
+                lambda: enqueue_async_email(
                     subject="Password Reset Request",
                     template_name="emails/password_reset.html",
                     context=context,
@@ -272,7 +272,7 @@ class OrganizationInvitationViewSet(viewsets.ModelViewSet):
                 "inviter_name": user.full_name,
             }
             transaction.on_commit(
-                lambda: send_async_email.delay(
+                lambda: enqueue_async_email(
                     subject=f"Invitation to join {org.name}",
                     template_name="emails/invitation.html",
                     context=context,
