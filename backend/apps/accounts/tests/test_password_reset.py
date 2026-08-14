@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 import pytest
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-from django.core.cache import cache
+
 from apps.accounts.models import PasswordResetToken, Role, User
 from apps.accounts.token_utils import hash_lifecycle_token
 
@@ -75,6 +76,7 @@ def test_password_reset_confirm_accepts_raw_token_and_consumes_it():
     assert reset_token.used is True
     user.refresh_from_db()
     assert user.check_password("NewSecurePassword123!")
+
 
 @pytest.mark.django_db
 def test_password_reset_request_is_rate_limited():
