@@ -41,25 +41,50 @@ services:
     restart: always
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 2 --timeout 120
     environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
       - DEBUG=False
       - ENVIRONMENT=production
       - SECRET_KEY=${SECRET_KEY}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+      - EMAIL_BACKEND=${EMAIL_BACKEND}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
     networks:
       - app-network-prod
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import os, urllib.request; host=os.environ['ALLOWED_HOSTS'].split(',')[0]; req=urllib.request.Request('http://127.0.0.1:8000/api/v1/health/', headers={'Host': host, 'X-Forwarded-Proto': 'https'}); r=urllib.request.urlopen(req, timeout=5); raise SystemExit(0 if r.status == 200 else 1)\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   celery_worker:
     build:
@@ -70,21 +95,43 @@ services:
     restart: always
     command: celery -A config worker -l info --concurrency=4
     environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
       - DEBUG=False
       - ENVIRONMENT=production
       - SECRET_KEY=${SECRET_KEY}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+      - EMAIL_BACKEND=${EMAIL_BACKEND}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+
     depends_on:
       - backend
+
     networks:
       - app-network-prod
+
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config status >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 
   nginx:
     build:
