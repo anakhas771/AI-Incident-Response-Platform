@@ -6,6 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.metrics import metrics
+
 
 class LivenessCheckView(APIView):
     """
@@ -127,3 +129,21 @@ class HealthCheckView(APIView):
         )
 
         return Response(health_status, status=http_status)
+
+
+class MetricsView(APIView):
+    """
+    Read-only operational metrics endpoint.
+
+    Metrics are intentionally restricted to authenticated callers and contain
+    aggregate operational data only. No request bodies, prompts, completions,
+    tokens, or other sensitive payloads are exposed.
+    """
+
+    @extend_schema(
+        summary="Application Metrics",
+        description="Returns aggregate application and Celery metrics.",
+        responses={200: dict},
+    )
+    def get(self, request, *args, **kwargs):
+        return Response(metrics.get_snapshot(), status=status.HTTP_200_OK)
