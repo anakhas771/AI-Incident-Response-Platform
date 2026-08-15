@@ -12,9 +12,15 @@ from celery.signals import (
     task_failure,
     task_postrun,
     task_prerun,
+    task_retry,
 )
 from kombu import Exchange, Queue
 
+from apps.common.celery_observability import (
+    task_finished,
+    task_retried,
+    task_started,
+)
 from apps.common.correlation import (
     clear_request_context,
     get_current_request_id,
@@ -85,7 +91,7 @@ def restore_request_id_for_task(
     task_id: str | None = None,
     **kwargs: object,
 ) -> None:
-    """Restore correlation context inside the Celery worker."""
+    """Restore correlation context and start task telemetry."""
     task_request = getattr(task, "request", None)
     headers = getattr(task_request, "headers", {}) or {}
     request_id = str(headers.get("request_id", ""))
@@ -93,18 +99,71 @@ def restore_request_id_for_task(
     if request_id:
         set_request_context(request_id)
 
+    if task_id:
+        task_name = str(getattr(task, "name", task.__class__.__name__))
+        task_started(task_id, task_name)
+
 
 @task_postrun.connect
 def clear_task_request_context(
+    task_id: str | None = None,
+    task: object | None = None,
     **kwargs: object,
 ) -> None:
-    """Prevent correlation state leaking between Celery tasks."""
+    """Record successful completion and clear task context."""
+    if task_id:
+        task_name = str(
+            getattr(task, "name", task.__class__.__name__)
+            if task is not None
+            else "unknown"
+        )
+        task_finished(task_id, task_name, "success")
+
     clear_request_context()
 
 
 @task_failure.connect
 def clear_failed_task_request_context(
+    task_id: str | None = None,
+    exception: BaseException | None = None,
+    task: object | None = None,
     **kwargs: object,
 ) -> None:
-    """Clear correlation state after task failure."""
+    """Record failed completion and clear task context."""
+    if task_id:
+        task_name = str(
+            getattr(task, "name", task.__class__.__name__)
+            if task is not None
+            else "unknown"
+        )
+        task_finished(
+            task_id,
+            task_name,
+            "failed",
+            exception=exception,
+        )
+
     clear_request_context()
+
+
+@task_retry.connect
+def log_task_retry(
+    request: object | None = None,
+    reason: BaseException | None = None,
+    **kwargs: object,
+) -> None:
+    """Record task retry attempts."""
+    if request is None:
+        return
+
+    task_id = str(getattr(request, "id", ""))
+    task_name = str(getattr(request, "task", "unknown"))
+    retries = int(getattr(request, "retries", 0))
+
+    if task_id:
+        task_retried(
+            task_id=task_id,
+            task_name=task_name,
+            reason=reason,
+            retries=retries,
+        )
