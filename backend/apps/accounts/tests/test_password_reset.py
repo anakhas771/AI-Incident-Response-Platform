@@ -11,6 +11,13 @@ from apps.accounts.models import PasswordResetToken, Role, User
 from apps.accounts.token_utils import hash_lifecycle_token
 
 
+@pytest.fixture(autouse=True)
+def clear_throttle_cache():
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.mark.django_db
 def test_password_reset_request_stores_only_token_hash(
     monkeypatch, django_capture_on_commit_callbacks
@@ -92,3 +99,74 @@ def test_password_reset_request_is_rate_limited():
     response = client.post(url, {"email": "unknown@example.com"})
 
     assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_rejects_invalid_token():
+    response = APIClient().post(
+        reverse("accounts:auth-password-reset-confirm"),
+        {
+            "token": "x" * 64,
+            "new_password": "NewSecurePassword123!",
+            "new_password_confirm": "NewSecurePassword123!",
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "token" in response.data
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_rejects_expired_token():
+    user = User.objects.create_user(
+        email="expired@test.com",
+        password="OldPassword123!",
+        role=Role.VIEWER,
+    )
+    raw_token = "e" * 64
+    PasswordResetToken.objects.create(
+        user=user,
+        token=hash_lifecycle_token(raw_token),
+        expires_at=timezone.now() - timedelta(minutes=1),
+    )
+
+    response = APIClient().post(
+        reverse("accounts:auth-password-reset-confirm"),
+        {
+            "token": raw_token,
+            "new_password": "NewSecurePassword123!",
+            "new_password_confirm": "NewSecurePassword123!",
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "token" in response.data
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_rejects_reused_token():
+    user = User.objects.create_user(
+        email="reused@test.com",
+        password="OldPassword123!",
+        role=Role.VIEWER,
+    )
+    raw_token = "u" * 64
+    PasswordResetToken.objects.create(
+        user=user,
+        token=hash_lifecycle_token(raw_token),
+        expires_at=timezone.now() + timedelta(hours=24),
+    )
+    client = APIClient()
+    url = reverse("accounts:auth-password-reset-confirm")
+    payload = {
+        "token": raw_token,
+        "new_password": "NewSecurePassword123!",
+        "new_password_confirm": "NewSecurePassword123!",
+    }
+
+    first_response = client.post(url, payload)
+    second_response = client.post(url, payload)
+
+    assert first_response.status_code == status.HTTP_200_OK
+    assert second_response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "token" in second_response.data
