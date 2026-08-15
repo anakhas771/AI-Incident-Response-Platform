@@ -7,7 +7,19 @@ task routing, retry policies, and auto-discovery across installed Django applica
 import os
 
 from celery import Celery
+from celery.signals import (
+    before_task_publish,
+    task_failure,
+    task_postrun,
+    task_prerun,
+)
 from kombu import Exchange, Queue
+
+from apps.common.correlation import (
+    clear_request_context,
+    get_current_request_id,
+    set_request_context,
+)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
 
@@ -50,3 +62,49 @@ app.autodiscover_tasks()
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")
+
+
+@before_task_publish.connect
+def propagate_request_id(
+    sender: str | None = None,
+    headers: dict[str, object] | None = None,
+    **kwargs: object,
+) -> None:
+    """Propagate the current HTTP request ID into Celery task headers."""
+    if headers is None:
+        return
+
+    request_id = get_current_request_id()
+    if request_id:
+        headers["request_id"] = request_id
+
+
+@task_prerun.connect
+def restore_request_id_for_task(
+    task: object,
+    task_id: str | None = None,
+    **kwargs: object,
+) -> None:
+    """Restore correlation context inside the Celery worker."""
+    task_request = getattr(task, "request", None)
+    headers = getattr(task_request, "headers", {}) or {}
+    request_id = str(headers.get("request_id", ""))
+
+    if request_id:
+        set_request_context(request_id)
+
+
+@task_postrun.connect
+def clear_task_request_context(
+    **kwargs: object,
+) -> None:
+    """Prevent correlation state leaking between Celery tasks."""
+    clear_request_context()
+
+
+@task_failure.connect
+def clear_failed_task_request_context(
+    **kwargs: object,
+) -> None:
+    """Clear correlation state after task failure."""
+    clear_request_context()

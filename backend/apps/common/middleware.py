@@ -1,34 +1,24 @@
 import logging
-import threading
 import time
-import uuid
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.deprecation import MiddlewareMixin
 
+from .correlation import (
+    clear_request_context,
+    get_current_org_id,
+    get_current_request_id,
+    get_current_user_id,
+    normalize_request_id,
+    set_request_context,
+)
+
 logger = logging.getLogger(__name__)
-
-# Thread-local storage for request context
-
-
-_thread_locals = threading.local()
-
-
-def get_current_request_id() -> str:
-    return getattr(_thread_locals, "request_id", "")
-
-
-def get_current_user_id() -> str:
-    return getattr(_thread_locals, "user_id", "")
-
-
-def get_current_org_id() -> str:
-    return getattr(_thread_locals, "org_id", "")
 
 
 class RequestContextFilter(logging.Filter):
     """
-    Injects request_id, user_id, and org_id into log records.
+    Inject request correlation context into log records.
     """
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -40,18 +30,16 @@ class RequestContextFilter(logging.Filter):
 
 class RequestLogMiddleware(MiddlewareMixin):
     """
-    Middleware to log requests, durations, and status codes.
-    Injects request context into thread locals for structured logging.
+    Attach request correlation context, log API requests, and return
+    the request ID to API clients.
     """
 
     def process_request(self, request: HttpRequest) -> None:
-        request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
-        request.request_id = request_id  # type: ignore
-        request.start_time = time.time()  # type: ignore
+        request_id = normalize_request_id(request.headers.get("X-Request-ID"))
+        request.request_id = request_id  # type: ignore[attr-defined]
+        request.start_time = time.time()  # type: ignore[attr-defined]
 
-        _thread_locals.request_id = request_id
-        _thread_locals.user_id = ""
-        _thread_locals.org_id = ""
+        set_request_context(request_id)
 
     def process_response(
         self, request: HttpRequest, response: HttpResponse
@@ -59,23 +47,23 @@ class RequestLogMiddleware(MiddlewareMixin):
         if not hasattr(request, "start_time"):
             return response
 
-        duration = time.time() - request.start_time  # type: ignore
-        duration_ms = int(duration * 1000)
+        duration_ms = int((time.time() - request.start_time) * 1000)  # type: ignore[attr-defined]
 
         user_id = ""
         org_id = ""
+
         if hasattr(request, "user") and request.user.is_authenticated:
             user_id = str(request.user.id)
-            if (
-                hasattr(request.user, "organization_id")
-                and request.user.organization_id
-            ):
+
+            if getattr(request.user, "organization_id", None):
                 org_id = str(request.user.organization_id)
 
-        _thread_locals.user_id = user_id
-        _thread_locals.org_id = org_id
+        set_request_context(
+            request_id=getattr(request, "request_id", ""),
+            user_id=user_id,
+            org_id=org_id,
+        )
 
-        # Skip logging for health checks or static files if desired, but we log all API requests
         if request.path.startswith("/api/"):
             logger.info(
                 "Completed request",
@@ -87,14 +75,14 @@ class RequestLogMiddleware(MiddlewareMixin):
                 },
             )
 
-        # Clean up thread locals
-        _thread_locals.request_id = ""
-        _thread_locals.user_id = ""
-        _thread_locals.org_id = ""
+        request_id = getattr(request, "request_id", "")
+        if request_id:
+            response["X-Request-ID"] = request_id
 
+        clear_request_context()
         return response
 
     def process_exception(self, request: HttpRequest, exception: Exception) -> None:
-        _thread_locals.request_id = ""
-        _thread_locals.user_id = ""
-        _thread_locals.org_id = ""
+        # Preserve the correlation context during Django's exception
+        # handling. process_response() performs the final cleanup.
+        return None
