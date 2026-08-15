@@ -78,3 +78,5 @@ __pycache__/
 node_modules/
 dist/
 *.tsbuildinfo
+
+backend.env
