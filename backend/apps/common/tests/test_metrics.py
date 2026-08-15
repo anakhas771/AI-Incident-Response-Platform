@@ -1,0 +1,80 @@
+from apps.common.metrics import metrics
+
+
+def setup_function():
+    metrics.reset()
+
+
+def teardown_function():
+    metrics.reset()
+
+
+def test_http_request_metrics_are_recorded():
+    metrics.record_http_request(
+        method="GET",
+        route="/api/v1/health/",
+        status_code=200,
+        duration_ms=12.5,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["http_requests_total"] == {
+        "GET|/api/v1/health/|2xx": 1,
+    }
+    assert snapshot["http_request_duration_ms"]["/api/v1/health/"] == [12.5]
+
+
+def test_http_status_class_is_low_cardinality():
+    metrics.record_http_request(
+        method="POST",
+        route="/api/v1/test/",
+        status_code=503,
+        duration_ms=42.0,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["http_requests_total"] == {
+        "POST|/api/v1/test/|5xx": 1,
+    }
+
+
+def test_celery_success_metrics_are_recorded():
+    metrics.record_celery_task(
+        task_name="demo.task",
+        outcome="success",
+        duration_ms=25.4,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["celery_tasks_total"] == {
+        "demo.task|success": 1,
+    }
+    assert snapshot["celery_task_duration_ms"]["demo.task"] == [25.4]
+
+
+def test_celery_failure_metrics_are_recorded():
+    metrics.record_celery_task(
+        task_name="demo.task",
+        outcome="failed",
+        duration_ms=80.1,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["celery_tasks_total"] == {
+        "demo.task|failed": 1,
+    }
+
+
+def test_celery_retry_metrics_are_recorded():
+    metrics.record_celery_retry("demo.task")
+    metrics.record_celery_retry("demo.task")
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["celery_task_retries_total"] == {
+        "demo.task": 2,
+    }

@@ -3,6 +3,7 @@ import time
 from typing import Any
 
 from apps.common.correlation import get_current_request_id
+from apps.common.metrics import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,12 @@ def task_finished(
         else None
     )
 
+    metrics.record_celery_task(
+        task_name=task_name,
+        outcome=status,
+        duration_ms=duration_ms,
+    )
+
     payload: dict[str, Any] = {
         "task_name": task_name,
         "task_id": task_id,
@@ -64,6 +71,8 @@ def task_retried(
     retries: int,
 ) -> None:
     """Emit a task retry event."""
+    metrics.record_celery_retry(task_name)
+
     logger.warning(
         "Celery task retrying",
         extra={

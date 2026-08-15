@@ -12,6 +12,7 @@ from .correlation import (
     normalize_request_id,
     set_request_context,
 )
+from .metrics import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,9 @@ class RequestLogMiddleware(MiddlewareMixin):
         if not hasattr(request, "start_time"):
             return response
 
-        duration_ms = int((time.time() - request.start_time) * 1000)  # type: ignore[attr-defined]
+        duration_ms = int(
+            (time.time() - request.start_time) * 1000  # type: ignore[attr-defined]
+        )
 
         user_id = ""
         org_id = ""
@@ -65,6 +68,19 @@ class RequestLogMiddleware(MiddlewareMixin):
         )
 
         if request.path.startswith("/api/"):
+            route = "unknown"
+            resolver_match = getattr(request, "resolver_match", None)
+
+            if resolver_match is not None:
+                route = getattr(resolver_match, "route", None) or "unknown"
+
+            metrics.record_http_request(
+                method=request.method or "",
+                route=route,
+                status_code=response.status_code,
+                duration_ms=duration_ms,
+            )
+
             logger.info(
                 "Completed request",
                 extra={
