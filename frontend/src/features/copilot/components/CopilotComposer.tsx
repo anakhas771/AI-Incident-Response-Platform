@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CopilotModel } from '../types';
-import { Send, Square, Sparkles, HelpCircle } from 'lucide-react';
+import { Send, Square, HelpCircle } from 'lucide-react';
 
 export interface CopilotComposerProps {
   isStreaming: boolean;
@@ -14,9 +14,6 @@ export interface CopilotComposerProps {
   initialPrompt?: string;
 }
 
-/**
- * Enterprise sticky composer with auto-resize textarea, model selector, stop generation, and accessible keyboard shortcuts.
- */
 export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
   ({
     isStreaming,
@@ -38,7 +35,6 @@ export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
       }
     }, [initialPrompt]);
 
-    // Auto resize textarea up to 6 lines (approx 140px)
     useEffect(() => {
       const el = textareaRef.current;
       if (el) {
@@ -79,89 +75,81 @@ export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && onOpenSearch) {
         e.preventDefault();
         onOpenSearch();
-        return;
       }
     };
 
     const isSubmitDisabled = !prompt.trim() || isStreaming;
 
     return (
-      <div className="sticky bottom-0 z-20 w-full bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800/80 p-3 sm:p-4">
-        <div className="max-w-4xl mx-auto space-y-2">
-          {/* Main Composer Box */}
-          <div className="relative flex flex-col rounded-xl bg-zinc-900/90 border border-zinc-800 focus-within:border-indigo-500/60 shadow-xl transition-all">
-            {/* Input Textarea */}
+      <div className="sticky bottom-0 z-20 w-full border-t border-zinc-800/80 bg-zinc-950 px-3 py-3 sm:px-5 sm:py-4">
+        <div className="mx-auto max-w-4xl">
+          <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/70 transition-colors focus-within:border-zinc-700 focus-within:bg-zinc-900">
             <textarea
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask Enterprise Copilot about incidents, runbooks, logs, or SQL telemetry... (Enter to send, Shift+Enter for new line)"
+              placeholder="Ask about incidents, telemetry, runbooks, or evidence…"
               rows={1}
               aria-label="Enterprise Copilot Prompt Input"
-              className="w-full px-4 py-3 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none resize-none overflow-y-auto leading-relaxed"
+              className="w-full resize-none overflow-y-auto bg-transparent px-4 py-3.5 text-sm leading-6 text-zinc-100 placeholder-zinc-600 focus:outline-none"
             />
 
-            {/* Bottom Actions Row (Model Selector + Submit/Stop Button) */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-800/60 bg-zinc-900/50 rounded-b-xl">
-              <div className="flex items-center gap-2">
-                {/* Model Selector */}
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-zinc-800/80 border border-zinc-700/60 text-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <select
-                    value={currentModel}
-                    onChange={(e) => onSelectModel?.(e.target.value as CopilotModel)}
-                    className="bg-transparent text-zinc-200 font-medium focus:outline-none cursor-pointer"
-                    aria-label="Select AI Engine Model"
-                  >
-                    <option value="gpt-4o">GPT-4o (Reasoning & RAG)</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo (Fast Response)</option>
-                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Code & Analysis)</option>
-                    <option value="enterprise-rag">Enterprise RAG (Internal KBs)</option>
-                  </select>
-                </div>
+            <div className="flex items-center justify-between border-t border-zinc-800/70 px-3 py-2">
+              <div className="flex items-center gap-2 text-xs">
+                <select
+                  value={currentModel}
+                  onChange={(e) => onSelectModel?.(e.target.value as CopilotModel)}
+                  className="max-w-[230px] bg-transparent font-medium text-zinc-400 focus:outline-none"
+                  aria-label="Select AI Engine Model"
+                >
+                  <option value="gpt-4o">GPT-4o</option>
+                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                  <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                  <option value="enterprise-rag">Enterprise RAG</option>
+                </select>
 
-                {/* Keyboard Shortcuts Hint */}
                 {onOpenShortcuts && (
                   <button
                     onClick={onOpenShortcuts}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                    className="hidden items-center gap-1 rounded px-1.5 py-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300 sm:flex"
                     aria-label="View Keyboard Shortcuts"
                     title="Press ? for shortcuts"
                   >
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Shortcuts</span>
+                    <HelpCircle className="h-3.5 w-3.5" />
+                    Shortcuts
                   </button>
                 )}
               </div>
 
-              {/* Submit / Stop Buttons */}
-              <div className="flex items-center gap-2">
-                {isStreaming ? (
-                  <button
-                    onClick={onStopGeneration}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-semibold text-xs transition-colors"
-                    aria-label="Stop generating response"
-                    title="Stop generation (Esc)"
-                  >
-                    <Square className="w-3.5 h-3.5 fill-rose-400" />
-                    <span>Stop</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleSubmit}
-                    disabled={isSubmitDisabled}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-600/20 disabled:shadow-none"
-                    aria-label="Send prompt to Enterprise Copilot"
-                    title="Send message (Enter)"
-                  >
-                    <span>Send</span>
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+              {isStreaming ? (
+                <button
+                  onClick={onStopGeneration}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-900/60 bg-rose-950/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-950/40"
+                  aria-label="Stop generating response"
+                  title="Stop generation (Esc)"
+                >
+                  <Square className="h-3.5 w-3.5 fill-rose-400" />
+                  Stop
+                </button>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitDisabled}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                  aria-label="Send prompt to Enterprise Copilot"
+                  title="Send message (Enter)"
+                >
+                  Send
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
+
+          <p className="mt-2 text-center text-[10px] text-zinc-700">
+            Enter to send · Shift+Enter for a new line · Esc to stop generation
+          </p>
         </div>
       </div>
     );
