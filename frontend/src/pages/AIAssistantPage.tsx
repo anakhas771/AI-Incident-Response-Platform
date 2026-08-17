@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { useCopilotChat } from '../features/copilot/hooks/useCopilotChat';
 import { CopilotSidebar, CopilotChatWindow } from '../features/copilot/components';
 import { useIncidentStore } from '../stores/useIncidentStore';
@@ -109,135 +110,186 @@ export const AIAssistantPage: React.FC = () => {
   );
 
   return (
-    <div className="relative flex min-h-[min(760px,calc(100dvh-10.5rem))] h-[min(900px,calc(100dvh-10.5rem))] flex-col overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/20">
-      <OfflineBanner />
-
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/95 px-4 py-2.5 text-xs backdrop-blur-xl">
-        <div className="flex min-w-0 items-center gap-3">
-          <button
-            onClick={() => setMobileDrawerOpen(true)}
-            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-zinc-200 md:hidden"
-            aria-label="Toggle copilot sidebar"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-
-          <div className="hidden shrink-0 sm:block">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
-              Investigation context
-            </p>
-          </div>
-
-          <select
-            value={selectedIncidentId}
-            onChange={(e) => setSelectedIncidentId(e.target.value)}
-            aria-label="Select Incident Context"
-            className="min-w-0 max-w-[min(65vw,520px)] bg-transparent text-xs font-medium text-zinc-300 outline-none transition-colors focus:text-zinc-100"
-          >
-            {incidents.map((inc) => (
-              <option key={inc.id} value={inc.id}>
-                {inc.title} ({inc.severity})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {activeIncident && (
-          <div className="hidden items-center gap-3 text-[10px] font-mono text-zinc-600 sm:flex">
-            <span>{activeIncident.id}</span>
-            <span>{activeIncident.severity}</span>
-          </div>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      className="relative isolate flex h-full min-h-0 flex-col overflow-hidden bg-[#09090b] text-zinc-100"
+    >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl"
+          animate={{ x: [0, 45, 0], y: [0, 30, 0], opacity: [0.45, 0.7, 0.45] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -right-20 top-1/3 h-80 w-80 rounded-full bg-cyan-400/[0.07] blur-3xl"
+          animate={{ x: [0, -35, 0], y: [0, 40, 0], opacity: [0.35, 0.55, 0.35] }}
+          transition={{ duration: 17, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute bottom-[-8rem] left-1/3 h-96 w-96 rounded-full bg-violet-500/[0.05] blur-3xl"
+          animate={{ x: [0, 30, 0], opacity: [0.25, 0.45, 0.25] }}
+          transition={{ duration: 19, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.05),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(34,211,238,0.035),transparent_28%)]" />
+        <div className="absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px]" />
       </div>
 
-      <ChatErrorBoundary>
-        <div className="relative flex min-h-0 flex-1 overflow-hidden">
-          <div className="sticky top-0 hidden h-full min-h-0 shrink-0 self-start md:block">
-            <CopilotSidebar
-              sessions={filteredSessions}
-              activeSessionId={activeSessionId}
-              isLoading={isLoadingSessions}
-              searchQuery={searchQuery}
-              filter={filter}
-              onSelectSession={(id) => selectSession(id)}
-              onCreateSession={handleNewChat}
-              onRenameSession={(id, title) => renameSession(id, title)}
-              onTogglePinSession={(id) => togglePinSession(id)}
-              onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
-              onDeleteSession={(id) => deleteSession(id)}
-              onSearchChange={(q) => setSearchQuery(q)}
-              onFilterChange={(f) => setFilter(f)}
-            />
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        <OfflineBanner />
+
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.45 }}
+          className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-zinc-950/75 px-4 py-2.5 text-xs backdrop-blur-xl"
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              onClick={() => setMobileDrawerOpen(true)}
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-white/[0.05] hover:text-zinc-200 md:hidden"
+              aria-label="Toggle copilot sidebar"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+
+            <div className="hidden shrink-0 sm:block">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-300/70">
+                Investigation context
+              </p>
+            </div>
+
+            <select
+              value={selectedIncidentId}
+              onChange={(e) => setSelectedIncidentId(e.target.value)}
+              aria-label="Select Incident Context"
+              className="min-w-0 max-w-[min(65vw,520px)] rounded-md border border-white/[0.06] bg-white/[0.025] px-2 py-1 text-xs font-medium text-zinc-300 outline-none transition-colors focus:border-indigo-400/30 focus:text-zinc-100"
+            >
+              {incidents.map((inc) => (
+                <option key={inc.id} value={inc.id}>
+                  {inc.title} ({inc.severity})
+                </option>
+              ))}
+            </select>
           </div>
 
-          {mobileDrawerOpen && (
-            <div className="fixed inset-0 z-50 flex md:hidden">
-              <div className="h-full w-[min(88vw,21rem)] border-r border-zinc-800 bg-zinc-950 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-zinc-800/80 px-3 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
-                    Investigations
-                  </p>
-                  <button
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="rounded-md p-1.5 text-zinc-600 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
-                    aria-label="Close mobile sidebar"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="h-[calc(100%-3.25rem)]">
-                  <CopilotSidebar
-                    sessions={filteredSessions}
-                    activeSessionId={activeSessionId}
-                    isLoading={isLoadingSessions}
-                    searchQuery={searchQuery}
-                    filter={filter}
-                    onSelectSession={(id) => {
-                      selectSession(id);
-                      setMobileDrawerOpen(false);
-                    }}
-                    onCreateSession={handleNewChat}
-                    onRenameSession={(id, title) => renameSession(id, title)}
-                    onTogglePinSession={(id) => togglePinSession(id)}
-                    onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
-                    onDeleteSession={(id) => deleteSession(id)}
-                    onSearchChange={(q) => setSearchQuery(q)}
-                    onFilterChange={(f) => setFilter(f)}
-                  />
-                </div>
-              </div>
-              <div
-                className="flex-1 bg-black/60 backdrop-blur-sm"
-                onClick={() => setMobileDrawerOpen(false)}
-              />
+          {activeIncident && (
+            <div className="hidden items-center gap-3 text-[10px] font-mono text-zinc-500 sm:flex">
+              <span className="text-indigo-300/60">{activeIncident.id}</span>
+              <span className="rounded-full border border-rose-400/10 bg-rose-400/[0.04] px-2 py-0.5 text-rose-300/70">
+                {activeIncident.severity}
+              </span>
             </div>
           )}
+        </motion.div>
 
-          <CopilotChatWindow
-            session={activeSession}
-            messages={messages}
-            isStreaming={isStreaming}
-            isLoadingMessages={isLoadingMessages}
-            error={error}
-            currentModel={currentModel}
-            tokenUsage={tokenUsage}
-            confidenceScore={confidenceScore}
-            onSendPrompt={handleSendMessageWithContext}
-            onStopGeneration={stopGeneration}
-            onRegenerate={regenerateResponse}
-            onRetry={retryResponse}
-            onSelectModel={setCurrentModel}
-            onOpenShortcuts={() => setShortcutsOpen(true)}
-            onNewSession={handleNewChat}
-            onOpenSearch={() => setSearchQuery('')}
-            onClearError={clearError}
-            onOpenDocumentPanel={handleOpenDocumentPanel}
-          />
-        </div>
-      </ChatErrorBoundary>
+        <ChatErrorBoundary>
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              className="sticky top-0 hidden h-full min-h-0 shrink-0 self-start md:block"
+            >
+              <CopilotSidebar
+                sessions={filteredSessions}
+                activeSessionId={activeSessionId}
+                isLoading={isLoadingSessions}
+                searchQuery={searchQuery}
+                filter={filter}
+                onSelectSession={(id) => selectSession(id)}
+                onCreateSession={handleNewChat}
+                onRenameSession={(id, title) => renameSession(id, title)}
+                onTogglePinSession={(id) => togglePinSession(id)}
+                onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
+                onDeleteSession={(id) => deleteSession(id)}
+                onSearchChange={(q) => setSearchQuery(q)}
+                onFilterChange={(f) => setFilter(f)}
+              />
+            </motion.div>
 
-      <KeyboardShortcutsModal />
-    </div>
+            {mobileDrawerOpen && (
+              <div className="fixed inset-0 z-50 flex md:hidden">
+                <motion.div
+                  initial={{ x: -24, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.28 }}
+                  className="h-full w-[min(88vw,21rem)] border-r border-white/[0.08] bg-zinc-950/95 shadow-2xl backdrop-blur-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-300/70">
+                      Investigations
+                    </p>
+                    <button
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className="rounded-md p-1.5 text-zinc-600 transition-colors hover:bg-white/[0.05] hover:text-zinc-200"
+                      aria-label="Close mobile sidebar"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="h-[calc(100%-3.25rem)]">
+                    <CopilotSidebar
+                      sessions={filteredSessions}
+                      activeSessionId={activeSessionId}
+                      isLoading={isLoadingSessions}
+                      searchQuery={searchQuery}
+                      filter={filter}
+                      onSelectSession={(id) => {
+                        selectSession(id);
+                        setMobileDrawerOpen(false);
+                      }}
+                      onCreateSession={handleNewChat}
+                      onRenameSession={(id, title) => renameSession(id, title)}
+                      onTogglePinSession={(id) => togglePinSession(id)}
+                      onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
+                      onDeleteSession={(id) => deleteSession(id)}
+                      onSearchChange={(q) => setSearchQuery(q)}
+                      onFilterChange={(f) => setFilter(f)}
+                    />
+                  </div>
+                </motion.div>
+                <div
+                  className="flex-1 bg-black/65 backdrop-blur-sm"
+                  onClick={() => setMobileDrawerOpen(false)}
+                />
+              </div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              className="min-h-0 min-w-0 flex-1"
+            >
+              <CopilotChatWindow
+                session={activeSession}
+                messages={messages}
+                isStreaming={isStreaming}
+                isLoadingMessages={isLoadingMessages}
+                error={error}
+                currentModel={currentModel}
+                tokenUsage={tokenUsage}
+                confidenceScore={confidenceScore}
+                onSendPrompt={handleSendMessageWithContext}
+                onStopGeneration={stopGeneration}
+                onRegenerate={regenerateResponse}
+                onRetry={retryResponse}
+                onSelectModel={setCurrentModel}
+                onOpenShortcuts={() => setShortcutsOpen(true)}
+                onNewSession={handleNewChat}
+                onOpenSearch={() => setSearchQuery('')}
+                onClearError={clearError}
+                onOpenDocumentPanel={handleOpenDocumentPanel}
+              />
+            </motion.div>
+          </div>
+        </ChatErrorBoundary>
+
+        <KeyboardShortcutsModal />
+      </div>
+    </motion.div>
   );
 };
 
