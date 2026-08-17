@@ -6,13 +6,9 @@ import { useCommandStore } from '../stores/useCommandStore';
 import { KeyboardShortcutsModal } from '../components/navigation/KeyboardShortcutsModal';
 import { OfflineBanner } from '../components/ui/OfflineBanner';
 import { ChatErrorBoundary } from '../components/ui/ChatErrorBoundary';
-import { Shield, Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-/**
- * Enterprise AI Copilot Page
- * production-quality assistant combining RAG knowledge, telemetry analysis, and automated runbook execution.
- */
 export const AIAssistantPage: React.FC = () => {
   const {
     filteredSessions,
@@ -64,7 +60,6 @@ export const AIAssistantPage: React.FC = () => {
     }
   }, [activeSessionId, filteredSessions, selectSession]);
 
-  // Global Keyboard shortcuts: ? for shortcuts, Ctrl+N for new chat
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isInput =
@@ -114,30 +109,30 @@ export const AIAssistantPage: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-full bg-zinc-950 text-zinc-100 relative overflow-hidden">
-      {/* Offline Alert Banner */}
+    <div className="relative flex h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       <OfflineBanner />
 
-      {/* Enterprise Incident Context Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/60 border-b border-zinc-800 text-xs text-zinc-400 shrink-0">
-        <div className="flex items-center gap-2">
-          {/* Mobile menu toggle */}
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950 px-4 py-2.5 text-xs">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => setMobileDrawerOpen(true)}
-            className="md:hidden p-1 rounded hover:bg-zinc-800 text-zinc-300"
+            className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-zinc-200 md:hidden"
             aria-label="Toggle copilot sidebar"
           >
-            <Menu className="w-4 h-4" />
+            <Menu className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-1.5 text-indigo-400 font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Enterprise Copilot Context:</span>
+
+          <div className="hidden shrink-0 sm:block">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
+              Investigation context
+            </p>
           </div>
+
           <select
             value={selectedIncidentId}
             onChange={(e) => setSelectedIncidentId(e.target.value)}
             aria-label="Select Incident Context"
-            className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-lg px-2.5 py-1 font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+            className="min-w-0 max-w-[min(65vw,520px)] bg-transparent text-xs font-medium text-zinc-300 outline-none transition-colors focus:text-zinc-100"
           >
             {incidents.map((inc) => (
               <option key={inc.id} value={inc.id}>
@@ -148,26 +143,16 @@ export const AIAssistantPage: React.FC = () => {
         </div>
 
         {activeIncident && (
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-zinc-500 font-mono">ID: {activeIncident.id}</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border ${
-                activeIncident.severity === 'CRITICAL'
-                  ? 'bg-rose-950/80 text-rose-400 border-rose-800'
-                  : 'bg-amber-950/80 text-amber-400 border-amber-800'
-              }`}
-            >
-              {activeIncident.severity}
-            </span>
+          <div className="hidden items-center gap-3 text-[10px] font-mono text-zinc-600 sm:flex">
+            <span>{activeIncident.id}</span>
+            <span>{activeIncident.severity}</span>
           </div>
         )}
       </div>
 
-      {/* Main Workspace Grid: CopilotSidebar + CopilotChatWindow */}
       <ChatErrorBoundary>
-        <div className="flex flex-1 min-h-0 relative">
-          {/* Sidebar for Desktop */}
-          <div className="hidden md:block h-full">
+        <div className="relative flex min-h-0 flex-1">
+          <div className="hidden h-full md:block">
             <CopilotSidebar
               sessions={filteredSessions}
               activeSessionId={activeSessionId}
@@ -185,21 +170,19 @@ export const AIAssistantPage: React.FC = () => {
             />
           </div>
 
-          {/* Sidebar Drawer for Mobile */}
           {mobileDrawerOpen && (
-            <div className="md:hidden fixed inset-0 z-50 flex">
-              <div className="w-72 h-full bg-zinc-900 border-r border-zinc-800">
-                <div className="flex items-center justify-between p-3 border-b border-zinc-800">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-400">
-                    <Shield className="w-3.5 h-3.5" />
-                    <span>Investigations</span>
-                  </div>
+            <div className="fixed inset-0 z-50 flex md:hidden">
+              <div className="h-full w-72 border-r border-zinc-800 bg-zinc-950">
+                <div className="flex items-center justify-between border-b border-zinc-800/80 px-3 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
+                    Investigations
+                  </p>
                   <button
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="p-1 rounded hover:bg-zinc-800 text-zinc-400"
+                    className="rounded-md p-1.5 text-zinc-600 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
                     aria-label="Close mobile sidebar"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
                 <CopilotSidebar
@@ -228,7 +211,6 @@ export const AIAssistantPage: React.FC = () => {
             </div>
           )}
 
-          {/* Chat Window Workspace */}
           <CopilotChatWindow
             session={activeSession}
             messages={messages}
@@ -252,7 +234,6 @@ export const AIAssistantPage: React.FC = () => {
         </div>
       </ChatErrorBoundary>
 
-      {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal />
     </div>
   );
