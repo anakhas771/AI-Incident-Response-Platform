@@ -2,4 +2,7 @@ node_modules
 dist
 build
 coverage
-*.lock
+package-lock.json
+vite.config.js
+vite.config.d.ts
+test_frontend.js
