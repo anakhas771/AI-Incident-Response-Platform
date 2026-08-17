@@ -41,7 +41,9 @@ export const IncidentSummaryPanel: React.FC<IncidentSummaryPanelProps> = React.m
               Problem statement
             </p>
           </div>
-          <span className="text-[10px] uppercase tracking-[0.14em] text-zinc-600">Primary evidence</span>
+          <span className="text-[10px] uppercase tracking-[0.14em] text-zinc-600">
+            Primary evidence
+          </span>
         </div>
 
         {incident.description ? (
@@ -61,7 +63,7 @@ export const IncidentSummaryPanel: React.FC<IncidentSummaryPanelProps> = React.m
             <span className="font-mono text-[10px] text-zinc-600">stderr / ingress</span>
           </div>
           <pre className="overflow-x-auto px-4 py-3 font-mono text-[11px] leading-5 text-zinc-400">
-{`[ERROR] 2026-07-29T18:14:02.941Z auth-pod-789a: Failed to acquire DB lock within 5000ms.
+            {`[ERROR] 2026-07-29T18:14:02.941Z auth-pod-789a: Failed to acquire DB lock within 5000ms.
 [WARN]  Goroutine pool saturated: 1024/1024 active workers.
 [FATAL] OOMKilled: Memory limit of 512Mi exceeded on /api/v1/auth/token endpoint.`}
           </pre>

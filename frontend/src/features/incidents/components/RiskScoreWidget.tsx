@@ -54,7 +54,9 @@ export const RiskScoreWidget: React.FC<RiskScoreWidgetProps> = React.memo(({ met
           </div>
           <p className="mt-2 text-xs text-zinc-500">Current exposure across affected systems</p>
         </div>
-        <span className="text-[10px] font-mono text-zinc-600">{metrics.ai_confidence}% confidence</span>
+        <span className="text-[10px] font-mono text-zinc-600">
+          {metrics.ai_confidence}% confidence
+        </span>
       </div>
 
       <div className="mt-5 flex items-end justify-between gap-4">

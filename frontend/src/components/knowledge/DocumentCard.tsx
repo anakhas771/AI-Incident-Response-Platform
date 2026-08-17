@@ -129,7 +129,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           </div>
           <div className="pl-4">
             <div className="text-[10px] uppercase tracking-[0.14em] text-slate-600">Embeddings</div>
-            <div className="mt-1 text-sm font-medium text-slate-200">{document.embedding_count}</div>
+            <div className="mt-1 text-sm font-medium text-slate-200">
+              {document.embedding_count}
+            </div>
           </div>
         </div>
       </div>
@@ -170,7 +172,12 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
               Reindex
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" onClick={() => onView(document)} className="h-8 px-3 text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onView(document)}
+            className="h-8 px-3 text-xs"
+          >
             <Eye className="mr-1.5 h-3.5 w-3.5" />
             Open
           </Button>

@@ -94,7 +94,9 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
                 title="Refresh workspace data"
                 className="rounded-lg border border-subtle bg-surface-elevated p-1.5 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-400' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-400' : ''}`}
+                />
               </button>
 
               <Button variant="secondary" size="sm" onClick={handleCopyShareLink}>
@@ -131,9 +133,8 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
               </h1>
 
               <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
-                Reported by{' '}
-                <span className="text-zinc-200">{incident.created_by.full_name}</span>{' '}
-                · {new Date(incident.created_at).toLocaleString()}
+                Reported by <span className="text-zinc-200">{incident.created_by.full_name}</span> ·{' '}
+                {new Date(incident.created_at).toLocaleString()}
               </p>
             </div>
 
@@ -164,9 +165,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = React.memo(
             </div>
           </div>
 
-          {lastUpdated && (
-            <p className="text-[11px] text-zinc-600">Last synced {lastUpdated}</p>
-          )}
+          {lastUpdated && <p className="text-[11px] text-zinc-600">Last synced {lastUpdated}</p>}
         </div>
       </header>
     );
