@@ -277,7 +277,9 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
                         }}
                         className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
                         title={session.is_archived ? 'Unarchive' : 'Archive'}
-                        aria-label={session.is_archived ? 'Unarchive conversation' : 'Archive conversation'}
+                        aria-label={
+                          session.is_archived ? 'Unarchive conversation' : 'Archive conversation'
+                        }
                       >
                         <Archive className="h-3.5 w-3.5" />
                       </button>

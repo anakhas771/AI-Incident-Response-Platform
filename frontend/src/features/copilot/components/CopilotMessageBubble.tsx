@@ -181,7 +181,10 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
                 </div>
               ) : (
                 <>
-                  <CopilotMarkdown content={message.content} onCitationClick={handleCitationClick} />
+                  <CopilotMarkdown
+                    content={message.content}
+                    onCitationClick={handleCitationClick}
+                  />
                   {message.isStreaming && (
                     <span
                       className="ml-1 inline-block h-4 w-1.5 rounded-sm bg-zinc-400 align-middle animate-pulse"
@@ -212,7 +215,10 @@ export const CopilotMessageBubble: React.FC<CopilotMessageBubbleProps> = React.m
                 )}
 
                 {confidenceScore !== undefined && (
-                  <span className="flex items-center gap-1 text-zinc-500" title={`Confidence Level: ${confidenceLevel}`}>
+                  <span
+                    className="flex items-center gap-1 text-zinc-500"
+                    title={`Confidence Level: ${confidenceLevel}`}
+                  >
                     <Award className="h-3 w-3 text-zinc-600" />
                     {confidenceScore}% confidence
                   </span>
