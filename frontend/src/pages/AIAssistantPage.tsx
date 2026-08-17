@@ -109,10 +109,10 @@ export const AIAssistantPage: React.FC = () => {
   );
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="relative flex min-h-0 h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       <OfflineBanner />
 
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950 px-4 py-2.5 text-xs">
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/95 px-4 py-2.5 text-xs backdrop-blur-xl">
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => setMobileDrawerOpen(true)}
@@ -151,8 +151,8 @@ export const AIAssistantPage: React.FC = () => {
       </div>
 
       <ChatErrorBoundary>
-        <div className="relative flex min-h-0 flex-1">
-          <div className="hidden h-full md:block">
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          <div className="sticky top-0 hidden h-full min-h-0 shrink-0 self-start md:block">
             <CopilotSidebar
               sessions={filteredSessions}
               activeSessionId={activeSessionId}
@@ -172,7 +172,7 @@ export const AIAssistantPage: React.FC = () => {
 
           {mobileDrawerOpen && (
             <div className="fixed inset-0 z-50 flex md:hidden">
-              <div className="h-full w-72 border-r border-zinc-800 bg-zinc-950">
+              <div className="h-full w-[min(88vw,21rem)] border-r border-zinc-800 bg-zinc-950 shadow-2xl">
                 <div className="flex items-center justify-between border-b border-zinc-800/80 px-3 py-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600">
                     Investigations
@@ -185,24 +185,26 @@ export const AIAssistantPage: React.FC = () => {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <CopilotSidebar
-                  sessions={filteredSessions}
-                  activeSessionId={activeSessionId}
-                  isLoading={isLoadingSessions}
-                  searchQuery={searchQuery}
-                  filter={filter}
-                  onSelectSession={(id) => {
-                    selectSession(id);
-                    setMobileDrawerOpen(false);
-                  }}
-                  onCreateSession={handleNewChat}
-                  onRenameSession={(id, title) => renameSession(id, title)}
-                  onTogglePinSession={(id) => togglePinSession(id)}
-                  onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
-                  onDeleteSession={(id) => deleteSession(id)}
-                  onSearchChange={(q) => setSearchQuery(q)}
-                  onFilterChange={(f) => setFilter(f)}
-                />
+                <div className="h-[calc(100%-3.25rem)]">
+                  <CopilotSidebar
+                    sessions={filteredSessions}
+                    activeSessionId={activeSessionId}
+                    isLoading={isLoadingSessions}
+                    searchQuery={searchQuery}
+                    filter={filter}
+                    onSelectSession={(id) => {
+                      selectSession(id);
+                      setMobileDrawerOpen(false);
+                    }}
+                    onCreateSession={handleNewChat}
+                    onRenameSession={(id, title) => renameSession(id, title)}
+                    onTogglePinSession={(id) => togglePinSession(id)}
+                    onArchiveSession={(id, isArchived) => archiveSession(id, isArchived)}
+                    onDeleteSession={(id) => deleteSession(id)}
+                    onSearchChange={(q) => setSearchQuery(q)}
+                    onFilterChange={(f) => setFilter(f)}
+                  />
+                </div>
               </div>
               <div
                 className="flex-1 bg-black/60 backdrop-blur-sm"
