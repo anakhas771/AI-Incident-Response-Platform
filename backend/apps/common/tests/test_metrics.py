@@ -138,3 +138,33 @@ def test_celery_retry_metrics_are_recorded():
     assert snapshot["celery_task_retries_total"] == {
         "demo.task": 2,
     }
+
+
+def test_db_query_metrics_are_recorded():
+    metrics.record_db_query(
+        route="/api/v1/incidents/",
+        duration_ms=15.0,
+    )
+    metrics.record_db_query(
+        route="/api/v1/incidents/",
+        duration_ms=125.0,
+        slow=True,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["db_queries_total"] == {
+        "/api/v1/incidents/": 2,
+    }
+
+    assert snapshot["db_slow_queries_total"] == {
+        "/api/v1/incidents/": 1,
+    }
+
+    assert snapshot["db_query_duration_ms"]["/api/v1/incidents/"] == {
+        "count": 2,
+        "total_ms": 140.0,
+        "min_ms": 15.0,
+        "max_ms": 125.0,
+        "avg_ms": 70.0,
+    }

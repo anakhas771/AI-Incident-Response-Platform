@@ -21,6 +21,10 @@ class MetricsRegistry:
         self.celery_task_duration: dict[str, dict[str, float | int]] = {}
         self.celery_task_retries_total: dict[str, int] = defaultdict(int)
 
+        self.db_queries_total: dict[str, int] = defaultdict(int)
+        self.db_query_duration: dict[str, dict[str, float | int]] = {}
+        self.db_slow_queries_total: dict[str, int] = defaultdict(int)
+
     @staticmethod
     def _record_duration(
         registry: dict[str, dict[str, float | int]],
@@ -79,6 +83,24 @@ class MetricsRegistry:
         with self._lock:
             self.celery_task_retries_total[task_name] += 1
 
+    def record_db_query(
+        self,
+        route: str,
+        duration_ms: float,
+        slow: bool = False,
+    ) -> None:
+        with self._lock:
+            self.db_queries_total[route] += 1
+
+            self._record_duration(
+                self.db_query_duration,
+                route,
+                duration_ms,
+            )
+
+            if slow:
+                self.db_slow_queries_total[route] += 1
+
     @staticmethod
     def _with_average(
         metrics: dict[str, dict[str, float | int]],
@@ -121,6 +143,9 @@ class MetricsRegistry:
                     self.celery_task_duration,
                 ),
                 "celery_task_retries_total": dict(self.celery_task_retries_total),
+                "db_queries_total": dict(self.db_queries_total),
+                "db_query_duration_ms": self._with_average(self.db_query_duration),
+                "db_slow_queries_total": dict(self.db_slow_queries_total),
             }
 
     def reset(self) -> None:
@@ -130,6 +155,9 @@ class MetricsRegistry:
             self.celery_tasks_total.clear()
             self.celery_task_duration.clear()
             self.celery_task_retries_total.clear()
+            self.db_queries_total.clear()
+            self.db_query_duration.clear()
+            self.db_slow_queries_total.clear()
 
 
 metrics = MetricsRegistry()
