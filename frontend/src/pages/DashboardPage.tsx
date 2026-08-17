@@ -27,7 +27,9 @@ export const DashboardPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">Operations overview</h1>
+            <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+              Operations overview
+            </h1>
             <p className="text-sm text-zinc-500 mt-1">Preparing the latest security telemetry.</p>
           </div>
         </div>
@@ -64,7 +66,8 @@ export const DashboardPage: React.FC = () => {
             Command center
           </h1>
           <p className="mt-2 text-sm sm:text-base text-zinc-500 max-w-2xl leading-6">
-            A focused view of incident volume, response performance, system health, and recent AI-assisted activity.
+            A focused view of incident volume, response performance, system health, and recent
+            AI-assisted activity.
           </p>
         </div>
 
@@ -107,8 +110,12 @@ export const DashboardPage: React.FC = () => {
                   </span>
                   <span className="text-[11px] text-zinc-600 font-mono">{criticalIncident.id}</span>
                 </div>
-                <h2 className="mt-1 text-sm font-semibold text-zinc-100 truncate">{criticalIncident.title}</h2>
-                <p className="mt-1 text-xs text-zinc-500 line-clamp-1">{criticalIncident.description}</p>
+                <h2 className="mt-1 text-sm font-semibold text-zinc-100 truncate">
+                  {criticalIncident.title}
+                </h2>
+                <p className="mt-1 text-xs text-zinc-500 line-clamp-1">
+                  {criticalIncident.description}
+                </p>
               </div>
             </div>
 

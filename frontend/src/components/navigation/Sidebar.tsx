@@ -137,7 +137,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 exit={{ opacity: 0 }}
                 className="flex flex-col truncate"
               >
-                <span className="font-semibold text-sm text-zinc-100 tracking-tight">Antigravity</span>
+                <span className="font-semibold text-sm text-zinc-100 tracking-tight">
+                  Antigravity
+                </span>
                 <span className="text-[10px] text-zinc-500 truncate">
                   {organization?.name || 'Security workspace'}
                 </span>
