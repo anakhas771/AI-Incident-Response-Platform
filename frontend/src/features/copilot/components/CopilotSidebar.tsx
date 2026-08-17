@@ -11,6 +11,7 @@ import {
   X,
   MessageSquare,
   Clock,
+  Plus,
 } from 'lucide-react';
 
 export interface CopilotSidebarProps {
@@ -99,25 +100,25 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
 
     return (
       <aside
-        className="flex h-full w-full shrink-0 flex-col border-r border-zinc-800/80 bg-zinc-950 md:w-72"
+        className="sticky top-0 flex h-[calc(100dvh-8.5rem)] w-full shrink-0 self-start flex-col border-r border-zinc-800/80 bg-zinc-950/95 backdrop-blur-xl md:w-72 lg:w-80"
         aria-label="Enterprise AI Copilot Sidebar"
       >
-        <div className="border-b border-zinc-800/80 p-3">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-600">
+        <div className="border-b border-zinc-800/80 px-3 py-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
                 Investigations
               </p>
-              <p className="mt-1 text-xs text-zinc-400">Conversation history</p>
+              <p className="mt-1 truncate text-xs text-zinc-400">Conversation history</p>
             </div>
             <button
               onClick={onCreateSession}
-              className="inline-flex items-center gap-1.5 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs font-semibold text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-100 px-2.5 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition-all hover:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-400/40"
               aria-label="Create new conversation (Ctrl+N)"
               title="Create new conversation (Ctrl+N)"
             >
-              <MessageSquarePlus className="h-3.5 w-3.5" />
-              New
+              <Plus className="h-3.5 w-3.5" />
+              New Investigation
             </button>
           </div>
 
@@ -128,12 +129,12 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search investigations"
-              className="w-full rounded-md border border-zinc-800 bg-zinc-900/70 py-1.5 pl-8 pr-3 text-xs text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-zinc-700"
+              className="w-full rounded-md border border-zinc-800 bg-zinc-900/70 py-2 pl-8 pr-3 text-xs text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-zinc-600 focus:bg-zinc-900"
               aria-label="Search investigations"
             />
           </div>
 
-          <div className="mt-2 flex items-center gap-1 border-b border-zinc-800/70">
+          <div className="mt-3 flex items-center gap-1 border-b border-zinc-800/70">
             {(['all', 'pinned', 'archived'] as const).map((tab) => (
               <button
                 key={tab}
@@ -155,7 +156,7 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
           ref={listRef}
           onKeyDown={handleKeyDown}
           tabIndex={0}
-          className="flex-1 space-y-0.5 overflow-y-auto p-2 focus:outline-none"
+          className="min-h-0 flex-1 space-y-0.5 overflow-y-auto p-2 pr-1 focus:outline-none"
           role="listbox"
           aria-label="Conversation Sessions List"
         >
@@ -189,7 +190,7 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
                   aria-selected={isActive}
                   className={`group relative flex cursor-pointer items-center justify-between rounded-md px-2.5 py-2 transition-colors ${
                     isActive
-                      ? 'bg-zinc-900 text-zinc-100'
+                      ? 'bg-zinc-900 text-zinc-100 ring-1 ring-inset ring-zinc-800'
                       : isFocused
                         ? 'bg-zinc-900/60 text-zinc-200'
                         : 'text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-200'
