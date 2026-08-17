@@ -109,7 +109,7 @@ export const AIAssistantPage: React.FC = () => {
   );
 
   return (
-    <div className="relative flex min-h-0 h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="relative flex min-h-[min(760px,calc(100dvh-10.5rem))] h-[min(900px,calc(100dvh-10.5rem))] flex-col overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/20">
       <OfflineBanner />
 
       <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/95 px-4 py-2.5 text-xs backdrop-blur-xl">
