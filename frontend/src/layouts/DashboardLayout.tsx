@@ -39,9 +39,7 @@ export const DashboardLayout: React.FC = () => {
 
           <div
             className={
-              isCopilotPage
-                ? 'h-full min-h-0 w-full'
-                : 'mx-auto w-full max-w-7xl space-y-6'
+              isCopilotPage ? 'h-full min-h-0 w-full' : 'mx-auto w-full max-w-7xl space-y-6'
             }
           >
             <Suspense fallback={<PageLoader />}>

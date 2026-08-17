@@ -99,7 +99,7 @@ export const CopilotSidebar: React.FC<CopilotSidebarProps> = React.memo(
 
     return (
       <aside
-        className="flex h-full min-h-0 w-full shrink-0 flex-col border-r border-indigo-500/10 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.12),transparent_32%),linear-gradient(180deg,#101014_0%,#09090b_55%,#08080a_100%)] md:w-72"
+        className="flex h-full min-h-0 w-full shrink-0 flex-col border-r border-indigo-500/15 bg-[radial-gradient(circle_at_0%_0%,rgba(99,102,241,0.22),transparent_28%),radial-gradient(circle_at_100%_65%,rgba(34,211,238,0.08),transparent_24%),linear-gradient(180deg,#12121a_0%,#0c0c10_48%,#08080a_100%)] md:w-72"
         aria-label="Enterprise AI Copilot Sidebar"
       >
         <div className="relative shrink-0 border-b border-zinc-800/80 p-3.5">

@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import transactLogo from '../../assets/brand/transact-logo.svg';
+
 import {
   Activity,
   AlertTriangle,
@@ -15,7 +17,6 @@ import {
   LayoutDashboard,
   Plus,
   Settings,
-  ShieldCheck,
   Users,
   X,
 } from 'lucide-react';
@@ -126,8 +127,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       >
         <div className="h-16 px-4 flex items-center justify-between border-b border-white/[0.06]">
           <NavLink to="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-zinc-200 shrink-0">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.04]">
+              <img src={transactLogo} alt="logo" className="h-6 w-6 object-contain" />
             </div>
 
             {!isSidebarCollapsed && (
@@ -137,9 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 exit={{ opacity: 0 }}
                 className="flex flex-col truncate"
               >
-                <span className="font-semibold text-sm text-zinc-100 tracking-tight">
-                  Antigravity
-                </span>
+                <span className="font-semibold text-sm text-zinc-100 tracking-tight">OpsMind</span>
                 <span className="text-[10px] text-zinc-500 truncate">
                   {organization?.name || 'Security workspace'}
                 </span>

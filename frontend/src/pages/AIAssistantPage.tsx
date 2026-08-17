@@ -114,7 +114,7 @@ export const AIAssistantPage: React.FC = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className="relative isolate flex h-full min-h-0 flex-col overflow-hidden bg-[#09090b] text-zinc-100"
+      className="relative isolate flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#09090b] text-zinc-100"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <motion.div
