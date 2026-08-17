@@ -116,7 +116,9 @@ export const CopilotChatWindow: React.FC<CopilotChatWindowProps> = React.memo(
               <div className="border-l border-zinc-800 pl-4 text-right">
                 <div className="flex items-center justify-end gap-1.5 text-xs font-mono text-zinc-400">
                   <Cpu className="h-3.5 w-3.5 text-zinc-600" />
-                  Tokens: {tokenUsage.total_tokens.toLocaleString()}
+                  <span>
+                    Tokens: {tokenUsage.total_tokens.toLocaleString()}
+                  </span>
                 </div>
                 <p className="text-[10px] uppercase tracking-[0.14em] text-zinc-600">Usage</p>
               </div>
