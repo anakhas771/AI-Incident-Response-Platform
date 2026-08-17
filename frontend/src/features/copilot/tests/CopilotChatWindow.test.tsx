@@ -49,7 +49,9 @@ describe('CopilotChatWindow', () => {
 
     expect(screen.getByText('What is the root cause?')).toBeInTheDocument();
     expect(screen.getByText('Connection pool exhausted in primary node.')).toBeInTheDocument();
-    expect(screen.getByText(/30\s+tokens/i)).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent?.replace(/\s+/g, ' ').trim() === '30 tokens')
+    ).toBeInTheDocument();
   });
 
   it('renders stop button when isStreaming is true', () => {
