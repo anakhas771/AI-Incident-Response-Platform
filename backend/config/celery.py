@@ -13,6 +13,7 @@ from celery.signals import (
     task_postrun,
     task_prerun,
     task_retry,
+    task_success,
 )
 from kombu import Exchange, Queue
 
@@ -104,21 +105,26 @@ def restore_request_id_for_task(
         task_started(task_id, task_name)
 
 
-@task_postrun.connect
-def clear_task_request_context(
-    task_id: str | None = None,
-    task: object | None = None,
+@task_success.connect
+def record_successful_task(
+    result: object | None = None,
+    sender: object | None = None,
     **kwargs: object,
 ) -> None:
-    """Record successful completion and clear task context."""
-    if task_id:
-        task_name = str(
-            getattr(task, "name", task.__class__.__name__)
-            if task is not None
-            else "unknown"
-        )
-        task_finished(task_id, task_name, "success")
+    """Record successful task completion."""
+    task = sender
 
+    if task is not None:
+        task_id = str(getattr(getattr(task, "request", None), "id", ""))
+        task_name = str(getattr(task, "name", task.__class__.__name__))
+
+        if task_id:
+            task_finished(task_id, task_name, "success")
+
+
+@task_postrun.connect
+def clear_task_request_context(**kwargs: object) -> None:
+    """Prevent correlation state leaking between Celery tasks."""
     clear_request_context()
 
 

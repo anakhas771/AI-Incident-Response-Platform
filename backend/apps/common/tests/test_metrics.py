@@ -22,7 +22,13 @@ def test_http_request_metrics_are_recorded():
     assert snapshot["http_requests_total"] == {
         "GET|/api/v1/health/|2xx": 1,
     }
-    assert snapshot["http_request_duration_ms"]["/api/v1/health/"] == [12.5]
+    assert snapshot["http_request_duration_ms"]["/api/v1/health/"] == {
+        "count": 1,
+        "total_ms": 12.5,
+        "min_ms": 12.5,
+        "max_ms": 12.5,
+        "avg_ms": 12.5,
+    }
 
 
 def test_http_status_class_is_low_cardinality():
@@ -52,7 +58,61 @@ def test_celery_success_metrics_are_recorded():
     assert snapshot["celery_tasks_total"] == {
         "demo.task|success": 1,
     }
-    assert snapshot["celery_task_duration_ms"]["demo.task"] == [25.4]
+    assert snapshot["celery_task_duration_ms"]["demo.task"] == {
+        "count": 1,
+        "total_ms": 25.4,
+        "min_ms": 25.4,
+        "max_ms": 25.4,
+        "avg_ms": 25.4,
+    }
+
+
+def test_http_durations_are_aggregated():
+    metrics.record_http_request(
+        method="GET",
+        route="/api/v1/health/",
+        status_code=200,
+        duration_ms=10.0,
+    )
+    metrics.record_http_request(
+        method="GET",
+        route="/api/v1/health/",
+        status_code=200,
+        duration_ms=30.0,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["http_request_duration_ms"]["/api/v1/health/"] == {
+        "count": 2,
+        "total_ms": 40.0,
+        "min_ms": 10.0,
+        "max_ms": 30.0,
+        "avg_ms": 20.0,
+    }
+
+
+def test_celery_durations_are_aggregated():
+    metrics.record_celery_task(
+        task_name="demo.task",
+        outcome="success",
+        duration_ms=20.0,
+    )
+    metrics.record_celery_task(
+        task_name="demo.task",
+        outcome="success",
+        duration_ms=40.0,
+    )
+
+    snapshot = metrics.get_snapshot()
+
+    assert snapshot["celery_task_duration_ms"]["demo.task"] == {
+        "count": 2,
+        "total_ms": 60.0,
+        "min_ms": 20.0,
+        "max_ms": 40.0,
+        "avg_ms": 30.0,
+    }
 
 
 def test_celery_failure_metrics_are_recorded():
