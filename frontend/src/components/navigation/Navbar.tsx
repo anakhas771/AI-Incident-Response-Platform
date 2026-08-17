@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Keyboard, Sparkles, Menu } from 'lucide-react';
+import { Bell, Keyboard, Menu, Sparkles } from 'lucide-react';
 import { useCommandStore } from '../../stores/useCommandStore';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
@@ -10,70 +10,62 @@ export const Navbar: React.FC = () => {
   const { setShortcutsOpen, toggleSidebar } = useCommandStore();
 
   return (
-    <header className="sticky top-0 h-14 bg-surface/90 backdrop-blur-md border-b border-subtle flex items-center justify-between px-4 sm:px-6 z-20 shrink-0">
-      {/* Left: Mobile Menu Button & SearchBar */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
+    <header className="sticky top-0 h-16 bg-surface/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-4 sm:px-6 lg:px-8 z-20 shrink-0">
+      <div className="flex items-center gap-3 flex-1 min-w-0 max-w-2xl">
         <button
           type="button"
           onClick={toggleSidebar}
-          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors lg:hidden"
-          title="Open Menu (⌘B)"
+          className="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors lg:hidden"
+          title="Open menu"
           aria-label="Toggle navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="w-full">
+        <div className="w-full max-w-xl">
           <SearchBar />
         </div>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Real-time System Status Indicator */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 text-xs font-mono font-medium">
-          <span className="w-2 h-2 rounded-full bg-red-500 critical-pulse" />
-          <span>1 Critical Incident Active</span>
+      <div className="flex items-center gap-1 sm:gap-2 ml-4">
+        <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/15 bg-emerald-500/[0.05] text-emerald-300 text-[11px] font-medium">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>Systems operational</span>
         </div>
 
-        {/* AI Copilot Quick Launcher */}
         <Link
           to="/ai-assistant"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-950/60 border border-indigo-800/50 text-indigo-300 hover:text-indigo-200 text-xs font-medium transition-all shadow-sm hover:shadow-indigo-500/10"
+          className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/[0.05] transition-colors text-xs font-medium"
           title="Open AI Copilot"
         >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="hidden sm:inline">AI Copilot</span>
+          <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+          <span>Copilot</span>
         </Link>
 
-        {/* Keyboard Shortcuts Trigger */}
         <button
           type="button"
           onClick={() => setShortcutsOpen(true)}
-          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-          title="Keyboard Shortcuts (?)"
+          className="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors"
+          title="Keyboard shortcuts"
           aria-label="Keyboard shortcuts"
         >
           <Keyboard className="w-4 h-4" />
         </button>
 
-        {/* Notifications Icon */}
         <Link
           to="/alerts"
-          className="relative p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-          title="Alerts Queue"
+          className="relative p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors"
+          title="Alerts queue"
           aria-label="Alerts queue"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400" />
         </Link>
 
-        {/* Theme Toggle Button */}
         <ThemeToggle />
 
-        <div className="h-4 w-[1px] bg-zinc-800 mx-0.5 sm:mx-1" />
+        <div className="h-5 w-px bg-white/[0.08] mx-1" />
 
-        {/* User Menu Dropdown */}
         <UserMenu />
       </div>
     </header>
