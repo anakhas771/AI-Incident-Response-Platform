@@ -130,16 +130,19 @@ def clear_task_request_context(**kwargs: object) -> None:
 
 @task_failure.connect
 def clear_failed_task_request_context(
+    sender: object | None = None,
     task_id: str | None = None,
     exception: BaseException | None = None,
     task: object | None = None,
     **kwargs: object,
 ) -> None:
     """Record failed completion and clear task context."""
+    task_obj = task if task is not None else sender
+
     if task_id:
         task_name = str(
-            getattr(task, "name", task.__class__.__name__)
-            if task is not None
+            getattr(task_obj, "name", task_obj.__class__.__name__)
+            if task_obj is not None
             else "unknown"
         )
         task_finished(
