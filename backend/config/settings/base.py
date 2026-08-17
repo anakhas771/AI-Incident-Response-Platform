@@ -137,6 +137,7 @@ REST_FRAMEWORK = {
         "user": "100/minute",
         "auth": "5/minute",
     },
+    "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
 }
 
 # SimpleJWT Authentication Settings
