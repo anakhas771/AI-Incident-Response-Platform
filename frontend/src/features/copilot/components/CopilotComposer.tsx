@@ -81,9 +81,10 @@ export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
     const isSubmitDisabled = !prompt.trim() || isStreaming;
 
     return (
-      <div className="sticky bottom-0 z-20 w-full border-t border-zinc-800/80 bg-zinc-950 px-3 py-3 sm:px-5 sm:py-4">
+      <div className="sticky bottom-0 z-20 w-full border-t border-zinc-800/80 bg-zinc-950/95 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
         <div className="mx-auto max-w-4xl">
-          <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/70 transition-colors focus-within:border-zinc-700 focus-within:bg-zinc-900">
+          <div className="relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/80 shadow-2xl shadow-black/20 transition-all focus-within:border-zinc-700 focus-within:bg-zinc-900">
+            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700/60 to-transparent" />
             <textarea
               ref={textareaRef}
               value={prompt}
@@ -95,12 +96,12 @@ export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
               className="w-full resize-none overflow-y-auto bg-transparent px-4 py-3.5 text-sm leading-6 text-zinc-100 placeholder-zinc-600 focus:outline-none"
             />
 
-            <div className="flex items-center justify-between border-t border-zinc-800/70 px-3 py-2">
-              <div className="flex items-center gap-2 text-xs">
+            <div className="flex flex-col gap-2 border-t border-zinc-800/70 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-2 text-xs">
                 <select
                   value={currentModel}
                   onChange={(e) => onSelectModel?.(e.target.value as CopilotModel)}
-                  className="max-w-[230px] bg-transparent font-medium text-zinc-400 focus:outline-none"
+                  className="max-w-[190px] min-w-0 bg-transparent font-medium text-zinc-400 outline-none hover:text-zinc-200 sm:max-w-[230px]"
                   aria-label="Select AI Engine Model"
                 >
                   <option value="gpt-4o">GPT-4o</option>
@@ -122,28 +123,30 @@ export const CopilotComposer: React.FC<CopilotComposerProps> = React.memo(
                 )}
               </div>
 
-              {isStreaming ? (
-                <button
-                  onClick={onStopGeneration}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-900/60 bg-rose-950/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-950/40"
-                  aria-label="Stop generating response"
-                  title="Stop generation (Esc)"
-                >
-                  <Square className="h-3.5 w-3.5 fill-rose-400" />
-                  Stop
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitDisabled}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
-                  aria-label="Send prompt to Enterprise Copilot"
-                  title="Send message (Enter)"
-                >
-                  Send
-                  <Send className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <div className="flex justify-end">
+                {isStreaming ? (
+                  <button
+                    onClick={onStopGeneration}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-rose-900/60 bg-rose-950/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-950/40"
+                    aria-label="Stop generating response"
+                    title="Stop generation (Esc)"
+                  >
+                    <Square className="h-3.5 w-3.5 fill-rose-400" />
+                    Stop
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitDisabled}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition-all hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
+                    aria-label="Send prompt to Enterprise Copilot"
+                    title="Send message (Enter)"
+                  >
+                    Send
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
