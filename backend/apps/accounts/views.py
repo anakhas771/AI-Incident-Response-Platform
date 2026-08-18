@@ -23,6 +23,7 @@ from .models import (
     Organization,
     OrganizationInvitation,
     PasswordResetToken,
+    Role,
     User,
 )
 from .permissions import IsAdmin, IsResponder, IsSameOrganization
@@ -40,12 +41,7 @@ from .serializers import (
 from .token_utils import hash_lifecycle_token
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Register a new user account",
-    description="Registers a new enterprise user with email, password, role, and optional organization.",
-    responses={201: UserDetailSerializer, 400: OpenApiResponse(description="Validation error")},
-)
+@extend_schema(tags=["Authentication"], summary="Register a new user account", responses={201: UserDetailSerializer, 400: OpenApiResponse(description="Validation error")})
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
@@ -58,29 +54,17 @@ class RegisterView(generics.CreateAPIView):
         return Response(UserDetailSerializer(user, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="User Login (Obtain JWT token pair)",
-    description="Authenticates user using email and password, returning JWT access & refresh tokens alongside user info.",
-)
+@extend_schema(tags=["Authentication"], summary="User Login (Obtain JWT token pair)")
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class: Any = CustomTokenObtainPairSerializer
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Refresh JWT access token",
-    description="Takes a valid refresh token and returns a new access token.",
-)
+@extend_schema(tags=["Authentication"], summary="Refresh JWT access token")
 class CustomTokenRefreshView(TokenRefreshView):
     pass
 
 
-@extend_schema(
-    tags=["Users"],
-    summary="Retrieve or update user profile",
-    description="Returns profile information for the currently authenticated user.",
-)
+@extend_schema(tags=["Users"], summary="Retrieve or update user profile")
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserDetailSerializer
     permission_classes = [IsAuthenticated]
@@ -89,13 +73,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return cast(User, self.request.user)
 
 
-@extend_schema(
-    tags=["Users"],
-    summary="Change user password",
-    description="Allows authenticated user to update their account password.",
-    request=ChangePasswordSerializer,
-    responses={200: OpenApiResponse(description="Password changed successfully."), 400: OpenApiResponse(description="Invalid password input.")},
-)
+@extend_schema(tags=["Users"], summary="Change user password", request=ChangePasswordSerializer)
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -108,13 +86,7 @@ class ChangePasswordView(APIView):
         return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    tags=["Organizations"],
-    summary="Create a new organization",
-    description="Creates a new organization and makes the authenticated user its administrator.",
-    request=OrganizationSerializer,
-    responses={201: OrganizationSerializer},
-)
+@extend_schema(tags=["Organizations"], summary="Create a new organization", request=OrganizationSerializer, responses={201: OrganizationSerializer})
 class OrganizationCreateView(generics.CreateAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
@@ -125,22 +97,18 @@ class OrganizationCreateView(generics.CreateAPIView):
         user = cast(User, self.request.user)
         organization = serializer.save()
         user.organization = organization
-        user.role = "ADMIN"
+        user.role = Role.ADMIN
         user.save(update_fields=["organization", "role", "updated_at"])
         AuditLogger.log_event(
-            action=AuditAction.ORGANIZATION_CREATED,
+            action=AuditAction.USER_ADDED_TO_ORGANIZATION,
             user=user,
             organization=organization,
             ip_address=self.request.META.get("REMOTE_ADDR"),
-            metadata={"organization_name": organization.name},
+            metadata={"organization_name": organization.name, "created": True},
         )
 
 
-@extend_schema(
-    tags=["Organizations"],
-    summary="Retrieve or update current organization",
-    description="Returns organization details for the authenticated user's organization.",
-)
+@extend_schema(tags=["Organizations"], summary="Retrieve or update current organization")
 class OrganizationDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = OrganizationSerializer
     permission_classes = [IsAuthenticated, IsSameOrganization]
@@ -156,12 +124,7 @@ class OrganizationDetailView(generics.RetrieveUpdateAPIView):
         return cast(Organization, org)
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Request Password Reset",
-    description="Generates a password reset token and emails a one-time link to the user. Always returns success to prevent email enumeration.",
-    responses={200: OpenApiResponse(description="Reset link sent if account exists.")},
-)
+@extend_schema(tags=["Authentication"], summary="Request Password Reset")
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -185,12 +148,7 @@ class PasswordResetRequestView(APIView):
         return Response({"detail": "If your account exists, a reset link has been sent."}, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Confirm Password Reset",
-    description="Resets the password using a valid one-time token.",
-    responses={200: OpenApiResponse(description="Password changed successfully.")},
-)
+@extend_schema(tags=["Authentication"], summary="Confirm Password Reset")
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -242,12 +200,7 @@ class OrganizationInvitationViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(invitation).data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Accept Organization Invitation",
-    description="Validates an invitation token and updates the user's organization and role.",
-    responses={200: OpenApiResponse(description="Invitation accepted.")},
-)
+@extend_schema(tags=["Authentication"], summary="Accept Organization Invitation")
 class InvitationAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
