@@ -25,12 +25,12 @@ export const DashboardPage: React.FC = () => {
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
               Operations overview
             </h1>
-            <p className="text-sm text-zinc-500 mt-1">Preparing the latest security telemetry.</p>
+            <p className="mt-1 text-sm text-zinc-500">Preparing the latest security telemetry.</p>
           </div>
         </div>
         <DashboardSkeleton />
@@ -55,26 +55,26 @@ export const DashboardPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8" role="main" aria-label="Enterprise Command Center Dashboard">
-      <section className="flex flex-col xl:flex-row xl:items-end justify-between gap-5">
+    <div className="space-y-6" role="main" aria-label="Enterprise Command Center Dashboard">
+      <section className="flex flex-col justify-between gap-5 xl:flex-row xl:items-end">
         <div className="max-w-3xl">
-          <div className="flex items-center gap-2 text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.2em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             Live operations
           </div>
-          <h1 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-[-0.035em] text-zinc-50">
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-zinc-50 sm:text-4xl">
             Command center
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-zinc-500 max-w-2xl leading-6">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
             A focused view of incident volume, response performance, system health, and recent
             AI-assisted activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-2.5">
           <Link to="/ai-assistant">
             <Button variant="ai" size="sm">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="h-3.5 w-3.5" />
               Copilot
             </Button>
           </Link>
@@ -84,7 +84,7 @@ export const DashboardPage: React.FC = () => {
             onClick={() => setCreateModalOpen(true)}
             aria-label="Report a new incident"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="h-3.5 w-3.5" />
             Report incident
           </Button>
         </div>
@@ -98,24 +98,22 @@ export const DashboardPage: React.FC = () => {
           role="alert"
           aria-label={`Critical incident alert: ${criticalIncident.title}`}
         >
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="mt-0.5 p-2 rounded-lg bg-red-500/[0.08] border border-red-500/10 text-red-300 shrink-0">
-                <ShieldAlert className="w-4 h-4" />
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="mt-0.5 shrink-0 rounded-lg border border-red-500/10 bg-red-500/[0.08] p-2 text-red-300">
+                <ShieldAlert className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-semibold text-red-300 uppercase tracking-[0.14em]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-red-300">
                     Critical incident
                   </span>
-                  <span className="text-[11px] text-zinc-600 font-mono">{criticalIncident.id}</span>
+                  <span className="font-mono text-[11px] text-zinc-600">{criticalIncident.id}</span>
                 </div>
-                <h2 className="mt-1 text-sm font-semibold text-zinc-100 truncate">
+                <h2 className="mt-1 truncate text-sm font-semibold text-zinc-100">
                   {criticalIncident.title}
                 </h2>
-                <p className="mt-1 text-xs text-zinc-500 line-clamp-1">
-                  {criticalIncident.description}
-                </p>
+                <p className="mt-1 line-clamp-1 text-xs text-zinc-500">{criticalIncident.description}</p>
               </div>
             </div>
 
@@ -126,7 +124,7 @@ export const DashboardPage: React.FC = () => {
               aria-label={`Investigate critical incident ${criticalIncident.id}`}
             >
               Investigate
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </motion.div>
@@ -137,16 +135,28 @@ export const DashboardPage: React.FC = () => {
       {data.recentIncidents.length === 0 ? (
         <DashboardEmptyState onReportIncident={() => setCreateModalOpen(true)} />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 space-y-5">
-            <IncidentTrendChart data={data.incidentTrends} />
-            <RecentIncidentFeed incidents={data.recentIncidents} />
+        <div className="space-y-5">
+          {/* Analytics row: balanced chart widths, equal visual weight. */}
+          <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-5">
+            <div className="min-w-0 xl:col-span-3 [&>*]:h-full">
+              <IncidentTrendChart data={data.incidentTrends} />
+            </div>
+            <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
+              <IncidentSeverityChart data={data.severityDistribution} />
+            </div>
           </div>
 
-          <div className="space-y-5">
-            <IncidentSeverityChart data={data.severityDistribution} />
-            <SystemHealthCard health={data.systemHealth} />
-            <RecentAiActivityFeed activities={data.recentAiActivity} />
+          {/* Operations row: feed gets the space it needs without creating a long side column. */}
+          <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2 xl:grid-cols-4">
+            <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
+              <RecentIncidentFeed incidents={data.recentIncidents} />
+            </div>
+            <div className="min-w-0 [&>*]:h-full">
+              <SystemHealthCard health={data.systemHealth} />
+            </div>
+            <div className="min-w-0 [&>*]:h-full">
+              <RecentAiActivityFeed activities={data.recentAiActivity} />
+            </div>
           </div>
         </div>
       )}
