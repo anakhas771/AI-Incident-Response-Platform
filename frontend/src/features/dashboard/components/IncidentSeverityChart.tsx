@@ -18,26 +18,28 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
   data,
   isLoading = false,
 }) => {
-  if (isLoading) {
-    return null; // Handled by DashboardSkeleton
-  }
+  if (isLoading) return null;
 
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <Card hoverEffect={false} className="h-full flex flex-col justify-between">
-      <CardHeader className="pb-2">
+    <Card hoverEffect={false} className="h-[320px] flex flex-col">
+      <CardHeader className="pb-3 border-b border-subtle">
         <CardTitle className="text-sm font-semibold text-zinc-100">Severity Distribution</CardTitle>
-        <CardDescription>Breakdown across active platform queue</CardDescription>
+        <CardDescription>Active incident queue</CardDescription>
       </CardHeader>
 
-      <CardContent className="flex items-center justify-between gap-4 flex-1">
-        <div className="w-40 h-40" role="img" aria-label="Incident severity distribution pie chart">
+      <CardContent className="min-h-0 flex-1 flex items-center gap-5 pt-3">
+        <div
+          className="h-36 w-36 shrink-0"
+          role="img"
+          aria-label="Incident severity distribution pie chart"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
-                innerRadius={45}
+                innerRadius={43}
                 outerRadius={65}
                 paddingAngle={3}
                 dataKey="value"
@@ -52,7 +54,7 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
                   backgroundColor: '#18181b',
                   borderColor: '#27272a',
                   borderRadius: '8px',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   color: '#f4f4f5',
                 }}
                 formatter={(value: unknown, name: unknown) => [
@@ -64,21 +66,28 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
           </ResponsiveContainer>
         </div>
 
-        <div className="space-y-2.5 text-xs font-mono flex-1">
+        <div className="min-w-0 flex-1 space-y-3 text-xs font-mono">
           {data.map((item) => {
             const pct = total > 0 ? Math.round((item.value / total) * 100) : 0;
             return (
-              <div key={item.name} className="flex items-center justify-between gap-4">
-                <span className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: item.fill }}
+              <div key={item.name} className="space-y-1.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: item.fill }}
+                    />
+                    <span className="truncate font-medium text-zinc-300">{item.name}</span>
+                  </span>
+                  <span className="shrink-0 text-zinc-400">
+                    <strong className="text-zinc-100">{item.value}</strong> ({pct}%)
+                  </span>
+                </div>
+                <div className="h-1 overflow-hidden rounded-full bg-zinc-900">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${pct}%`, backgroundColor: item.fill }}
                   />
-                  <span className="text-zinc-300 font-medium">{item.name}</span>
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-zinc-100">{item.value}</span>
-                  <span className="text-zinc-500 text-[10px]">({pct}%)</span>
                 </div>
               </div>
             );
