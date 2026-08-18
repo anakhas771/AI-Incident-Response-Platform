@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, MoreVertical, MessageSquare, Paperclip } from 'lucide-react';
 import { useIncidentStore } from '../stores/useIncidentStore';
@@ -10,15 +10,53 @@ import { Button } from '../components/ui/Button';
 import { Category, Severity, Status } from '../types';
 
 export const IncidentsPage: React.FC = () => {
-  const { incidents, filters, setFilters, setSelectedIncident, updateStatus } = useIncidentStore();
+  const {
+    incidents,
+    filters,
+    setFilters,
+    setSelectedIncident,
+    updateStatus,
+    loadIncidents,
+  } = useIncidentStore();
   const { setCreateModalOpen } = useCommandStore();
   const { user } = useAuthStore();
   const { canUpdateIncidents } = usePermissions();
   const navigate = useNavigate();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [sortField] = useState<'created_at' | 'severity' | 'status'>('created_at');
   const [sortOrder] = useState<'asc' | 'desc'>('desc');
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        await loadIncidents();
+      } catch (error) {
+        if (!mounted) return;
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 401) {
+          setLoadError('Your session has expired. Please sign in again.');
+        } else if (status === 403) {
+          setLoadError('You do not have access to your organization incidents.');
+        } else {
+          setLoadError('Unable to load organization incidents. Please refresh and try again.');
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, [loadIncidents]);
 
   const filtered = incidents.filter((inc) => {
     if (filters.severity !== 'ALL' && inc.severity !== filters.severity) return false;
@@ -55,8 +93,9 @@ export const IncidentsPage: React.FC = () => {
 
   const handleBulkStatusChange = (newStatus: Status) => {
     if (!user) return;
-    selectedIds.forEach((id) => updateStatus(id, newStatus, user));
-    setSelectedIds([]);
+    void Promise.all(selectedIds.map((id) => updateStatus(id, newStatus, user))).finally(() => {
+      setSelectedIds([]);
+    });
   };
 
   return (
@@ -70,7 +109,7 @@ export const IncidentsPage: React.FC = () => {
             </span>
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Enterprise triage table with real-time status transitions
+            Organization-wide incident queue with real-time status transitions
           </p>
         </div>
 
@@ -82,6 +121,12 @@ export const IncidentsPage: React.FC = () => {
         )}
       </div>
 
+      {loadError && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+          {loadError}
+        </div>
+      )}
+
       <div className="p-4 rounded-xl bg-surface border border-subtle space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <div className="md:col-span-2 relative">
@@ -90,7 +135,7 @@ export const IncidentsPage: React.FC = () => {
               type="text"
               value={filters.search}
               onChange={(e) => setFilters({ search: e.target.value })}
-              placeholder="Search by title or ID (e.g. inc-9081)..."
+              placeholder="Search organization incidents..."
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
@@ -137,6 +182,7 @@ export const IncidentsPage: React.FC = () => {
               <option value="Application">Application</option>
               <option value="Database">Database</option>
               <option value="Network">Network</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
@@ -145,18 +191,10 @@ export const IncidentsPage: React.FC = () => {
           <div className="flex items-center justify-between p-2.5 rounded-lg bg-indigo-950/60 border border-indigo-800/60 text-xs text-indigo-200">
             <span className="font-semibold">{selectedIds.length} incidents selected</span>
             <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handleBulkStatusChange('INVESTIGATING')}
-              >
+              <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('INVESTIGATING')}>
                 Mark Investigating
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handleBulkStatusChange('RESOLVED')}
-              >
+              <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('RESOLVED')}>
                 Mark Resolved
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
@@ -189,10 +227,12 @@ export const IncidentsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-subtle">
-              {sorted.length === 0 ? (
+              {isLoading ? (
+                <tr><td colSpan={7} className="py-14 text-center text-zinc-500 font-mono text-xs">Loading organization incidents...</td></tr>
+              ) : sorted.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-zinc-500 font-mono text-xs">
-                    No incidents match active query filters.
+                    No incidents found in this organization.
                   </td>
                 </tr>
               ) : (
@@ -203,101 +243,45 @@ export const IncidentsPage: React.FC = () => {
                       setSelectedIncident(inc);
                       navigate(`/incidents/${inc.id}`);
                     }}
-                    className={`hover:bg-surface-elevated/60 transition-colors cursor-pointer group ${
-                      selectedIds.includes(inc.id) ? 'bg-indigo-950/30' : ''
-                    }`}
+                    className={`hover:bg-surface-elevated/60 transition-colors cursor-pointer group ${selectedIds.includes(inc.id) ? 'bg-indigo-950/30' : ''}`}
                   >
                     <td className="py-3.5 px-4" onClick={(e) => toggleSelectOne(inc.id, e)}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(inc.id)}
-                        onChange={() => {}}
-                        className="rounded border-zinc-700 bg-zinc-900 text-indigo-600 focus:ring-0"
-                      />
+                      <input type="checkbox" checked={selectedIds.includes(inc.id)} onChange={() => {}} className="rounded border-zinc-700 bg-zinc-900 text-indigo-600 focus:ring-0" />
                     </td>
-
-                    <td className="py-3.5 px-4">
-                      <SeverityBadge severity={inc.severity} />
-                    </td>
-
+                    <td className="py-3.5 px-4"><SeverityBadge severity={inc.severity} /></td>
                     <td className="py-3.5 px-4 max-w-md">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] text-zinc-500 font-bold">
-                            {inc.id}
-                          </span>
-                          <h3 className="font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors truncate">
-                            {inc.title}
-                          </h3>
+                          <span className="font-mono text-[10px] text-zinc-500 font-bold">{inc.id}</span>
+                          <h3 className="font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors truncate">{inc.title}</h3>
                         </div>
-                        <p className="text-zinc-400 line-clamp-1 text-[11px] font-normal">
-                          {inc.description}
-                        </p>
+                        <p className="text-zinc-400 line-clamp-1 text-[11px] font-normal">{inc.description}</p>
                         <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono pt-0.5">
-                          <span className="bg-zinc-800/60 px-1.5 py-0.5 rounded">
-                            {inc.category}
-                          </span>
-                          {inc.comments_count ? (
-                            <span className="flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" /> {inc.comments_count}
-                            </span>
-                          ) : null}
-                          {inc.attachments_count ? (
-                            <span className="flex items-center gap-1">
-                              <Paperclip className="w-3 h-3" /> {inc.attachments_count}
-                            </span>
-                          ) : null}
+                          <span className="bg-zinc-800/60 px-1.5 py-0.5 rounded">{inc.category}</span>
+                          {inc.comments_count ? <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {inc.comments_count}</span> : null}
+                          {inc.attachments_count ? <span className="flex items-center gap-1"><Paperclip className="w-3 h-3" /> {inc.attachments_count}</span> : null}
                         </div>
                       </div>
                     </td>
-
-                    <td className="py-3.5 px-4">
-                      <StatusBadge status={inc.status} />
-                    </td>
-
+                    <td className="py-3.5 px-4"><StatusBadge status={inc.status} /></td>
                     <td className="py-3.5 px-4">
                       {inc.assigned_to ? (
                         <div className="flex items-center gap-2">
-                          <img
-                            src={
-                              inc.assigned_to.avatar ||
-                              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-                            }
-                            alt={inc.assigned_to.full_name}
-                            className="w-5 h-5 rounded-full object-cover shrink-0"
-                          />
-                          <span className="text-zinc-300 font-medium truncate">
-                            {inc.assigned_to.full_name}
-                          </span>
+                          <div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-semibold text-zinc-300 shrink-0">
+                            {(inc.assigned_to.full_name || inc.assigned_to.email || '?').charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-zinc-300 font-medium truncate">{inc.assigned_to.full_name || inc.assigned_to.email}</span>
                         </div>
                       ) : (
-                        <span className="text-zinc-500 italic font-mono text-[11px]">
-                          Unassigned
-                        </span>
+                        <span className="text-zinc-500 italic font-mono text-[11px]">Unassigned</span>
                       )}
                     </td>
-
                     <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-400">
-                      {new Date(inc.created_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                      ,{' '}
-                      {new Date(inc.created_at).toLocaleDateString([], {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {new Date(inc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })},{' '}
+                      {new Date(inc.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                     </td>
-
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedIncident(inc);
-                          navigate(`/incidents/${inc.id}`);
-                        }}
-                        className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-                      >
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedIncident(inc); navigate(`/incidents/${inc.id}`); }} className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </td>
