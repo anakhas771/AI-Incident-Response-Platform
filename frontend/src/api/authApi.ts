@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { User, Role } from '../types';
+import { Organization, User, Role } from '../types';
 
 export interface LoginPayload {
   email: string;
@@ -51,6 +51,11 @@ export const authApi = {
     return response.data;
   },
 
+  updateProfile: async (payload: FormData | Partial<User>): Promise<User> => {
+    const response = await apiClient.patch<User>('/auth/me/', payload);
+    return response.data;
+  },
+
   requestPasswordReset: async (email: string): Promise<{ detail: string }> => {
     const response = await apiClient.post<{ detail: string }>('/auth/password-reset/', { email });
     return response.data;
@@ -77,6 +82,14 @@ export const authApi = {
 
   sendInvitation: async (payload: { email: string; role: Role }): Promise<unknown> => {
     const response = await apiClient.post('/auth/invitations/', payload);
+    return response.data;
+  },
+
+  createOrganization: async (payload: {
+    name: string;
+    description?: string;
+  }): Promise<Organization> => {
+    const response = await apiClient.post<Organization>('/auth/organizations/', payload);
     return response.data;
   },
 };
