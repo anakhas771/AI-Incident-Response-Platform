@@ -78,8 +78,8 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0", "SERVE_INCLUDE_SCHEMA": False, "SCHEMA_PATH_PREFIX": r"/api/v1/", "COMPONENT_SPLIT_REQUEST": True,
     "SECURITY": [{"jwtAuth": []}],
     "COMPONENTS": {"securitySchemes": {"jwtAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}},
-    "ENUM_NAME_OVERRIDES": {"UserRoleEnum": "apps.accounts.models.Role", "IncidentStatusEnum": "apps.incidents.models.Status", "IncidentSeverityEnum": "apps.incidents.models.Severity", "DocumentTypeEnum": "apps.knowledge.models.DocumentType", "DocumentStatusEnum": "apps.knowledge.models.DocumentStatus"},
     "SWAGGER_UI_SETTINGS": {"deepLinking": True, "persistAuthorization": True, "displayOperationId": True},
+    "ENUM_NAME_OVERRIDES": {"UserRoleEnum": "apps.accounts.models.Role", "IncidentStatusEnum": "apps.incidents.models.Status", "IncidentSeverityEnum": "apps.incidents.models.Severity", "DocumentTypeEnum": "apps.knowledge.models.DocumentType", "DocumentStatusEnum": "apps.knowledge.models.DocumentStatus"},
 }
 
 CACHES = {"default": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0"), "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}}}
@@ -109,12 +109,12 @@ LOGGING = {
 }
 
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 1025))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "greatcart.dev@gmail.com")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "False") == "True"
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "greatcart.dev@gmail.com")
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:5173")
 
 AI_ENGINE_CONFIG = {"PROVIDER": os.environ.get("AI_PROVIDER", "mock"), "API_KEY": os.environ.get("AI_API_KEY", ""), "MODEL": os.environ.get("AI_MODEL", "gpt-4-turbo")}
