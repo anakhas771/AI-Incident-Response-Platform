@@ -30,6 +30,13 @@ export interface RefreshTokenResponse {
   refresh?: string;
 }
 
+export interface InvitationPreview {
+  email: string;
+  organization_name: string;
+  role: Role;
+  expires_at: string;
+}
+
 export const authApi = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/auth/login/', payload);
@@ -70,6 +77,13 @@ export const authApi = {
       '/auth/password-reset/confirm/',
       payload
     );
+    return response.data;
+  },
+
+  previewInvitation: async (token: string): Promise<InvitationPreview> => {
+    const response = await apiClient.get<InvitationPreview>('/auth/invitations/preview/', {
+      params: { token },
+    });
     return response.data;
   },
 
