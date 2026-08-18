@@ -171,7 +171,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             data = super().validate(attrs)
         except AuthenticationFailed as err:
             raise AuthenticationFailed(_("Invalid email or password")) from err
-        data["user"] = cast(Any, UserDetailSerializer(self.user, context=self.context).data
+        data["user"] = cast(Any, UserDetailSerializer(self.user, context=self.context).data)
         return data
 
 
@@ -184,7 +184,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         if attrs["new_password"] != attrs["new_password_confirm"]:
             raise serializers.ValidationError({"new_password_confirm": "New passwords do not match."})
         user = self.context["request"].user
-        if not user.check_password(attrs["old_password"]):
+        if not user.check_password(attrs["new_password"]):
             raise serializers.ValidationError({"old_password": "Old password is incorrect."})
         validate_password(attrs["new_password"], user=user)
         return attrs
