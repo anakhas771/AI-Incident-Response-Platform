@@ -1,9 +1,10 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { Navbar } from '../components/navigation/Navbar';
 import { WorkspaceHeader } from '../components/navigation/WorkspaceHeader';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { useIncidentStore } from '../stores/useIncidentStore';
 
 export const PageLoader: React.FC = () => {
   return (
@@ -17,6 +18,11 @@ export const PageLoader: React.FC = () => {
 export const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const isCopilotPage = location.pathname === '/ai-assistant';
+  const loadIncidents = useIncidentStore((state) => state.loadIncidents);
+
+  useEffect(() => {
+    void loadIncidents();
+  }, [loadIncidents]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-sans antialiased text-zinc-100">
