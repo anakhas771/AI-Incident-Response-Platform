@@ -3,6 +3,7 @@ from typing import Any, Dict, cast
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -100,6 +101,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": list(err.messages)}) from err
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data: Dict[str, Any]) -> User:
         validated_data.pop("password_confirm", None)
         password = validated_data.pop("password")
@@ -107,9 +109,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         org_id = validated_data.pop("organization_id", None)
         inv_token = validated_data.pop("invitation_token", None)
         organization = None
+        invitation = None
+
         if inv_token:
             try:
-                invitation = OrganizationInvitation.objects.get(token=hash_lifecycle_token(inv_token), status=InvitationStatus.PENDING)
+                invitation = OrganizationInvitation.objects.select_for_update().get(
+                    token=hash_lifecycle_token(inv_token),
+                    status=InvitationStatus.PENDING,
+                )
                 if invitation.expires_at < timezone.now():
                     raise serializers.ValidationError({"invitation_token": "Invitation has expired."})
                 if invitation.email.lower() != validated_data["email"].lower():
@@ -131,7 +138,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             organization = Organization.objects.create(name=org_name, slug=slug)
-        return User.objects.create_user(password=password, organization=organization, **validated_data)
+
+        user = User.objects.create_user(password=password, organization=organization, **validated_data)
+
+        if invitation is not None:
+            invitation.status = InvitationStatus.ACCEPTED
+            invitation.accepted_at = timezone.now()
+            invitation.save(update_fields=["status", "accepted_at", "updated_at"])
+
+        return user
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -156,7 +171,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             data = super().validate(attrs)
         except AuthenticationFailed as err:
             raise AuthenticationFailed(_("Invalid email or password")) from err
-        data["user"] = cast(Any, UserDetailSerializer(self.user, context=self.context).data)
+        data["user"] = cast(Any, UserDetailSerializer(self.user, context=self.context).data
         return data
 
 
