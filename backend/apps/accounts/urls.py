@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from .invitation_preview import InvitationPreviewView
 from .views import (
     ChangePasswordView,
     CustomTokenObtainPairView,
@@ -28,5 +29,6 @@ urlpatterns = [
     path("auth/organizations/", OrganizationCreateView.as_view(), name="organization-create"),
     path("auth/password-reset/", PasswordResetRequestView.as_view(), name="auth-password-reset"),
     path("auth/password-reset/confirm/", PasswordResetConfirmView.as_view(), name="auth-password-reset-confirm"),
+    path("auth/invitations/preview/", InvitationPreviewView.as_view(), name="invitations-preview"),
     path("auth/invitations/accept/", InvitationAcceptView.as_view(), name="invitations-accept"),
 ] + router.urls
