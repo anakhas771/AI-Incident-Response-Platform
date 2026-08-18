@@ -37,23 +37,24 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     full_name = serializers.CharField(read_only=True)
-    avatar = serializers.FileField(required=False, allow_null=True)
+    avatar = serializers.FileField(required=False, allow_null=True, write_only=True)
+    avatar_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = [
             "id", "email", "first_name", "last_name", "full_name", "role",
-            "organization", "phone_number", "avatar", "is_active", "date_joined",
-            "created_at", "updated_at",
+            "organization", "phone_number", "avatar", "avatar_url", "is_active",
+            "date_joined", "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "email", "role", "date_joined", "created_at", "updated_at"]
+        read_only_fields = ["id", "email", "role", "avatar_url", "date_joined", "created_at", "updated_at"]
 
-    def get_fields(self):
-        fields = super().get_fields()
+    def get_avatar_url(self, obj: User) -> str | None:
+        if not obj.avatar:
+            return None
         request = self.context.get("request")
-        if request is not None:
-            fields["avatar"].help_text = "Profile image upload."
-        return fields
+        url = obj.avatar.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
