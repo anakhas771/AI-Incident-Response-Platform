@@ -58,6 +58,11 @@ export const authApi = {
     return response.data;
   },
 
+  getOrganizationMembers: async (): Promise<User[]> => {
+    const response = await apiClient.get<User[]>('/auth/organization/members/');
+    return response.data;
+  },
+
   updateProfile: async (payload: FormData | Partial<User>): Promise<User> => {
     const response = await apiClient.patch<User>('/auth/me/', payload);
     return response.data;
