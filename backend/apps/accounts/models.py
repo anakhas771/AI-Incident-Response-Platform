@@ -10,14 +10,10 @@ from apps.common.models import TimeStampedUUIDModel
 
 
 class Organization(TimeStampedUUIDModel):
-    """
-    Enterprise organization model for multi-tenant incident response.
-    """
+    """Enterprise organization model for multi-tenant incident response."""
 
     name: models.CharField = models.CharField(max_length=255)
-    slug: models.SlugField = models.SlugField(
-        max_length=255, unique=True, db_index=True
-    )
+    slug: models.SlugField = models.SlugField(max_length=255, unique=True, db_index=True)
     description: models.TextField = models.TextField(blank=True, default="")
     is_active: models.BooleanField = models.BooleanField(default=True)
 
@@ -38,10 +34,7 @@ class Role(models.TextChoices):
 
 
 class UserManager(BaseUserManager["User"]):
-    """
-    Custom user model manager where email is the unique identifier
-    for authentication instead of usernames.
-    """
+    """Custom user manager using email as the authentication identifier."""
 
     def create_user(
         self, email: str, password: str | None = None, **extra_fields: Any
@@ -50,8 +43,6 @@ class UserManager(BaseUserManager["User"]):
             raise ValueError(_("The Email field must be set"))
         email = self.normalize_email(email).strip()
         if "username" not in extra_fields or not extra_fields["username"]:
-            import uuid
-
             extra_fields["username"] = str(uuid.uuid4())
         user = self.model(email=email, **extra_fields)
         if password:
@@ -78,23 +69,12 @@ class UserManager(BaseUserManager["User"]):
 
 
 class User(AbstractUser):
-    """
-    Custom enterprise user model with email authentication, organization,
-    and role-based access control (RBAC).
-    """
+    """Custom enterprise user model with email auth, organization and RBAC."""
 
-    id: models.UUIDField = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
-    email: models.EmailField = models.EmailField(
-        _("email address"), unique=True, db_index=True
-    )
-    username: models.CharField = models.CharField(
-        max_length=150, unique=True, null=True, blank=True
-    )
-    role: models.CharField = models.CharField(
-        max_length=20, choices=Role.choices, default=Role.VIEWER
-    )
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email: models.EmailField = models.EmailField(_("email address"), unique=True, db_index=True)
+    username: models.CharField = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    role: models.CharField = models.CharField(max_length=20, choices=Role.choices, default=Role.VIEWER)
     organization: models.ForeignKey = models.ForeignKey(
         Organization,
         on_delete=models.SET_NULL,
@@ -103,9 +83,8 @@ class User(AbstractUser):
         related_name="users",
     )
     organization_id: Any
-    phone_number: models.CharField = models.CharField(
-        max_length=20, blank=True, default=""
-    )
+    phone_number: models.CharField = models.CharField(max_length=20, blank=True, default="")
+    avatar: models.FileField = models.FileField(upload_to="avatars/", blank=True, null=True)
 
     created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
     updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
@@ -129,9 +108,7 @@ class User(AbstractUser):
 
 
 class PasswordResetToken(TimeStampedUUIDModel):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="password_reset_tokens"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_tokens")
     token = models.CharField(max_length=64, unique=True, db_index=True)
     expires_at = models.DateTimeField()
     used = models.BooleanField(default=False)
@@ -154,20 +131,12 @@ class InvitationStatus(models.TextChoices):
 
 class OrganizationInvitation(TimeStampedUUIDModel):
     email = models.EmailField(db_index=True)
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="invitations"
-    )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invitations")
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.VIEWER)
     token = models.CharField(max_length=64, unique=True, db_index=True)
-    created_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="created_invitations"
-    )
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_invitations")
     expires_at = models.DateTimeField()
-    status = models.CharField(
-        max_length=20,
-        choices=InvitationStatus.choices,
-        default=InvitationStatus.PENDING,
-    )
+    status = models.CharField(max_length=20, choices=InvitationStatus.choices, default=InvitationStatus.PENDING)
     accepted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -178,9 +147,7 @@ class OrganizationInvitation(TimeStampedUUIDModel):
 
     @property
     def is_valid(self) -> bool:
-        return (
-            self.status == InvitationStatus.PENDING and self.expires_at > timezone.now()
-        )
+        return self.status == InvitationStatus.PENDING and self.expires_at > timezone.now()
 
     def __str__(self) -> str:
         return f"Invite for {self.email} to {self.organization.name}"
