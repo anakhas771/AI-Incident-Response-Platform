@@ -37,7 +37,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     full_name = serializers.CharField(read_only=True)
-    avatar = serializers.FileField(required=False, allow_null=True, write_only=True)
+    avatar = serializers.FileField(required=False, allow_null=True)
     avatar_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -55,6 +55,13 @@ class UserDetailSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         url = obj.avatar.url
         return request.build_absolute_uri(url) if request else url
+
+    def to_representation(self, instance: User) -> Dict[str, Any]:
+        data = super().to_representation(instance)
+        avatar_url = self.get_avatar_url(instance)
+        data["avatar"] = avatar_url
+        data["avatar_url"] = avatar_url
+        return data
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
