@@ -24,6 +24,7 @@ export const OrganizationsPage: React.FC = () => {
       setDescription('');
       setIsCreateOpen(false);
       toast.success('Organization created and selected as your active workspace.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(String(error?.response?.data?.name?.[0] || error?.response?.data?.detail || 'Unable to create organization.'));
     } finally {

@@ -56,6 +56,7 @@ export const CreateIncidentModal: React.FC = () => {
       setCreateModalOpen(false);
       toast.success(`Incident ${incident.id} created. AI analysis is starting.`);
       navigate(`/incidents/${incident.id}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const detail = error?.response?.data?.detail || error?.response?.data || 'Unable to create incident.';
       toast.error(typeof detail === 'string' ? detail : 'Unable to create incident. Check the form and your organization access.');

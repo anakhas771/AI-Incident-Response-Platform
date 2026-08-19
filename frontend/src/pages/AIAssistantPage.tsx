@@ -6,6 +6,7 @@ import { useIncidentStore } from '../stores/useIncidentStore';
 import { useCommandStore } from '../stores/useCommandStore';
 import { KeyboardShortcutsModal } from '../components/navigation/KeyboardShortcutsModal';
 import { OfflineBanner } from '../components/ui/OfflineBanner';
+import { ChatErrorBoundary } from '../components/ui/ChatErrorBoundary';
 import { Menu, X, Sparkles, Activity, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -180,7 +181,7 @@ export const AIAssistantPage: React.FC = () => {
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-1 text-zinc-500">
                 <ShieldCheck className="h-3 w-3 text-indigo-300/70" />
-                {currentModel?.name || currentModel?.id || 'Copilot'}
+                {typeof currentModel === 'string' ? currentModel : 'Copilot'}
               </span>
             </div>
           </div>

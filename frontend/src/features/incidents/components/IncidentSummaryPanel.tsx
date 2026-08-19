@@ -32,14 +32,16 @@ export const IncidentSummaryPanel: React.FC<IncidentSummaryPanelProps> = React.m
       );
     }
 
-    const events = Array.isArray(incident.events) ? incident.events : [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const incidentAny = incident as any;
+    const events = Array.isArray(incidentAny.events) ? incidentAny.events : [];
     const evidence = events
       .slice(-8)
-      .map((event) => {
+      .map((event: { created_at?: string; event_type?: string; message?: string }) => {
         const timestamp = event.created_at
           ? new Date(event.created_at).toISOString()
           : '';
-        return `[${timestamp}] ${event.event_type}: ${event.message}`;
+        return `[${timestamp}] ${event.event_type || ''}: ${event.message || ''}`;
       })
       .filter(Boolean)
       .join('\n');

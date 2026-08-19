@@ -106,11 +106,11 @@ class IncidentWorkspaceService {
         incident_id: id,
         title: recommendation,
         description: recommendation,
-        priority: index === 0 ? 'P1' : index === 1 ? 'P2' : 'P3',
+        priority: (index === 0 ? 'P1' : index === 1 ? 'P2' : 'P3') as 'P1' | 'P2' | 'P3',
         category: data.incident_category || 'Incident response',
         confidence: Math.round(confidence * 100),
         estimated_impact: 'AI-generated mitigation based on the incident context',
-        action_type: 'MANUAL',
+        action_type: 'MANUAL' as const,
         created_at: data.updated_at || new Date().toISOString(),
       }));
 
@@ -140,6 +140,7 @@ class IncidentWorkspaceService {
       }));
 
       return { status, summary, rca, recommendations, similarIncidents };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error?.response?.status === 404 && !this.analysisRequested.has(id)) {
         this.analysisRequested.add(id);
