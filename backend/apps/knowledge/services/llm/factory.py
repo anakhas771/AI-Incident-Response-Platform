@@ -38,7 +38,7 @@ def get_llm_gateway() -> BaseLLMGateway:
                 )
             ).strip(),
             temperature=float(str(config.get("TEMPERATURE", "0.2"))),
-            max_tokens=int(str(config.get("MAX_TOKENS", "256"))),
+            max_tokens=int(str(config.get("MAX_TOKENS", "1536"))),
             timeout=int(str(config.get("TIMEOUT", "180"))),
             retry_policy=RetryPolicy(
                 max_retries=int(str(config.get("MAX_RETRIES", "1"))),
@@ -62,7 +62,7 @@ def get_llm_gateway() -> BaseLLMGateway:
             api_key=str(api_key),
             model=model,
             temperature=float(str(config.get("TEMPERATURE", "0.2"))),
-            max_tokens=int(str(config.get("MAX_TOKENS", "2048"))),
+            max_tokens=int(str(config.get("MAX_TOKENS", "1536"))),
             timeout=int(str(config.get("TIMEOUT", "60"))),
             retry_policy=RetryPolicy(
                 max_retries=int(str(config.get("MAX_RETRIES", "2"))),

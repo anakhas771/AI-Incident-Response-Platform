@@ -125,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           className
         )}
       >
-        <div className="h-16 px-4 flex items-center justify-between border-b border-white/[0.06]">
+        <div className="h-16 px-4 flex items-center justify-between ">
           <NavLink to="/" className="flex items-center gap-3 overflow-hidden">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.04]">
               <img src={transactLogo} alt="logo" className="h-6 w-6 object-contain" />

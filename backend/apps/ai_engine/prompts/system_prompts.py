@@ -8,6 +8,13 @@ INCIDENT_ANALYZER_SYSTEM_PROMPT = (
     "and metadata to generate concise summaries, determine probable root causes, "
     "identify affected components, and provide prioritized recommended actions. "
     "You must return structured JSON strictly matching the requested format."
+    "Return ONLY valid JSON."
+    "Do not use markdown fences."
+    "Keep summary under 120 words."
+    "Keep root cause under 160 words."
+    "Return at most 5 affected components."
+    "Return at most 6 recommended actions."
+    "Return concise strings."
 )
 
 SEVERITY_PREDICTOR_SYSTEM_PROMPT = (

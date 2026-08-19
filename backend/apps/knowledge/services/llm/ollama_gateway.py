@@ -33,7 +33,7 @@ class OllamaLLMGateway(BaseLLMGateway):
         base_url: str = "http://host.docker.internal:11434/v1",
         model: str = "qwen3:4b",
         temperature: float = 0.2,
-        max_tokens: int = 256,
+        max_tokens: int = 1536,
         timeout: int = 180,
         retry_policy: Optional[RetryPolicy] = None,
     ) -> None:
