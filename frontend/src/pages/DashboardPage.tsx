@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Plus, ShieldAlert, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -20,6 +20,14 @@ export const DashboardPage: React.FC = () => {
   const { data, isLoading, isError, error, refetch } = useDashboardMetrics('24h');
   const { setCreateModalOpen } = useCommandStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void refetch();
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, [refetch]);
 
   if (isLoading || !data) {
     return (
