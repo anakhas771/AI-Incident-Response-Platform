@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Plus, ShieldAlert, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,7 +12,6 @@ import {
   IncidentTrendChart,
   RecentAiActivityFeed,
   RecentIncidentFeed,
-  SystemHealthCard,
   useDashboardMetrics,
 } from '../features/dashboard';
 
@@ -20,14 +19,6 @@ export const DashboardPage: React.FC = () => {
   const { data, isLoading, isError, error, refetch } = useDashboardMetrics('24h');
   const { setCreateModalOpen } = useCommandStore();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      void refetch();
-    }, 5000);
-
-    return () => window.clearInterval(interval);
-  }, [refetch]);
 
   if (isLoading || !data) {
     return (
@@ -74,7 +65,7 @@ export const DashboardPage: React.FC = () => {
             Command center
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-            Live incident volume, infrastructure health, active response queues, and Copilot intelligence.
+            Live incident volume, response trends, active investigations, and Copilot intelligence.
           </p>
         </div>
 
@@ -118,12 +109,8 @@ export const DashboardPage: React.FC = () => {
                   </span>
                   <span className="break-all font-mono text-[11px] text-zinc-600">{criticalIncident.id}</span>
                 </div>
-                <h2 className="mt-1 break-words text-sm font-semibold text-zinc-100">
-                  {criticalIncident.title}
-                </h2>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-500">
-                  {criticalIncident.description}
-                </p>
+                <h2 className="mt-1 break-words text-sm font-semibold text-zinc-100">{criticalIncident.title}</h2>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-500">{criticalIncident.description}</p>
               </div>
             </div>
 
@@ -150,10 +137,6 @@ export const DashboardPage: React.FC = () => {
 
           <section className="min-w-0 xl:col-span-4">
             <IncidentSeverityChart data={data.severityDistribution} />
-          </section>
-
-          <section className="min-w-0 xl:col-span-12">
-            <SystemHealthCard health={data.systemHealth} />
           </section>
 
           <section className="min-w-0 xl:col-span-8">
