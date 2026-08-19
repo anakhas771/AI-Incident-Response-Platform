@@ -10,6 +10,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -114,7 +115,7 @@ class OrganizationCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @transaction.atomic
-    def perform_create(self, serializer: OrganizationSerializer) -> None:
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
         user = cast(User, self.request.user)
         organization = serializer.save()
         user.organization = organization
