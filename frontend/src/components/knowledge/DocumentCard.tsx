@@ -111,7 +111,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         </div>
 
         {document.description ? (
-          <p className="mt-4 line-clamp-3 text-xs leading-5 text-slate-400">{document.description}</p>
+          <p className="mt-4 line-clamp-3 text-xs leading-5 text-slate-400">
+            {document.description}
+          </p>
         ) : (
           <p className="mt-4 text-xs leading-5 text-slate-600">No description provided.</p>
         )}

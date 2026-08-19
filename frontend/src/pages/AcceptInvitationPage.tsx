@@ -33,7 +33,8 @@ export const AcceptInvitationPage: React.FC = () => {
       })
       .catch((err) => {
         const response = err as { response?: { data?: { detail?: string } } };
-        if (mounted) setError(response.response?.data?.detail || 'This invitation is invalid or expired.');
+        if (mounted)
+          setError(response.response?.data?.detail || 'This invitation is invalid or expired.');
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -152,13 +153,19 @@ export const AcceptInvitationPage: React.FC = () => {
           <>
             <div className="space-y-3 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">Organization</p>
-                <p className="mt-1 text-base font-semibold text-zinc-100">{invitation.organization_name}</p>
+                <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+                  Organization
+                </p>
+                <p className="mt-1 text-base font-semibold text-zinc-100">
+                  {invitation.organization_name}
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-indigo-300" />
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">Invited email</p>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+                    Invited email
+                  </p>
                   <p className="truncate text-sm font-medium text-zinc-200">{invitation.email}</p>
                 </div>
               </div>
@@ -176,17 +183,26 @@ export const AcceptInvitationPage: React.FC = () => {
 
             {isAuthenticated ? (
               user?.email?.trim().toLowerCase() === invitation.email.trim().toLowerCase() ? (
-                <Button onClick={handleAccept} variant="ai" className="mt-6 w-full py-3" disabled={accepting}>
+                <Button
+                  onClick={handleAccept}
+                  variant="ai"
+                  className="mt-6 w-full py-3"
+                  disabled={accepting}
+                >
                   {accepting ? 'Joining organization…' : 'Accept Invitation & Join'}
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
                 <div className="mt-6 space-y-3">
                   <p className="rounded-lg border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-xs text-rose-200">
-                    This invitation is for <strong>{invitation.email}</strong>. You are currently signed in as{' '}
-                    <strong>{user?.email || 'another account'}</strong>.
+                    This invitation is for <strong>{invitation.email}</strong>. You are currently
+                    signed in as <strong>{user?.email || 'another account'}</strong>.
                   </p>
-                  <Button variant="outline" onClick={() => useAuthStore.getState().logout()} className="w-full">
+                  <Button
+                    variant="outline"
+                    onClick={() => useAuthStore.getState().logout()}
+                    className="w-full"
+                  >
                     Sign Out
                   </Button>
                   <Button variant="ai" onClick={goToLogin} className="w-full">

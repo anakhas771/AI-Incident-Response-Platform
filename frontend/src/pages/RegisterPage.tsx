@@ -104,7 +104,8 @@ export const RegisterPage: React.FC = () => {
 
         {invitationToken && (
           <div className="mb-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-xs text-indigo-200">
-            You are registering through an organization invitation. Use the exact email address that received the invitation.
+            You are registering through an organization invitation. Use the exact email address that
+            received the invitation.
           </div>
         )}
 

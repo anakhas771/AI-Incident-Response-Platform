@@ -69,9 +69,7 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
   return (
     <Card hoverEffect={false} className="flex min-w-0 flex-col bg-surface border-white/[0.06]">
       <CardHeader className="border-b border-white/[0.05] pb-3">
-        <CardTitle className="text-sm font-semibold text-zinc-100">
-          Severity Distribution
-        </CardTitle>
+        <CardTitle className="text-sm font-semibold text-zinc-100">Severity Distribution</CardTitle>
         <CardDescription className="mt-0.5">
           {total > 0
             ? `${total} incident${total === 1 ? '' : 's'} in queue`
@@ -90,7 +88,11 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={displayData.length > 0 ? displayData : [{ name: 'None', value: 1, fill: '#27272a' }]}
+                  data={
+                    displayData.length > 0
+                      ? displayData
+                      : [{ name: 'None', value: 1, fill: '#27272a' }]
+                  }
                   innerRadius={46}
                   outerRadius={66}
                   paddingAngle={displayData.length > 1 ? 3 : 0}
@@ -99,21 +101,23 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
                   startAngle={90}
                   endAngle={-270}
                 >
-                  {(displayData.length > 0 ? displayData : [{ name: 'None', value: 1, fill: '#27272a' }]).map(
-                    (entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.fill}
-                        opacity={
-                          activeSeverity === null || activeSeverity === entry.name ? 1 : 0.3
-                        }
-                        style={{ cursor: displayData.length > 0 ? 'pointer' : 'default', transition: 'opacity 200ms ease' }}
-                        onClick={() => {
-                          if (displayData.length > 0) handleSeverityClick(entry.name);
-                        }}
-                      />
-                    )
-                  )}
+                  {(displayData.length > 0
+                    ? displayData
+                    : [{ name: 'None', value: 1, fill: '#27272a' }]
+                  ).map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.fill}
+                      opacity={activeSeverity === null || activeSeverity === entry.name ? 1 : 0.3}
+                      style={{
+                        cursor: displayData.length > 0 ? 'pointer' : 'default',
+                        transition: 'opacity 200ms ease',
+                      }}
+                      onClick={() => {
+                        if (displayData.length > 0) handleSeverityClick(entry.name);
+                      }}
+                    />
+                  ))}
                 </Pie>
                 {displayData.length > 0 && <Tooltip content={<CustomTooltip />} />}
               </PieChart>
@@ -173,7 +177,11 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
                 <div className="h-[3px] overflow-hidden rounded-full bg-white/[0.05]">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%`, backgroundColor: item.fill, opacity: isFiltered ? 0.4 : 1 }}
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: item.fill,
+                      opacity: isFiltered ? 0.4 : 1,
+                    }}
                   />
                 </div>
               </button>

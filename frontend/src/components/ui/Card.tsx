@@ -8,10 +8,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  (
-    { className, aiGlow = false, hoverEffect = true, compact = false, children, ...props },
-    ref
-  ) => {
+  ({ className, aiGlow = false, hoverEffect = true, compact = false, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -47,10 +44,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   children,
   ...props
 }) => (
-  <h3
-    className={cn('text-base font-semibold text-zinc-100 tracking-tight', className)}
-    {...props}
-  >
+  <h3 className={cn('text-base font-semibold text-zinc-100 tracking-tight', className)} {...props}>
     {children}
   </h3>
 );

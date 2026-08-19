@@ -214,9 +214,7 @@ export const AlertsPage: React.FC = () => {
                           {formatElapsed(incident.created_at)} elapsed
                         </span>
                         <span>Updated {formatRelativeTime(alert.timestamp)}</span>
-                        {incident.assigned_to && (
-                          <span>→ {incident.assigned_to.full_name}</span>
-                        )}
+                        {incident.assigned_to && <span>→ {incident.assigned_to.full_name}</span>}
                       </div>
                     </div>
                   </div>

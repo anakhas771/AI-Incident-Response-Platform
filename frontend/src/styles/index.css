@@ -68,13 +68,19 @@
   body {
     background-color: #07080c;
     color: #f1f1f3;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
     letter-spacing: -0.012em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 200ms ease, color 200ms ease;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
   }
 
   .light body {
@@ -90,30 +96,70 @@
 }
 
 /* ─── Color Scheme ──────────────────────────────────────────────────── */
-html.dark  { color-scheme: dark; }
-html.light { color-scheme: light; }
+html.dark {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+}
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────── */
-::-webkit-scrollbar              { width: 5px; height: 5px; }
-::-webkit-scrollbar-track        { background: transparent; }
-::-webkit-scrollbar-thumb        { background: #27272a; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover  { background: #3f3f46; }
-.light ::-webkit-scrollbar-track  { background: #f1f5f9; }
-.light ::-webkit-scrollbar-thumb  { background: #cbd5e1; }
-.light ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 /* ─── Surface Tokens ────────────────────────────────────────────────── */
-.bg-surface          { background-color: #0d0e12; }
-.light .bg-surface   { background-color: #ffffff; }
-.bg-surface-elevated          { background-color: #111318; }
-.light .bg-surface-elevated   { background-color: #f8fafc; }
-.bg-surface-hover          { background-color: #181b22; }
-.light .bg-surface-hover   { background-color: #f1f5f9; }
+.bg-surface {
+  background-color: #0d0e12;
+}
+.light .bg-surface {
+  background-color: #ffffff;
+}
+.bg-surface-elevated {
+  background-color: #111318;
+}
+.light .bg-surface-elevated {
+  background-color: #f8fafc;
+}
+.bg-surface-hover {
+  background-color: #181b22;
+}
+.light .bg-surface-hover {
+  background-color: #f1f5f9;
+}
 
-.border-subtle          { border-color: rgba(255, 255, 255, 0.07); }
-.light .border-subtle   { border-color: rgba(15, 23, 42, 0.08); }
-.border-subtle-hover:hover          { border-color: rgba(255, 255, 255, 0.14); }
-.light .border-subtle-hover:hover   { border-color: rgba(15, 23, 42, 0.14); }
+.border-subtle {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.light .border-subtle {
+  border-color: rgba(15, 23, 42, 0.08);
+}
+.border-subtle-hover:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.light .border-subtle-hover:hover {
+  border-color: rgba(15, 23, 42, 0.14);
+}
 
 .surface {
   background-color: #0d0e12;
@@ -140,7 +186,9 @@ html.light { color-scheme: light; }
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-.light .glass { background: rgba(255, 255, 255, 0.82); }
+.light .glass {
+  background: rgba(255, 255, 255, 0.82);
+}
 
 .glass-card {
   background: rgba(17, 19, 24, 0.65);
@@ -164,8 +212,9 @@ html.light { color-scheme: light; }
   background-clip: text;
 }
 .ai-glow {
-  box-shadow: 0 0 30px -8px rgba(99, 102, 241, 0.18),
-              0 0 12px -3px rgba(6, 182, 212, 0.12);
+  box-shadow:
+    0 0 30px -8px rgba(99, 102, 241, 0.18),
+    0 0 12px -3px rgba(6, 182, 212, 0.12);
 }
 .ai-border-glow {
   border-color: rgba(99, 102, 241, 0.35);
@@ -174,40 +223,82 @@ html.light { color-scheme: light; }
 
 /* ─── Animations & Keyframes ────────────────────────────────────────── */
 @keyframes pulse-critical {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 
 @keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 
 @keyframes stream-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.85); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
 
 @keyframes live-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes critical-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  50%       { box-shadow: 0 0 20px -4px rgba(239, 68, 68, 0.25); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px -4px rgba(239, 68, 68, 0.25);
+  }
 }
 
-.critical-pulse    { animation: pulse-critical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.stream-pulse      { animation: stream-pulse 1.5s ease-in-out infinite; }
-.live-blink        { animation: live-blink 2s ease-in-out infinite; }
-.critical-glow     { animation: critical-glow-pulse 2.5s ease-in-out infinite; }
-.animate-fade-up   { animation: fade-in-up 0.4s ease-out both; }
+.critical-pulse {
+  animation: pulse-critical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.stream-pulse {
+  animation: stream-pulse 1.5s ease-in-out infinite;
+}
+.live-blink {
+  animation: live-blink 2s ease-in-out infinite;
+}
+.critical-glow {
+  animation: critical-glow-pulse 2.5s ease-in-out infinite;
+}
+.animate-fade-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
 
 /* Shimmer skeleton */
 .skeleton {
@@ -253,7 +344,9 @@ html.light { color-scheme: light; }
 
 /* ─── Card hover lift ───────────────────────────────────────────────── */
 .card-lift {
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 .card-lift:hover {
   transform: translateY(-1px);
@@ -261,21 +354,45 @@ html.light { color-scheme: light; }
 }
 
 /* ─── Light-mode bridge ─────────────────────────────────────────────── */
-.light .bg-zinc-950  { background-color: #f8fafc !important; }
-.light .bg-zinc-900  { background-color: #ffffff !important; }
-.light .bg-zinc-800  { background-color: #f1f5f9 !important; }
-.light .bg-zinc-700  { background-color: #e2e8f0 !important; }
+.light .bg-zinc-950 {
+  background-color: #f8fafc !important;
+}
+.light .bg-zinc-900 {
+  background-color: #ffffff !important;
+}
+.light .bg-zinc-800 {
+  background-color: #f1f5f9 !important;
+}
+.light .bg-zinc-700 {
+  background-color: #e2e8f0 !important;
+}
 .light .text-zinc-50,
-.light .text-zinc-100 { color: #0f172a !important; }
+.light .text-zinc-100 {
+  color: #0f172a !important;
+}
 .light .text-zinc-200,
-.light .text-zinc-300 { color: #1e293b !important; }
+.light .text-zinc-300 {
+  color: #1e293b !important;
+}
 .light .text-zinc-400,
-.light .text-zinc-500 { color: #475569 !important; }
-.light .text-zinc-600 { color: #64748b !important; }
-.light .border-zinc-800 { border-color: #e2e8f0 !important; }
-.light .border-zinc-700 { border-color: #cbd5e1 !important; }
-.light .hover\:bg-zinc-800:hover { background-color: #f1f5f9 !important; }
-.light .hover\:bg-zinc-900:hover { background-color: #f8fafc !important; }
+.light .text-zinc-500 {
+  color: #475569 !important;
+}
+.light .text-zinc-600 {
+  color: #64748b !important;
+}
+.light .border-zinc-800 {
+  border-color: #e2e8f0 !important;
+}
+.light .border-zinc-700 {
+  border-color: #cbd5e1 !important;
+}
+.light .hover\:bg-zinc-800:hover {
+  background-color: #f1f5f9 !important;
+}
+.light .hover\:bg-zinc-900:hover {
+  background-color: #f8fafc !important;
+}
 
 /* ─── Reduced Motion ────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

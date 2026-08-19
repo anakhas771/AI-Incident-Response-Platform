@@ -90,7 +90,9 @@ class IncidentWorkspaceService {
     similarIncidents: SimilarIncidentCard[];
   }> {
     try {
-      const response = await apiClient.get<IncidentAnalysisPayload>(`/ai/incidents/${id}/analysis/`);
+      const response = await apiClient.get<IncidentAnalysisPayload>(
+        `/ai/incidents/${id}/analysis/`
+      );
       const data = response.data || {};
       const status = this.normalizeAIStatus(data.status);
       const summary = data.summary || null;
@@ -114,19 +116,22 @@ class IncidentWorkspaceService {
         created_at: data.updated_at || new Date().toISOString(),
       }));
 
-      const rca = data.root_cause_analysis || data.impact_analysis || data.summary
-        ? {
-            id: `rca-${id}`,
-            incident_id: id,
-            summary: data.summary || 'AI analysis completed.',
-            contributing_factors: data.impact_analysis ? [data.impact_analysis] : [],
-            affected_systems: [],
-            confidence: Math.round(confidence * 100),
-            ai_explanation: data.root_cause_analysis || 'No root-cause narrative was returned by the AI engine.',
-            recommended_remediation: recommendationsRaw,
-            generated_at: data.updated_at || new Date().toISOString(),
-          }
-        : null;
+      const rca =
+        data.root_cause_analysis || data.impact_analysis || data.summary
+          ? {
+              id: `rca-${id}`,
+              incident_id: id,
+              summary: data.summary || 'AI analysis completed.',
+              contributing_factors: data.impact_analysis ? [data.impact_analysis] : [],
+              affected_systems: [],
+              confidence: Math.round(confidence * 100),
+              ai_explanation:
+                data.root_cause_analysis ||
+                'No root-cause narrative was returned by the AI engine.',
+              recommended_remediation: recommendationsRaw,
+              generated_at: data.updated_at || new Date().toISOString(),
+            }
+          : null;
 
       const similarIncidents = (data.similar_incidents || []).map((item) => ({
         id: item.id,
@@ -140,12 +145,18 @@ class IncidentWorkspaceService {
       }));
 
       return { status, summary, rca, recommendations, similarIncidents };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error?.response?.status === 404 && !this.analysisRequested.has(id)) {
         this.analysisRequested.add(id);
         await this.triggerAIAnalyze(id);
-        return { status: 'pending', summary: null, rca: null, recommendations: [], similarIncidents: [] };
+        return {
+          status: 'pending',
+          summary: null,
+          rca: null,
+          recommendations: [],
+          similarIncidents: [],
+        };
       }
       throw error;
     }
@@ -177,7 +188,9 @@ class IncidentWorkspaceService {
   }
 
   async loadAttachments(id: string): Promise<IncidentAttachment[]> {
-    const response = await apiClient.get<{ attachments?: IncidentAttachmentResponse[] }>(`/incidents/${id}/`);
+    const response = await apiClient.get<{ attachments?: IncidentAttachmentResponse[] }>(
+      `/incidents/${id}/`
+    );
     return (response.data.attachments || []).map((attachment) => ({
       id: attachment.id,
       incident_id: id,
@@ -205,13 +218,17 @@ class IncidentWorkspaceService {
 
   async loadRiskScore(id: string): Promise<RiskScoreMetrics> {
     const incident = await this.loadIncident(id);
-    const analysisResponse = await apiClient.get<IncidentAnalysisPayload | null>(`/ai/incidents/${id}/analysis/`);
+    const analysisResponse = await apiClient.get<IncidentAnalysisPayload | null>(
+      `/ai/incidents/${id}/analysis/`
+    );
     const analysis = analysisResponse.data;
     const score = analysis?.risk_score ?? 0;
     const confidence = analysis?.confidence_score ?? 0;
     const severity = analysis?.severity_prediction || incident.severity;
 
-    const normalizedSeverity = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(String(severity).toUpperCase())
+    const normalizedSeverity = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(
+      String(severity).toUpperCase()
+    )
       ? (String(severity).toUpperCase() as Incident['severity'])
       : incident.severity;
 
@@ -221,11 +238,18 @@ class IncidentWorkspaceService {
       trend: 'STABLE',
       severity: normalizedSeverity,
       color_indicator:
-        normalizedSeverity === 'CRITICAL' ? 'red' : normalizedSeverity === 'HIGH' ? 'amber' : normalizedSeverity === 'MEDIUM' ? 'yellow' : 'green',
+        normalizedSeverity === 'CRITICAL'
+          ? 'red'
+          : normalizedSeverity === 'HIGH'
+            ? 'amber'
+            : normalizedSeverity === 'MEDIUM'
+              ? 'yellow'
+              : 'green',
       ai_confidence: Math.round(confidence * 100),
-      breakdown: score > 0
-        ? [{ label: 'AI risk score', score, weight: 100 }]
-        : [{ label: 'AI risk score unavailable', score: 0, weight: 100 }],
+      breakdown:
+        score > 0
+          ? [{ label: 'AI risk score', score, weight: 100 }]
+          : [{ label: 'AI risk score unavailable', score: 0, weight: 100 }],
     };
   }
 
@@ -235,7 +259,9 @@ class IncidentWorkspaceService {
       cluster_id: 'Not provided by incident telemetry',
       region: 'Not provided by incident telemetry',
       environment: 'PRODUCTION',
-      kubernetes_namespace: incident.category ? `incident-${incident.category.toLowerCase()}` : 'Not provided',
+      kubernetes_namespace: incident.category
+        ? `incident-${incident.category.toLowerCase()}`
+        : 'Not provided',
       impacted_services: [],
       last_deployed_at: undefined,
     };
@@ -254,12 +280,16 @@ class IncidentWorkspaceService {
   ): Promise<IncidentAttachment> {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await apiClient.post<IncidentAttachmentResponse>(`/incidents/${id}/attachments/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (event) => {
-        if (onProgress && event.total) onProgress(Math.round((event.loaded / event.total) * 100));
-      },
-    });
+    const response = await apiClient.post<IncidentAttachmentResponse>(
+      `/incidents/${id}/attachments/`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (event) => {
+          if (onProgress && event.total) onProgress(Math.round((event.loaded / event.total) * 100));
+        },
+      }
+    );
 
     return {
       id: response.data.id,
@@ -291,9 +321,17 @@ class IncidentWorkspaceService {
     return response.status >= 200 && response.status < 300;
   }
 
-  private normalizeAIStatus(value?: string): 'idle' | 'pending' | 'processing' | 'completed' | 'failed' {
+  private normalizeAIStatus(
+    value?: string
+  ): 'idle' | 'pending' | 'processing' | 'completed' | 'failed' {
     const status = value?.toLowerCase();
-    if (status === 'pending' || status === 'processing' || status === 'completed' || status === 'failed') return status;
+    if (
+      status === 'pending' ||
+      status === 'processing' ||
+      status === 'completed' ||
+      status === 'failed'
+    )
+      return status;
     return 'idle';
   }
 
@@ -307,13 +345,20 @@ class IncidentWorkspaceService {
 
   private mapEventTitle(type?: string): string {
     switch (type) {
-      case 'CREATED': return 'Incident created';
-      case 'STATUS_CHANGED': return 'Status changed';
-      case 'SEVERITY_CHANGED': return 'Severity changed';
-      case 'ASSIGNED': return 'Incident assigned';
-      case 'COMMENT_ADDED': return 'Comment added';
-      case 'AI_ANALYSIS_COMPLETED': return 'AI analysis completed';
-      default: return 'Timeline event';
+      case 'CREATED':
+        return 'Incident created';
+      case 'STATUS_CHANGED':
+        return 'Status changed';
+      case 'SEVERITY_CHANGED':
+        return 'Severity changed';
+      case 'ASSIGNED':
+        return 'Incident assigned';
+      case 'COMMENT_ADDED':
+        return 'Comment added';
+      case 'AI_ANALYSIS_COMPLETED':
+        return 'AI analysis completed';
+      default:
+        return 'Timeline event';
     }
   }
 
@@ -334,13 +379,19 @@ class IncidentWorkspaceService {
 
   private mapEventIcon(type?: string): IncidentTimelineItem['icon_type'] {
     switch (type) {
-      case 'CREATED': return 'alert';
-      case 'ASSIGNED': return 'user';
-      case 'COMMENT_ADDED': return 'comment';
-      case 'AI_ANALYSIS_COMPLETED': return 'ai';
+      case 'CREATED':
+        return 'alert';
+      case 'ASSIGNED':
+        return 'user';
+      case 'COMMENT_ADDED':
+        return 'comment';
+      case 'AI_ANALYSIS_COMPLETED':
+        return 'ai';
       case 'STATUS_CHANGED':
-      case 'SEVERITY_CHANGED': return 'check';
-      default: return 'system';
+      case 'SEVERITY_CHANGED':
+        return 'check';
+      default:
+        return 'system';
     }
   }
 }

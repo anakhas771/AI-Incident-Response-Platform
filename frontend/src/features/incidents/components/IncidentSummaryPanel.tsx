@@ -38,9 +38,7 @@ export const IncidentSummaryPanel: React.FC<IncidentSummaryPanelProps> = React.m
     const evidence = events
       .slice(-8)
       .map((event: { created_at?: string; event_type?: string; message?: string }) => {
-        const timestamp = event.created_at
-          ? new Date(event.created_at).toISOString()
-          : '';
+        const timestamp = event.created_at ? new Date(event.created_at).toISOString() : '';
         return `[${timestamp}] ${event.event_type || ''}: ${event.message || ''}`;
       })
       .filter(Boolean)
@@ -66,7 +64,8 @@ export const IncidentSummaryPanel: React.FC<IncidentSummaryPanelProps> = React.m
           </p>
         ) : (
           <p className="mt-4 text-sm text-zinc-500">
-            No primary description was recorded. Analysis is grounded in the incident timeline evidence below.
+            No primary description was recorded. Analysis is grounded in the incident timeline
+            evidence below.
           </p>
         )}
 

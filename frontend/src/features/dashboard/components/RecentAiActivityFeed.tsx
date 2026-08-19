@@ -63,20 +63,14 @@ export const RecentAiActivityFeed: React.FC<RecentAiActivityFeedProps> = ({
   if (isLoading) return null;
 
   return (
-    <Card
-      aiGlow
-      hoverEffect={false}
-      className="flex flex-col bg-surface border-indigo-500/[0.12]"
-    >
+    <Card aiGlow hoverEffect={false} className="flex flex-col bg-surface border-indigo-500/[0.12]">
       <CardHeader className="flex shrink-0 flex-row items-center justify-between border-b border-white/[0.05] pb-3">
         <div className="min-w-0">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
             <Sparkles className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
             AI Copilot Intelligence
           </CardTitle>
-          <CardDescription className="mt-0.5">
-            Live sessions, RCA, and remediation
-          </CardDescription>
+          <CardDescription className="mt-0.5">Live sessions, RCA, and remediation</CardDescription>
         </div>
 
         {/* LIVE indicator */}
@@ -151,9 +145,7 @@ export const RecentAiActivityFeed: React.FC<RecentAiActivityFeedProps> = ({
                 {/* Footer */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
-                    <span
-                      className={cn('h-1.5 w-1.5 rounded-full shrink-0', config.dotColor)}
-                    />
+                    <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', config.dotColor)} />
                     <span className="text-[9px] font-mono text-zinc-700 truncate">
                       {isCopilot ? `Session` : `INC-${item.incidentId.slice(-6)}`}
                     </span>
@@ -167,8 +159,8 @@ export const RecentAiActivityFeed: React.FC<RecentAiActivityFeedProps> = ({
                         item.confidence >= 70
                           ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40'
                           : item.confidence >= 40
-                          ? 'bg-amber-950/60 text-amber-400 border border-amber-800/40'
-                          : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                            ? 'bg-amber-950/60 text-amber-400 border border-amber-800/40'
+                            : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
                       )}
                     >
                       {item.confidence}%

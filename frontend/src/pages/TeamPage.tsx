@@ -135,9 +135,7 @@ export const TeamPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3.5 font-mono text-zinc-400">
-                      {member.date_joined
-                        ? new Date(member.date_joined).toLocaleDateString()
-                        : '—'}
+                      {member.date_joined ? new Date(member.date_joined).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <button

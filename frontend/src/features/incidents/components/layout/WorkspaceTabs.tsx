@@ -40,17 +40,46 @@ export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = React.memo(
       count?: number;
     }> = [
       { id: 'overview', label: 'Overview', icon: <FileText className="h-3.5 w-3.5" /> },
-      { id: 'timeline', label: 'Timeline', icon: <History className="h-3.5 w-3.5" />, count: timelineCount },
+      {
+        id: 'timeline',
+        label: 'Timeline',
+        icon: <History className="h-3.5 w-3.5" />,
+        count: timelineCount,
+      },
       { id: 'rca', label: 'AI RCA', icon: <Brain className="h-3.5 w-3.5 text-cyan-400" /> },
-      { id: 'recommendations', label: 'Remediation', icon: <Lightbulb className="h-3.5 w-3.5 text-amber-400" />, count: recommendationsCount },
-      { id: 'similar', label: 'Correlated', icon: <Layers className="h-3.5 w-3.5 text-purple-400" />, count: similarCount },
-      { id: 'comments', label: 'Discussions', icon: <MessageSquare className="h-3.5 w-3.5" />, count: commentsCount },
-      { id: 'attachments', label: 'Evidence', icon: <Paperclip className="h-3.5 w-3.5" />, count: attachmentsCount },
+      {
+        id: 'recommendations',
+        label: 'Remediation',
+        icon: <Lightbulb className="h-3.5 w-3.5 text-amber-400" />,
+        count: recommendationsCount,
+      },
+      {
+        id: 'similar',
+        label: 'Correlated',
+        icon: <Layers className="h-3.5 w-3.5 text-purple-400" />,
+        count: similarCount,
+      },
+      {
+        id: 'comments',
+        label: 'Discussions',
+        icon: <MessageSquare className="h-3.5 w-3.5" />,
+        count: commentsCount,
+      },
+      {
+        id: 'attachments',
+        label: 'Evidence',
+        icon: <Paperclip className="h-3.5 w-3.5" />,
+        count: attachmentsCount,
+      },
       { id: 'audit', label: 'Audit', icon: <Shield className="h-3.5 w-3.5" />, count: auditCount },
     ];
 
     return (
-      <div className="-mx-1 overflow-x-auto px-1 pb-1 scrollbar-none" role="tablist" aria-label="Incident Command Center View Navigation">
+      <div
+        className="-mx-1 overflow-x-auto px-1 pb-1 scrollbar-none"
+        role="tablist"
+        aria-label="Incident Command Center View Navigation"
+      >
         <div className="flex min-w-max gap-1 border-b border-subtle pt-1">
           {tabs.map((tab) => {
             const isActive = selectedTab === tab.id;
@@ -70,7 +99,9 @@ export const WorkspaceTabs: React.FC<WorkspaceTabsProps> = React.memo(
                 {tab.icon}
                 <span>{tab.label}</span>
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-mono ${isActive ? 'border-indigo-800 bg-indigo-950 text-indigo-300' : 'border-zinc-800 bg-zinc-900 text-zinc-500'}`}>
+                  <span
+                    className={`rounded-full border px-1.5 py-0.5 text-[9px] font-mono ${isActive ? 'border-indigo-800 bg-indigo-950 text-indigo-300' : 'border-zinc-800 bg-zinc-900 text-zinc-500'}`}
+                  >
                     {tab.count}
                   </span>
                 )}

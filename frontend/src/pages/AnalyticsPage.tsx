@@ -326,7 +326,11 @@ export const AnalyticsPage: React.FC = () => {
                           <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="rgba(255,255,255,0.04)"
+                        vertical={false}
+                      />
                       <XAxis
                         dataKey="timestamp"
                         stroke="#3f3f46"
@@ -345,10 +349,40 @@ export const AnalyticsPage: React.FC = () => {
                         width={24}
                         allowDecimals={false}
                       />
-                      <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'rgba(255,255,255,0.06)' }} />
-                      <Area type="monotone" dataKey="critical" name="Critical" stroke="#ef4444" fillOpacity={1} fill="url(#aCritical)" strokeWidth={1.8} dot={false} />
-                      <Area type="monotone" dataKey="high" name="High" stroke="#f97316" fillOpacity={1} fill="url(#aHigh)" strokeWidth={1.8} dot={false} />
-                      <Area type="monotone" dataKey="medium" name="Medium" stroke="#f59e0b" fillOpacity={1} fill="url(#aMedium)" strokeWidth={1.5} dot={false} />
+                      <Tooltip
+                        contentStyle={tooltipStyle}
+                        cursor={{ stroke: 'rgba(255,255,255,0.06)' }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="critical"
+                        name="Critical"
+                        stroke="#ef4444"
+                        fillOpacity={1}
+                        fill="url(#aCritical)"
+                        strokeWidth={1.8}
+                        dot={false}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="high"
+                        name="High"
+                        stroke="#f97316"
+                        fillOpacity={1}
+                        fill="url(#aHigh)"
+                        strokeWidth={1.8}
+                        dot={false}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="medium"
+                        name="Medium"
+                        stroke="#f59e0b"
+                        fillOpacity={1}
+                        fill="url(#aMedium)"
+                        strokeWidth={1.5}
+                        dot={false}
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -422,8 +456,25 @@ const CategoryDistributionChart: React.FC<{ incidents: Array<{ category: string 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} barGap={8} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-          <XAxis type="number" stroke="#3f3f46" fontSize={9} tickLine={false} axisLine={false} tick={{ fill: '#52525b' }} allowDecimals={false} />
-          <YAxis type="category" dataKey="name" stroke="#3f3f46" fontSize={9} tickLine={false} axisLine={false} tick={{ fill: '#a1a1aa' }} width={90} />
+          <XAxis
+            type="number"
+            stroke="#3f3f46"
+            fontSize={9}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: '#52525b' }}
+            allowDecimals={false}
+          />
+          <YAxis
+            type="category"
+            dataKey="name"
+            stroke="#3f3f46"
+            fontSize={9}
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: '#a1a1aa' }}
+            width={90}
+          />
           <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.025)' }} />
           <Bar dataKey="value" name="Incidents" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (

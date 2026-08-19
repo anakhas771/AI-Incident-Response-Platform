@@ -75,7 +75,9 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
         />
 
         <div className="relative w-full min-w-0">
-          <div className={`w-full min-w-0 transition-[padding] duration-300 ${isCopilotOpen ? 'xl:pr-[420px]' : ''}`}>
+          <div
+            className={`w-full min-w-0 transition-[padding] duration-300 ${isCopilotOpen ? 'xl:pr-[420px]' : ''}`}
+          >
             <div className="grid w-full min-w-0 grid-cols-1 items-start gap-4 md:gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
               <main className="min-w-0">
                 <WorkspaceContent

@@ -46,7 +46,8 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
     set((state) => ({
       incidents,
       selectedIncident:
-        state.selectedIncident && incidents.some((incident) => incident.id === state.selectedIncident?.id)
+        state.selectedIncident &&
+        incidents.some((incident) => incident.id === state.selectedIncident?.id)
           ? incidents.find((incident) => incident.id === state.selectedIncident?.id) || null
           : null,
     }));
@@ -54,13 +55,14 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
 
   setSelectedIncident: (incident) => set({ selectedIncident: incident }),
 
-  setFilters: (newFilters) =>
-    set((state) => ({ filters: { ...state.filters, ...newFilters } })),
+  setFilters: (newFilters) => set((state) => ({ filters: { ...state.filters, ...newFilters } })),
 
   resetFilters: () => set({ filters: initialFilters }),
 
   updateStatus: async (id, newStatus) => {
-    const response = await apiClient.post<Incident>(`/incidents/${id}/status/`, { status: newStatus });
+    const response = await apiClient.post<Incident>(`/incidents/${id}/status/`, {
+      status: newStatus,
+    });
     const updated = response.data;
     set((state) => ({
       incidents: state.incidents.map((incident) => (incident.id === id ? updated : incident)),
@@ -82,7 +84,9 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
   },
 
   addComment: async (incidentId, message) => {
-    const response = await apiClient.post<Comment>(`/incidents/${incidentId}/comments/`, { message });
+    const response = await apiClient.post<Comment>(`/incidents/${incidentId}/comments/`, {
+      message,
+    });
     set((state) => ({
       commentsMap: {
         ...state.commentsMap,
@@ -98,14 +102,16 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
       if (filters.severity !== 'ALL' && incident.severity !== filters.severity) return false;
       if (filters.status !== 'ALL' && incident.status !== filters.status) return false;
       if (filters.category !== 'ALL' && incident.category !== filters.category) return false;
-      if (filters.assignedTo !== 'ALL' && incident.assigned_to?.id !== filters.assignedTo) return false;
+      if (filters.assignedTo !== 'ALL' && incident.assigned_to?.id !== filters.assignedTo)
+        return false;
       if (filters.search) {
         const query = filters.search.toLowerCase();
         if (
           !incident.title.toLowerCase().includes(query) &&
           !incident.description.toLowerCase().includes(query) &&
           !incident.id.toLowerCase().includes(query)
-        ) return false;
+        )
+          return false;
       }
       return true;
     });

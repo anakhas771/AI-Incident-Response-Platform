@@ -43,7 +43,10 @@ export const ActivityLogPage: React.FC = () => {
       if (incident.updated_at && incident.updated_at !== incident.created_at) {
         activity.push({
           id: `updated-${incident.id}`,
-          actor: incident.assigned_to?.full_name || incident.created_by?.full_name || 'Organization member',
+          actor:
+            incident.assigned_to?.full_name ||
+            incident.created_by?.full_name ||
+            'Organization member',
           action: `Incident currently ${incident.status}`,
           target: incident.title,
           timestamp: incident.updated_at,
@@ -86,8 +89,12 @@ export const ActivityLogPage: React.FC = () => {
                 onClick={() => navigate(`/incidents/${row.incidentId}`)}
                 className="flex w-full min-w-0 flex-col gap-3 p-4 text-left transition-colors hover:bg-surface-elevated/50 sm:grid sm:grid-cols-[minmax(10rem,1fr)_minmax(12rem,1.4fr)_minmax(12rem,1.7fr)_auto] sm:items-center sm:gap-4"
               >
-                <span className="min-w-0 break-words text-xs font-medium text-zinc-100">{row.actor}</span>
-                <span className="min-w-0 break-words font-mono text-[11px] text-zinc-300">{row.action}</span>
+                <span className="min-w-0 break-words text-xs font-medium text-zinc-100">
+                  {row.actor}
+                </span>
+                <span className="min-w-0 break-words font-mono text-[11px] text-zinc-300">
+                  {row.action}
+                </span>
                 <span className="min-w-0 break-words text-xs text-indigo-300">{row.target}</span>
                 <span className="flex items-center justify-between gap-3 text-[11px] font-mono text-zinc-500 sm:block sm:text-right">
                   <span>{new Date(row.timestamp).toLocaleString()}</span>

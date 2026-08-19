@@ -6,9 +6,7 @@ interface DashboardEmptyStateProps {
   onReportIncident?: () => void;
 }
 
-export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({
-  onReportIncident,
-}) => {
+export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ onReportIncident }) => {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       {/* Icon container */}
@@ -25,12 +23,10 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({
         All systems operational
       </div>
 
-      <h2 className="text-lg font-semibold text-zinc-100 tracking-tight">
-        No active incidents
-      </h2>
+      <h2 className="text-lg font-semibold text-zinc-100 tracking-tight">No active incidents</h2>
       <p className="mt-2 max-w-sm text-sm text-zinc-500 leading-relaxed">
-        Your organization is operating normally. Security posture is healthy across all
-        monitored systems.
+        Your organization is operating normally. Security posture is healthy across all monitored
+        systems.
       </p>
 
       {onReportIncident && (

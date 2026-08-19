@@ -82,7 +82,9 @@ export const RootCauseAnalysisCard: React.FC<RootCauseAnalysisCardProps> = React
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Executive Hypothesis</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+            Executive Hypothesis
+          </h4>
           <p className="break-words rounded-lg border border-zinc-800/80 bg-zinc-950/60 p-3 text-xs font-medium leading-relaxed text-zinc-200 sm:p-4">
             {rca.summary}
           </p>
@@ -96,14 +98,19 @@ export const RootCauseAnalysisCard: React.FC<RootCauseAnalysisCardProps> = React
             {factors.length ? (
               <ul className="space-y-1.5 text-xs text-zinc-300">
                 {factors.map((factor, idx) => (
-                  <li key={idx} className="flex items-start gap-2 rounded-md border border-subtle bg-surface-elevated/40 p-2.5">
+                  <li
+                    key={idx}
+                    className="flex items-start gap-2 rounded-md border border-subtle bg-surface-elevated/40 p-2.5"
+                  >
                     <span className="font-mono font-bold text-amber-400">•</span>
                     <span className="break-words leading-snug">{factor}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">No additional contributing factors were returned.</p>
+              <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">
+                No additional contributing factors were returned.
+              </p>
             )}
           </div>
 
@@ -114,19 +121,26 @@ export const RootCauseAnalysisCard: React.FC<RootCauseAnalysisCardProps> = React
             {systems.length ? (
               <div className="flex flex-wrap gap-1.5">
                 {systems.map((sys, idx) => (
-                  <span key={idx} className="max-w-full break-words rounded border border-red-900/50 bg-red-950/40 px-2.5 py-1 text-[11px] font-mono text-red-300">
+                  <span
+                    key={idx}
+                    className="max-w-full break-words rounded border border-red-900/50 bg-red-950/40 px-2.5 py-1 text-[11px] font-mono text-red-300"
+                  >
                     {sys}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">No affected systems were returned by the analysis.</p>
+              <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">
+                No affected systems were returned by the analysis.
+              </p>
             )}
           </div>
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">AI Evidence & Log Correlation</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+            AI Evidence & Log Correlation
+          </h4>
           <p className="break-words rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 text-xs leading-relaxed text-zinc-300 sm:p-4">
             {rca.ai_explanation}
           </p>
@@ -139,14 +153,19 @@ export const RootCauseAnalysisCard: React.FC<RootCauseAnalysisCardProps> = React
           {remediations.length ? (
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {remediations.map((step, idx) => (
-                <div key={idx} className="flex items-start gap-2 rounded-md border border-emerald-900/40 bg-emerald-950/30 p-2.5 text-xs text-emerald-300">
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 rounded-md border border-emerald-900/40 bg-emerald-950/30 p-2.5 text-xs text-emerald-300"
+                >
                   <span className="shrink-0 font-bold text-emerald-400">{idx + 1}.</span>
                   <span className="break-words leading-snug">{step}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">No mitigation actions were returned.</p>
+            <p className="rounded-md border border-subtle p-3 text-xs text-zinc-500">
+              No mitigation actions were returned.
+            </p>
           )}
         </div>
 
@@ -161,7 +180,11 @@ export const RootCauseAnalysisCard: React.FC<RootCauseAnalysisCardProps> = React
                 aria-label="Copy suggested RCA fix patch"
                 className="inline-flex w-fit items-center gap-1 rounded border border-zinc-800 bg-zinc-900 px-2 py-1 text-[11px] font-mono text-zinc-300 hover:border-zinc-700 hover:text-zinc-100"
               >
-                {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                {copied ? (
+                  <Check className="h-3 w-3 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
                 <span>{copied ? 'Copied' : 'Copy Patch'}</span>
               </button>
             </div>

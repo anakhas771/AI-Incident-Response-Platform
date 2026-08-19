@@ -8,7 +8,13 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/Card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '../../../components/ui/Card';
 import { IncidentTrendPoint, DashboardTimeframe } from '../types';
 import { cn } from '../../../utils/cn';
 
@@ -131,7 +137,11 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.04)"
+                vertical={false}
+              />
               <XAxis
                 dataKey="timestamp"
                 stroke="#3f3f46"
@@ -150,7 +160,10 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
                 width={24}
                 allowDecimals={false}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }}
+              />
 
               <Area
                 type="monotone"
@@ -209,10 +222,7 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
             { label: 'Low', color: '#10b981' },
           ].map((entry) => (
             <div key={entry.label} className="flex items-center gap-1.5">
-              <span
-                className="w-2 h-0.5 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
+              <span className="w-2 h-0.5 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="text-[10px] font-mono text-zinc-500">{entry.label}</span>
             </div>
           ))}

@@ -71,14 +71,14 @@ export default {
 
       boxShadow: {
         'card-hover': '0 8px 24px -4px rgba(0, 0, 0, 0.35)',
-        'critical': '0 0 20px -4px rgba(239, 68, 68, 0.3)',
-        'ai': '0 0 24px -6px rgba(99, 102, 241, 0.35)',
+        critical: '0 0 20px -4px rgba(239, 68, 68, 0.3)',
+        ai: '0 0 24px -6px rgba(99, 102, 241, 0.35)',
         'glow-indigo': '0 0 20px -5px rgba(99, 102, 241, 0.4)',
         'glow-cyan': '0 0 20px -5px rgba(34, 211, 238, 0.3)',
       },
 
       animation: {
-        'shimmer': 'shimmer 1.4s ease-in-out infinite',
+        shimmer: 'shimmer 1.4s ease-in-out infinite',
         'stream-pulse': 'stream-pulse 1.5s ease-in-out infinite',
         'live-blink': 'live-blink 2s ease-in-out infinite',
         'critical-glow': 'critical-glow-pulse 2.5s ease-in-out infinite',
@@ -114,7 +114,7 @@ export default {
       },
 
       transitionTimingFunction: {
-        'spring': 'cubic-bezier(0.22, 1, 0.36, 1)',
+        spring: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
 
       backdropBlur: {

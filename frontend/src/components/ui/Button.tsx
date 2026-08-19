@@ -24,14 +24,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] select-none cursor-pointer';
 
     const variants = {
-      default:
-        'bg-zinc-100 text-zinc-950 hover:bg-zinc-200 font-semibold shadow-sm',
+      default: 'bg-zinc-100 text-zinc-950 hover:bg-zinc-200 font-semibold shadow-sm',
       secondary:
         'bg-white/[0.06] text-zinc-100 hover:bg-white/[0.1] border border-white/[0.08] hover:border-white/[0.14]',
       outline:
         'bg-transparent text-zinc-200 hover:bg-white/[0.05] border border-white/[0.1] hover:border-white/[0.18]',
-      ghost:
-        'bg-transparent text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05]',
+      ghost: 'bg-transparent text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05]',
       destructive:
         'bg-red-900/40 text-red-200 border border-red-800/60 hover:bg-red-900/60 hover:border-red-700/60',
       ai: 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 text-white font-semibold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 border border-indigo-400/20 hover:brightness-110',

@@ -81,7 +81,9 @@ export const WorkspaceToolbar: React.FC<WorkspaceToolbarProps> = React.memo(
                 Assign Incident Owner
               </label>
               <span className="text-[10px] text-zinc-600">
-                {membersLoading ? 'Loading members…' : `${members.length} org member${members.length === 1 ? '' : 's'}`}
+                {membersLoading
+                  ? 'Loading members…'
+                  : `${members.length} org member${members.length === 1 ? '' : 's'}`}
               </span>
             </div>
             <select

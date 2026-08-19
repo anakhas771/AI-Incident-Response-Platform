@@ -56,10 +56,15 @@ export const CreateIncidentModal: React.FC = () => {
       setCreateModalOpen(false);
       toast.success(`Incident ${incident.id} created. AI analysis is starting.`);
       navigate(`/incidents/${incident.id}`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const detail = error?.response?.data?.detail || error?.response?.data || 'Unable to create incident.';
-      toast.error(typeof detail === 'string' ? detail : 'Unable to create incident. Check the form and your organization access.');
+      const detail =
+        error?.response?.data?.detail || error?.response?.data || 'Unable to create incident.';
+      toast.error(
+        typeof detail === 'string'
+          ? detail
+          : 'Unable to create incident. Check the form and your organization access.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +80,9 @@ export const CreateIncidentModal: React.FC = () => {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">Incident Title *</label>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+            Incident Title *
+          </label>
           <input
             {...register('title')}
             placeholder="Describe the incident clearly"
@@ -86,8 +93,13 @@ export const CreateIncidentModal: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">Severity Level *</label>
-            <select {...register('severity')} className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+              Severity Level *
+            </label>
+            <select
+              {...register('severity')}
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
+            >
               <option value="CRITICAL">Critical</option>
               <option value="HIGH">High</option>
               <option value="MEDIUM">Medium</option>
@@ -95,8 +107,13 @@ export const CreateIncidentModal: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">Category *</label>
-            <select {...register('category')} className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+              Category *
+            </label>
+            <select
+              {...register('category')}
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none"
+            >
               <option value="Security">Security</option>
               <option value="Infrastructure">Infrastructure</option>
               <option value="Application">Application</option>
@@ -108,14 +125,18 @@ export const CreateIncidentModal: React.FC = () => {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">Detailed Description & Telemetry *</label>
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+            Detailed Description & Telemetry *
+          </label>
           <textarea
             {...register('description')}
             rows={6}
             placeholder="Include observed behavior, timestamps, affected services, errors, logs, user impact, or other evidence."
             className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-3 font-mono text-xs text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:outline-none"
           />
-          {errors.description && <p className="mt-1 text-xs text-red-400">{errors.description.message}</p>}
+          {errors.description && (
+            <p className="mt-1 text-xs text-red-400">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
@@ -124,8 +145,12 @@ export const CreateIncidentModal: React.FC = () => {
             <span>AI analysis is generated from this incident's actual data</span>
           </div>
           <div className="flex items-center gap-3">
-            <Button type="button" variant="ghost" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
-            <Button type="submit" variant="ai" isLoading={isSubmitting}>Create Incident</Button>
+            <Button type="button" variant="ghost" onClick={() => setCreateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="ai" isLoading={isSubmitting}>
+              Create Incident
+            </Button>
           </div>
         </div>
       </form>

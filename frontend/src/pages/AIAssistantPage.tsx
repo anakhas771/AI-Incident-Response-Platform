@@ -124,7 +124,7 @@ export const AIAssistantPage: React.FC = () => {
         />
         <motion.div
           className="absolute -right-20 top-1/3 h-96 w-96 rounded-full bg-cyan-400/[0.07] blur-3xl"
-          animate={{ x: [0, -35, 0], y: [0, 40, 0], opacity: [0.30, 0.50, 0.30] }}
+          animate={{ x: [0, -35, 0], y: [0, 40, 0], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 17, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
@@ -155,7 +155,9 @@ export const AIAssistantPage: React.FC = () => {
                   <Sparkles className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-300/70">AI Copilot</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-300/70">
+                    AI Copilot
+                  </p>
                   <p className="text-xs text-zinc-500">Security investigation workspace</p>
                 </div>
               </div>
@@ -230,7 +232,9 @@ export const AIAssistantPage: React.FC = () => {
                   className="h-full w-[min(88vw,21rem)] border-r border-white/[0.08] bg-zinc-950/95 shadow-2xl backdrop-blur-xl"
                 >
                   <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-300/70">Investigations</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-300/70">
+                      Investigations
+                    </p>
                     <button
                       onClick={() => setMobileDrawerOpen(false)}
                       className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-1.5 text-zinc-600 transition-colors hover:bg-white/[0.05] hover:text-zinc-200"
@@ -260,7 +264,10 @@ export const AIAssistantPage: React.FC = () => {
                     />
                   </div>
                 </motion.div>
-                <div className="flex-1 bg-black/65 backdrop-blur-sm" onClick={() => setMobileDrawerOpen(false)} />
+                <div
+                  className="flex-1 bg-black/65 backdrop-blur-sm"
+                  onClick={() => setMobileDrawerOpen(false)}
+                />
               </div>
             )}
 

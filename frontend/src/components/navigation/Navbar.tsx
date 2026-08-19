@@ -97,11 +97,7 @@ export const Navbar: React.FC = () => {
           }
           aria-label={activeAlertCount ? `${activeAlertCount} active alerts` : 'Alerts queue'}
         >
-          {hasCritical ? (
-            <Radio className="h-4 w-4 text-red-400" />
-          ) : (
-            <Bell className="h-4 w-4" />
-          )}
+          {hasCritical ? <Radio className="h-4 w-4 text-red-400" /> : <Bell className="h-4 w-4" />}
 
           <AnimatePresence>
             {activeAlertCount > 0 && (

@@ -18,7 +18,8 @@ function formatIncidentLoadError(reason: unknown): string {
 
   if (status === 401) return 'Your session has expired. Please sign in again.';
   if (status === 403) return 'You do not have access to this organization incident.';
-  if (status === 404) return 'This incident does not exist in your organization or has been removed.';
+  if (status === 404)
+    return 'This incident does not exist in your organization or has been removed.';
   if (typeof error?.message === 'string' && error.message.trim()) return error.message;
   return 'Unable to load incident details. Please refresh and try again.';
 }

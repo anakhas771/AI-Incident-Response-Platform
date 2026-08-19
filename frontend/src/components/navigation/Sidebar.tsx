@@ -37,17 +37,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
   // Real badge counts derived from actual incident data
   const incidentBadge = useMemo(() => {
-    const open = incidents.filter(
-      (inc) => !['RESOLVED', 'CLOSED'].includes(inc.status)
-    ).length;
+    const open = incidents.filter((inc) => !['RESOLVED', 'CLOSED'].includes(inc.status)).length;
     return open > 0 ? (open > 99 ? '99+' : String(open)) : null;
   }, [incidents]);
 
   const alertBadge = useMemo(() => {
     const active = incidents.filter(
       (inc) =>
-        ['CRITICAL', 'HIGH'].includes(inc.severity) &&
-        !['RESOLVED', 'CLOSED'].includes(inc.status)
+        ['CRITICAL', 'HIGH'].includes(inc.severity) && !['RESOLVED', 'CLOSED'].includes(inc.status)
     ).length;
     return active > 0 ? (active > 9 ? '9+' : String(active)) : null;
   }, [incidents]);
@@ -73,9 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     items.map((item) => {
       const Icon = item.icon;
       const isActive =
-        item.path === '/'
-          ? location.pathname === '/'
-          : location.pathname.startsWith(item.path);
+        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path);
       const badge = 'badge' in item ? item.badge : null;
       const isAlert = 'isAlert' in item ? item.isAlert : false;
 
@@ -110,10 +105,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
               item.isAi
                 ? 'text-indigo-300'
                 : isActive
-                ? 'text-zinc-100'
-                : isAlert && badge
-                ? 'text-amber-400'
-                : 'text-zinc-500 group-hover:text-zinc-300'
+                  ? 'text-zinc-100'
+                  : isAlert && badge
+                    ? 'text-amber-400'
+                    : 'text-zinc-500 group-hover:text-zinc-300'
             )}
           />
 

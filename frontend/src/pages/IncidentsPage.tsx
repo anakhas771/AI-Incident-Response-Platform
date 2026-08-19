@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, ArrowUpRight, MessageSquare, Paperclip, SlidersHorizontal, X } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  ArrowUpRight,
+  MessageSquare,
+  Paperclip,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIncidentStore } from '../stores/useIncidentStore';
 import { useCommandStore } from '../stores/useCommandStore';
@@ -19,14 +27,8 @@ const SEVERITY_BAR: Record<Severity, string> = {
 };
 
 export const IncidentsPage: React.FC = () => {
-  const {
-    incidents,
-    filters,
-    setFilters,
-    setSelectedIncident,
-    updateStatus,
-    loadIncidents,
-  } = useIncidentStore();
+  const { incidents, filters, setFilters, setSelectedIncident, updateStatus, loadIncidents } =
+    useIncidentStore();
   const { setCreateModalOpen } = useCommandStore();
   const { user } = useAuthStore();
   const { canUpdateIncidents } = usePermissions();
@@ -59,7 +61,9 @@ export const IncidentsPage: React.FC = () => {
       }
     };
     void load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [loadIncidents]);
 
   const filtered = incidents.filter((inc) => {
@@ -170,7 +174,9 @@ export const IncidentsPage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setFilters({ severity: 'ALL', status: 'ALL', category: 'ALL', search: '' })}
+              onClick={() =>
+                setFilters({ severity: 'ALL', status: 'ALL', category: 'ALL', search: '' })
+              }
               aria-label="Clear all filters"
               className="text-zinc-600 hover:text-zinc-300"
             >
@@ -247,10 +253,18 @@ export const IncidentsPage: React.FC = () => {
               <div className="flex items-center justify-between p-2.5 rounded-lg bg-indigo-950/50 border border-indigo-800/40 text-xs text-indigo-200">
                 <span className="font-semibold">{selectedIds.length} selected</span>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('INVESTIGATING')}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleBulkStatusChange('INVESTIGATING')}
+                  >
                     Mark Investigating
                   </Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleBulkStatusChange('RESOLVED')}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleBulkStatusChange('RESOLVED')}
+                  >
                     Mark Resolved
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>
@@ -293,17 +307,27 @@ export const IncidentsPage: React.FC = () => {
                 // Loading skeleton rows
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="py-4 px-4"><div className="skeleton h-3.5 w-3.5 rounded" /></td>
-                    <td className="py-4 px-3"><div className="skeleton h-5 w-16 rounded-full" /></td>
+                    <td className="py-4 px-4">
+                      <div className="skeleton h-3.5 w-3.5 rounded" />
+                    </td>
+                    <td className="py-4 px-3">
+                      <div className="skeleton h-5 w-16 rounded-full" />
+                    </td>
                     <td className="py-4 px-3">
                       <div className="space-y-1.5">
                         <div className="skeleton h-3.5 w-3/4 rounded" />
                         <div className="skeleton h-3 w-1/2 rounded" />
                       </div>
                     </td>
-                    <td className="py-4 px-3 hidden md:table-cell"><div className="skeleton h-5 w-20 rounded-md" /></td>
-                    <td className="py-4 px-3 hidden lg:table-cell"><div className="skeleton h-3.5 w-24 rounded" /></td>
-                    <td className="py-4 px-3 hidden lg:table-cell"><div className="skeleton h-3 w-20 rounded" /></td>
+                    <td className="py-4 px-3 hidden md:table-cell">
+                      <div className="skeleton h-5 w-20 rounded-md" />
+                    </td>
+                    <td className="py-4 px-3 hidden lg:table-cell">
+                      <div className="skeleton h-3.5 w-24 rounded" />
+                    </td>
+                    <td className="py-4 px-3 hidden lg:table-cell">
+                      <div className="skeleton h-3 w-20 rounded" />
+                    </td>
                     <td className="py-4 px-3" />
                   </tr>
                 ))
@@ -318,7 +342,14 @@ export const IncidentsPage: React.FC = () => {
                       </p>
                       {hasActiveFilters && (
                         <button
-                          onClick={() => setFilters({ severity: 'ALL', status: 'ALL', category: 'ALL', search: '' })}
+                          onClick={() =>
+                            setFilters({
+                              severity: 'ALL',
+                              status: 'ALL',
+                              category: 'ALL',
+                              search: '',
+                            })
+                          }
                           className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
                         >
                           Clear filters
@@ -341,7 +372,10 @@ export const IncidentsPage: React.FC = () => {
                     )}
                   >
                     {/* Severity accent bar */}
-                    <td className="py-3.5 px-4 relative" onClick={(e) => toggleSelectOne(inc.id, e)}>
+                    <td
+                      className="py-3.5 px-4 relative"
+                      onClick={(e) => toggleSelectOne(inc.id, e)}
+                    >
                       <div
                         className={cn(
                           'absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full opacity-0 group-hover:opacity-70 transition-opacity',
@@ -414,15 +448,25 @@ export const IncidentsPage: React.FC = () => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-700 font-mono text-[10px] italic">Unassigned</span>
+                        <span className="text-zinc-700 font-mono text-[10px] italic">
+                          Unassigned
+                        </span>
                       )}
                     </td>
 
                     <td className="py-3.5 px-3 hidden lg:table-cell">
                       <div className="font-mono text-[10px] text-zinc-500">
-                        <div>{new Date(inc.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</div>
+                        <div>
+                          {new Date(inc.created_at).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </div>
                         <div className="text-zinc-700">
-                          {new Date(inc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(inc.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </div>
                       </div>
                     </td>

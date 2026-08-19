@@ -45,7 +45,13 @@ export const SeverityBadge: React.FC<SeverityBadgeProps> = ({
       )}
     >
       {showDot && (
-        <span className={cn('rounded-full shrink-0', dots[severity], size === 'xs' ? 'w-1 h-1' : 'w-1.5 h-1.5')} />
+        <span
+          className={cn(
+            'rounded-full shrink-0',
+            dots[severity],
+            size === 'xs' ? 'w-1 h-1' : 'w-1.5 h-1.5'
+          )}
+        />
       )}
       {severity}
     </span>
