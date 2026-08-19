@@ -15,11 +15,15 @@ class OrganizationMembersView(APIView):
     def get(self, request):
         user = cast(User, request.user)
         if not user.organization_id:
-            return Response({"detail": "User does not belong to any organization."}, status=400)
+            return Response(
+                {"detail": "User does not belong to any organization."}, status=400
+            )
 
         members = (
             User.objects.filter(organization_id=user.organization_id)
             .select_related("organization")
             .order_by("date_joined", "email")
         )
-        return Response(UserDetailSerializer(members, many=True, context={"request": request}).data)
+        return Response(
+            UserDetailSerializer(members, many=True, context={"request": request}).data
+        )

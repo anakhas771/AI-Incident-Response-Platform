@@ -181,7 +181,9 @@ class IncidentAnalyzer:
         else:
             affected_components = [str(affected_raw).strip()] if affected_raw else []
 
-        actions_raw = result.get("recommendations") or result.get("recommended_actions") or []
+        actions_raw = (
+            result.get("recommendations") or result.get("recommended_actions") or []
+        )
         if isinstance(actions_raw, list):
             recommendations = [
                 str(item).strip() for item in actions_raw if str(item).strip()
@@ -201,7 +203,9 @@ class IncidentAnalyzer:
         )
         if severity_prediction not in _ALLOWED_SEVERITIES:
             fallback = str(severity or "MEDIUM").strip().upper()
-            severity_prediction = fallback if fallback in _ALLOWED_SEVERITIES else "MEDIUM"
+            severity_prediction = (
+                fallback if fallback in _ALLOWED_SEVERITIES else "MEDIUM"
+            )
 
         try:
             confidence_score = float(result.get("confidence_score", 0.0))

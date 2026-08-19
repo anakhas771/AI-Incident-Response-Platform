@@ -61,7 +61,10 @@ class OllamaLLMGateway(BaseLLMGateway):
                 messages.append({"role": turn.role, "content": turn.content})
         if prompt.raw_user_message:
             final_user_content = prompt.raw_user_message
-            if prompt.context_text and prompt.context_text != "No relevant knowledge base documents found.":
+            if (
+                prompt.context_text
+                and prompt.context_text != "No relevant knowledge base documents found."
+            ):
                 final_user_content = (
                     "RETRIEVED KNOWLEDGE BASE CONTEXT:\n"
                     f"{prompt.context_text}\n\nCURRENT USER MESSAGE:\n"
@@ -125,7 +128,9 @@ class OllamaLLMGateway(BaseLLMGateway):
                 status_code=502,
             )
 
-        content = self._clean_content(response_data.get("message", {}).get("content", ""))
+        content = self._clean_content(
+            response_data.get("message", {}).get("content", "")
+        )
         prompt_tokens = response_data.get("prompt_eval_count", 0)
         completion_tokens = response_data.get("eval_count", 0)
         total_tokens = prompt_tokens + completion_tokens
@@ -221,7 +226,11 @@ class OllamaLLMGateway(BaseLLMGateway):
         except GeneratorExit:
             logger.info(
                 "Ollama streaming cancelled",
-                extra={"model": self.model, "token_chunks": token_count, "output_chars": output_chars},
+                extra={
+                    "model": self.model,
+                    "token_chunks": token_count,
+                    "output_chars": output_chars,
+                },
             )
             raise
         except Exception as exc:

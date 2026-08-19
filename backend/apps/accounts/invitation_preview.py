@@ -16,18 +16,28 @@ class InvitationPreviewView(APIView):
     def get(self, request, *args, **kwargs):
         token = request.query_params.get("token")
         if not token:
-            return Response({"detail": "Invitation token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invitation token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
-            invitation = OrganizationInvitation.objects.select_related("organization").get(
+            invitation = OrganizationInvitation.objects.select_related(
+                "organization"
+            ).get(
                 token=hash_lifecycle_token(token),
                 status=InvitationStatus.PENDING,
             )
         except OrganizationInvitation.DoesNotExist:
-            return Response({"detail": "Invalid or expired invitation."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Invalid or expired invitation."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if invitation.expires_at < timezone.now():
-            return Response({"detail": "Invitation has expired."}, status=status.HTTP_410_GONE)
+            return Response(
+                {"detail": "Invitation has expired."}, status=status.HTTP_410_GONE
+            )
 
         return Response(
             {

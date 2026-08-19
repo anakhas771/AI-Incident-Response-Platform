@@ -65,7 +65,9 @@ class IncidentAnalyzeView(APIView):
             result = analyzer.analyze(**serializer.validated_data)
             response_serializer = IncidentAnalyzeResponseSerializer(data=result)
             response_serializer.is_valid(raise_exception=True)
-            return Response(response_serializer.validated_data, status=status.HTTP_200_OK)
+            return Response(
+                response_serializer.validated_data, status=status.HTTP_200_OK
+            )
         except Exception as exc:
             logger.exception("Error processing incident analysis: %s", str(exc))
             return Response(
@@ -88,16 +90,22 @@ class IncidentAnalyzeDetailView(APIView):
         summary="Analyze persistent incident by ID",
         description="Triggers AI analysis for a database incident and stores results.",
     )
-    def post(self, request: Request, incident_id: Any, *args: Any, **kwargs: Any) -> Response:
+    def post(
+        self, request: Request, incident_id: Any, *args: Any, **kwargs: Any
+    ) -> Response:
         incident = get_object_or_404(Incident, id=incident_id)
         self.check_object_permissions(request, incident)
 
         try:
             analyzer = IncidentAnalyzer()
             analysis = analyzer.analyze_incident(incident)
-            return Response(self.serializer_class(analysis).data, status=status.HTTP_200_OK)
+            return Response(
+                self.serializer_class(analysis).data, status=status.HTTP_200_OK
+            )
         except Exception as exc:
-            logger.exception("Error analyzing persistent incident ID=%s: %s", incident_id, str(exc))
+            logger.exception(
+                "Error analyzing persistent incident ID=%s: %s", incident_id, str(exc)
+            )
             return Response(
                 {"error": "Failed to analyze incident.", "detail": str(exc)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -118,7 +126,9 @@ class IncidentAnalysisRetrieveView(APIView):
         summary="Retrieve AI analysis for an incident",
         description="Returns the most recent stored AI analysis for a given incident ID.",
     )
-    def get(self, request: Request, incident_id: Any, *args: Any, **kwargs: Any) -> Response:
+    def get(
+        self, request: Request, incident_id: Any, *args: Any, **kwargs: Any
+    ) -> Response:
         incident = get_object_or_404(Incident, id=incident_id)
         self.check_object_permissions(request, incident)
 
@@ -156,7 +166,9 @@ class SeverityPredictView(APIView):
             result = predictor.predict(**serializer.validated_data)
             response_serializer = SeverityPredictResponseSerializer(data=result)
             response_serializer.is_valid(raise_exception=True)
-            return Response(response_serializer.validated_data, status=status.HTTP_200_OK)
+            return Response(
+                response_serializer.validated_data, status=status.HTTP_200_OK
+            )
         except Exception as exc:
             logger.exception("Error processing severity prediction: %s", str(exc))
             return Response(
@@ -190,7 +202,9 @@ class RecommendationView(APIView):
             result = engine.recommend(**serializer.validated_data, organization=org)
             response_serializer = RecommendationResponseSerializer(data=result)
             response_serializer.is_valid(raise_exception=True)
-            return Response(response_serializer.validated_data, status=status.HTTP_200_OK)
+            return Response(
+                response_serializer.validated_data, status=status.HTTP_200_OK
+            )
         except Exception as exc:
             logger.exception("Error generating AI recommendations: %s", str(exc))
             return Response(

@@ -15,32 +15,71 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 LOCAL_APPS = [
-    "apps.common", "apps.accounts", "apps.incidents", "apps.logs", "apps.monitoring", "apps.ai_engine", "apps.knowledge",
+    "apps.common",
+    "apps.accounts",
+    "apps.incidents",
+    "apps.logs",
+    "apps.monitoring",
+    "apps.ai_engine",
+    "apps.knowledge",
 ]
 INSTALLED_APPS = [
-    "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes", "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
-    "rest_framework", "corsheaders", "drf_spectacular",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "corsheaders",
+    "drf_spectacular",
 ] + LOCAL_APPS
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware", "corsheaders.middleware.CorsMiddleware", "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware", "django.middleware.csrf.CsrfViewMiddleware", "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware", "django.middleware.clickjacking.XFrameOptionsMiddleware", "apps.common.middleware.RequestLogMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.common.middleware.RequestLogMiddleware",
 ]
 ROOT_URLCONF = "config.urls"
-TEMPLATES = [{
-    "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [BASE_DIR / "templates"],
-    "APP_DIRS": True,
-    "OPTIONS": {"context_processors": ["django.template.context_processors.debug", "django.template.context_processors.request", "django.contrib.auth.context_processors.auth", "django.contrib.messages.context_processors.messages"]},
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        },
+    }
+]
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {"default": {"ENGINE": "django.db.backends.postgresql", "NAME": os.environ.get("POSTGRES_DB", "incident_platform_db"), "USER": os.environ.get("POSTGRES_USER", "postgres_user"), "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres_secure_password_dev"), "HOST": os.environ.get("POSTGRES_HOST", "localhost"), "PORT": os.environ.get("POSTGRES_PORT", "5432")}}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "incident_platform_db"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres_user"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres_secure_password_dev"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+    }
+}
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -57,34 +96,76 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication"
+    ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.AnonRateThrottle", "rest_framework.throttling.UserRateThrottle"],
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "auth": "5/minute"},
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/minute",
+        "user": "100/minute",
+        "auth": "5/minute",
+    },
     "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60), "REFRESH_TOKEN_LIFETIME": timedelta(days=7), "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True, "UPDATE_LAST_LOGIN": True, "ALGORITHM": "HS256", "SIGNING_KEY": SECRET_KEY,
-    "AUTH_HEADER_TYPES": ("Bearer",), "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION", "USER_ID_FIELD": "id", "USER_ID_CLAIM": "user_id",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
     "TOKEN_OBTAIN_SERIALIZER": "apps.accounts.serializers.CustomTokenObtainPairSerializer",
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "AI Incident Response Platform API",
     "DESCRIPTION": "Enterprise API for AI Incident Response Platform with AI Engine and RAG Copilot",
-    "VERSION": "1.0.0", "SERVE_INCLUDE_SCHEMA": False, "SCHEMA_PATH_PREFIX": r"/api/v1/", "COMPONENT_SPLIT_REQUEST": True,
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/v1/",
+    "COMPONENT_SPLIT_REQUEST": True,
     "SECURITY": [{"jwtAuth": []}],
-    "COMPONENTS": {"securitySchemes": {"jwtAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}},
-    "SWAGGER_UI_SETTINGS": {"deepLinking": True, "persistAuthorization": True, "displayOperationId": True},
-    "ENUM_NAME_OVERRIDES": {"UserRoleEnum": "apps.accounts.models.Role", "IncidentStatusEnum": "apps.incidents.models.Status", "IncidentSeverityEnum": "apps.incidents.models.Severity", "DocumentTypeEnum": "apps.knowledge.models.DocumentType", "DocumentStatusEnum": "apps.knowledge.models.DocumentStatus"},
+    "COMPONENTS": {
+        "securitySchemes": {
+            "jwtAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
+        }
+    },
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+    },
+    "ENUM_NAME_OVERRIDES": {
+        "UserRoleEnum": "apps.accounts.models.Role",
+        "IncidentStatusEnum": "apps.incidents.models.Status",
+        "IncidentSeverityEnum": "apps.incidents.models.Severity",
+        "DocumentTypeEnum": "apps.knowledge.models.DocumentType",
+        "DocumentStatusEnum": "apps.knowledge.models.DocumentStatus",
+    },
 }
 
-CACHES = {"default": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0"), "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}}}
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0"),
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+    }
+}
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0"
+)
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -96,19 +177,50 @@ CELERY_TASK_DEFAULT_RETRY_DELAY = 60
 CELERY_TASK_MAX_RETRIES = 3
 CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "False") == "True"
 
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173").split(",")
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173",
+).split(",")
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-client-request-time"]
 
 LOGGING = {
-    "version": 1, "disable_existing_loggers": False,
-    "formatters": {"verbose": {"format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}", "style": "{"}, "simple": {"format": "{levelname} {message}", "style": "{"}, "structured": {"format": '{{"level": "{levelname}", "timestamp": "{asctime}", "module": "{module}", "message": "{message}", "request_id": "{request_id}", "user_id": "{user_id}", "org_id": "{org_id}"}}', "style": "{"}},
-    "filters": {"request_context": {"()": "apps.common.middleware.RequestContextFilter"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "structured", "filters": ["request_context"]}},
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {"format": "{levelname} {message}", "style": "{"},
+        "structured": {
+            "format": '{{"level": "{levelname}", "timestamp": "{asctime}", "module": "{module}", "message": "{message}", "request_id": "{request_id}", "user_id": "{user_id}", "org_id": "{org_id}"}}',
+            "style": "{",
+        },
+    },
+    "filters": {
+        "request_context": {"()": "apps.common.middleware.RequestContextFilter"}
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "structured",
+            "filters": ["request_context"],
+        }
+    },
     "root": {"handlers": ["console"], "level": "INFO"},
-    "loggers": {"django": {"handlers": ["console"], "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"), "propagate": False}, "audit": {"handlers": ["console"], "level": "INFO", "propagate": False}},
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "audit": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
 }
 
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "greatcart.dev@gmail.com")
@@ -117,14 +229,34 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "greatcart.dev@gmail.com")
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:5173")
 
-AI_ENGINE_CONFIG = {"PROVIDER": os.environ.get("AI_PROVIDER", "mock"), "API_KEY": os.environ.get("AI_API_KEY", ""), "MODEL": os.environ.get("AI_MODEL", "gpt-4-turbo")}
+AI_ENGINE_CONFIG = {
+    "PROVIDER": os.environ.get("AI_PROVIDER", "mock"),
+    "API_KEY": os.environ.get("AI_API_KEY", ""),
+    "MODEL": os.environ.get("AI_MODEL", "gpt-4-turbo"),
+}
 KNOWLEDGE_RAG_CONFIG = {
-    "EMBEDDING_PROVIDER": os.environ.get("EMBEDDING_PROVIDER", "mock"), "EMBEDDING_MODEL": os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small"), "EMBEDDING_API_KEY": os.environ.get("EMBEDDING_API_KEY", ""), "EMBEDDING_DIMENSION": int(os.environ.get("EMBEDDING_DIMENSION", "1536")), "CHUNK_SIZE": int(os.environ.get("CHUNK_SIZE", "500")), "CHUNK_OVERLAP": int(os.environ.get("CHUNK_OVERLAP", "100")), "VECTOR_SEARCH_TOP_K": int(os.environ.get("VECTOR_SEARCH_TOP_K", "5")), "VECTOR_SIMILARITY_THRESHOLD": float(os.environ.get("VECTOR_SIMILARITY_THRESHOLD", "0.7")),
+    "EMBEDDING_PROVIDER": os.environ.get("EMBEDDING_PROVIDER", "mock"),
+    "EMBEDDING_MODEL": os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small"),
+    "EMBEDDING_API_KEY": os.environ.get("EMBEDDING_API_KEY", ""),
+    "EMBEDDING_DIMENSION": int(os.environ.get("EMBEDDING_DIMENSION", "1536")),
+    "CHUNK_SIZE": int(os.environ.get("CHUNK_SIZE", "500")),
+    "CHUNK_OVERLAP": int(os.environ.get("CHUNK_OVERLAP", "100")),
+    "VECTOR_SEARCH_TOP_K": int(os.environ.get("VECTOR_SEARCH_TOP_K", "5")),
+    "VECTOR_SIMILARITY_THRESHOLD": float(
+        os.environ.get("VECTOR_SIMILARITY_THRESHOLD", "0.7")
+    ),
 }
 COPILOT_LLM_CONFIG = {
-    "PROVIDER": os.environ.get("COPILOT_LLM_PROVIDER", "ollama").strip().lower(), "API_KEY": os.environ.get("COPILOT_LLM_API_KEY", "ollama"),
-    "BASE_URL": os.environ.get("COPILOT_LLM_BASE_URL", "http://host.docker.internal:11434/v1").strip(), "MODEL": os.environ.get("COPILOT_LLM_MODEL", "qwen3:4b").strip(),
-    "TEMPERATURE": float(os.environ.get("COPILOT_LLM_TEMPERATURE", "0.2")), "MAX_TOKENS": int(os.environ.get("COPILOT_LLM_MAX_TOKENS", "768")),
-    "TIMEOUT": int(os.environ.get("COPILOT_LLM_TIMEOUT", "120")), "MAX_RETRIES": int(os.environ.get("COPILOT_LLM_MAX_RETRIES", "0")),
-    "BASE_BACKOFF": float(os.environ.get("COPILOT_LLM_BASE_BACKOFF", "0.5")), "MAX_BACKOFF": float(os.environ.get("COPILOT_LLM_MAX_BACKOFF", "10.0")),
+    "PROVIDER": os.environ.get("COPILOT_LLM_PROVIDER", "ollama").strip().lower(),
+    "API_KEY": os.environ.get("COPILOT_LLM_API_KEY", "ollama"),
+    "BASE_URL": os.environ.get(
+        "COPILOT_LLM_BASE_URL", "http://host.docker.internal:11434/v1"
+    ).strip(),
+    "MODEL": os.environ.get("COPILOT_LLM_MODEL", "qwen3:4b").strip(),
+    "TEMPERATURE": float(os.environ.get("COPILOT_LLM_TEMPERATURE", "0.2")),
+    "MAX_TOKENS": int(os.environ.get("COPILOT_LLM_MAX_TOKENS", "768")),
+    "TIMEOUT": int(os.environ.get("COPILOT_LLM_TIMEOUT", "120")),
+    "MAX_RETRIES": int(os.environ.get("COPILOT_LLM_MAX_RETRIES", "0")),
+    "BASE_BACKOFF": float(os.environ.get("COPILOT_LLM_BASE_BACKOFF", "0.5")),
+    "MAX_BACKOFF": float(os.environ.get("COPILOT_LLM_MAX_BACKOFF", "10.0")),
 }

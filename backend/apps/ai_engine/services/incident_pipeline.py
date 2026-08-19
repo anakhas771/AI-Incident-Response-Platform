@@ -128,9 +128,7 @@ class IncidentPipeline:
         ).strip()
 
         impact_analysis = str(
-            raw_result.get("impact_analysis")
-            or raw_result.get("impact")
-            or ""
+            raw_result.get("impact_analysis") or raw_result.get("impact") or ""
         ).strip()
 
         incident_category = str(
@@ -151,9 +149,7 @@ class IncidentPipeline:
             recommended_actions = [str(actions_raw)]
 
         summary = str(
-            raw_result.get("summary")
-            or raw_result.get("security_summary")
-            or ""
+            raw_result.get("summary") or raw_result.get("security_summary") or ""
         ).strip()
 
         if not summary or not root_cause_analysis or not impact_analysis:
@@ -205,9 +201,7 @@ class IncidentPipeline:
             raw_result["previous_resolutions"] = sim_data.get(
                 "previous_resolutions", []
             )
-            raw_result["knowledge_citations"] = sim_data.get(
-                "knowledge_citations", []
-            )
+            raw_result["knowledge_citations"] = sim_data.get("knowledge_citations", [])
 
             recs = (
                 raw_result.get("recommendations")
