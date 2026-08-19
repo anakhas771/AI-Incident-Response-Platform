@@ -45,24 +45,17 @@ class IncidentAnalyzer:
 
     @staticmethod
     def _parse_json_response(content: str) -> Dict[str, Any]:
-        """
-        Parse JSON returned by the configured LLM gateway.
-
-        Handles plain JSON and common fenced markdown responses.
-        """
+        """Parse JSON returned by the configured LLM gateway."""
         text = (content or "").strip()
 
         if not text:
             raise RuntimeError("Incident analysis LLM returned an empty response.")
 
-        # Strip markdown code fences.
         text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
         text = re.sub(r"\s*```$", "", text)
 
-        # Extract the outermost JSON object when the model wraps it in prose.
         start = text.find("{")
         end = text.rfind("}")
-
         if start >= 0 and end > start:
             text = text[start : end + 1]
 
@@ -70,9 +63,7 @@ class IncidentAnalyzer:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
             logger.error("Invalid JSON from incident-analysis LLM: %s", content[:1000])
-            raise RuntimeError(
-                "Incident analysis LLM returned invalid JSON."
-            ) from exc
+            raise RuntimeError("Incident analysis LLM returned invalid JSON.") from exc
 
         if not isinstance(payload, dict):
             raise RuntimeError(
@@ -87,9 +78,6 @@ class IncidentAnalyzer:
         impact: str = "",
         confidence_score: float = 0.85,
     ) -> float:
-        """
-        Calculate quantitative risk score from 0.0 to 100.0.
-        """
         base_scores = {
             "CRITICAL": 90.0,
             "HIGH": 75.0,
@@ -114,9 +102,7 @@ class IncidentAnalyzer:
         return round(max(0.0, min(100.0, score)), 2)
 
     def _generate_json(self, prompt: str) -> Dict[str, Any]:
-        """
-        Generate structured JSON through the configured LLM gateway.
-        """
+        """Generate structured JSON through the configured LLM gateway."""
         if self.llm_client is not None:
             return self.llm_client.generate_json(
                 prompt=prompt,
@@ -153,9 +139,6 @@ class IncidentAnalyzer:
         severity: Optional[str] = None,
         impact: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """
-        Analyze an incident and return a structured dictionary.
-        """
         if not isinstance(title, str) or not title.strip():
             raise ValueError("Incident title must be a non-empty string.")
 
@@ -179,44 +162,29 @@ class IncidentAnalyzer:
         result = self._generate_json(prompt)
 
         summary = str(
-            result.get("summary")
-            or result.get("security_summary")
-            or ""
+            result.get("summary") or result.get("security_summary") or ""
         ).strip()
-
         root_cause = str(
-            result.get("root_cause")
-            or result.get("probable_root_cause")
-            or ""
+            result.get("root_cause") or result.get("probable_root_cause") or ""
         ).strip()
 
         if not summary:
             raise RuntimeError("Incident analysis returned no summary.")
-
         if not root_cause:
             raise RuntimeError("Incident analysis returned no root-cause analysis.")
 
         affected_raw = result.get("affected_components", [])
         if isinstance(affected_raw, list):
             affected_components = [
-                str(item).strip()
-                for item in affected_raw
-                if str(item).strip()
+                str(item).strip() for item in affected_raw if str(item).strip()
             ]
         else:
             affected_components = [str(affected_raw).strip()] if affected_raw else []
 
-        actions_raw = (
-            result.get("recommendations")
-            or result.get("recommended_actions")
-            or []
-        )
-
+        actions_raw = result.get("recommendations") or result.get("recommended_actions") or []
         if isinstance(actions_raw, list):
             recommendations = [
-                str(item).strip()
-                for item in actions_raw
-                if str(item).strip()
+                str(item).strip() for item in actions_raw if str(item).strip()
             ]
         else:
             recommendations = [str(actions_raw).strip()] if actions_raw else []
@@ -231,37 +199,27 @@ class IncidentAnalyzer:
             .strip()
             .upper()
         )
-
         if severity_prediction not in _ALLOWED_SEVERITIES:
-            severity_prediction = (
-                str(severity or "MEDIUM").strip().upper()
-                if str(severity or "MEDIUM").strip().upper() in _ALLOWED_SEVERITIES
-                else "MEDIUM"
-            )
+            fallback = str(severity or "MEDIUM").strip().upper()
+            severity_prediction = fallback if fallback in _ALLOWED_SEVERITIES else "MEDIUM"
 
         try:
             confidence_score = float(result.get("confidence_score", 0.0))
         except (TypeError, ValueError):
             confidence_score = 0.0
-
         confidence_score = max(0.0, min(1.0, confidence_score))
 
         risk_score_value = result.get("risk_score")
-
         if risk_score_value is not None:
             try:
                 risk_score = max(0.0, min(100.0, float(risk_score_value)))
             except (TypeError, ValueError):
                 risk_score = self.calculate_risk_score(
-                    severity_prediction,
-                    impact or description,
-                    confidence_score,
+                    severity_prediction, impact or description, confidence_score
                 )
         else:
             risk_score = self.calculate_risk_score(
-                severity_prediction,
-                impact or description,
-                confidence_score,
+                severity_prediction, impact or description, confidence_score
             )
 
         return {
@@ -284,44 +242,18 @@ class IncidentAnalyzer:
         }
 
     def analyze_incident(self, incident: Incident) -> AIIncidentAnalysis:
-        """
-        Analyze a Django Incident instance and persist the result.
-        """
+        """Analyze a Django Incident instance and persist the result."""
         logger.info("Running AI analysis for Incident ID=%s", incident.id)
-
-        impact = incident.description
 
         data = self.analyze(
             title=incident.title,
             description=incident.description,
             severity=str(incident.severity),
-            impact=impact,
+            impact=incident.description,
         )
 
-        recommendations = list(data["recommendations"])
-
-        try:
-            from apps.knowledge.services.similar_incident_service import (
-                SimilarIncidentService,
-            )
-
-            sim_data = SimilarIncidentService().find_similar_for_incident(incident)
-
-            for action in sim_data.get("recommended_actions", []):
-                if action and action not in recommendations:
-                    recommendations.append(f"[Knowledge RAG] {action}")
-
-            for resolution in sim_data.get("previous_resolutions", []):
-                if resolution and resolution not in recommendations:
-                    recommendations.append(f"[Similar Incident] {resolution}")
-
-        except Exception as exc:
-            logger.info(
-                "RAG enrichment unavailable for incident %s: %s",
-                incident.id,
-                exc,
-            )
-
+        # RAG enrichment is deliberately handled by IncidentPipeline so the
+        # incident analysis path performs the similarity lookup exactly once.
         analysis, _ = AIIncidentAnalysis.objects.update_or_create(
             incident=incident,
             defaults={
@@ -330,7 +262,7 @@ class IncidentAnalyzer:
                 "severity_prediction": data["severity_prediction"],
                 "risk_score": data["risk_score"],
                 "confidence_score": data["confidence_score"],
-                "recommendations": recommendations,
+                "recommendations": data["recommendations"],
             },
         )
 
