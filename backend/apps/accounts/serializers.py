@@ -268,16 +268,25 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(required=True, write_only=True)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        if attrs["new_password"] != attrs["new_password_confirm"]:
-            raise serializers.ValidationError(
-                {"new_password_confirm": "New passwords do not match."}
-            )
         user = self.context["request"].user
-        if not user.check_password(attrs["new_password"]):
+
+        if not user.check_password(attrs["old_password"]):
             raise serializers.ValidationError(
                 {"old_password": "Old password is incorrect."}
             )
-        validate_password(attrs["new_password"], user=user)
+
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Passwords do not match."}
+            )
+
+        try:
+            validate_password(attrs["new_password"], user=user)
+        except DjangoValidationError as err:
+            raise serializers.ValidationError(
+                {"new_password": list(err.messages)}
+            ) from err
+
         return attrs
 
 

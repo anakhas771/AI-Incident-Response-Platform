@@ -2,6 +2,7 @@
 Mock LLM gateway implementation for offline testing and deterministic responses.
 """
 
+import json
 import time
 from typing import Iterator, Optional
 
@@ -40,12 +41,31 @@ class MockLLMGateway(BaseLLMGateway):
 
         latency_ms = (time.perf_counter() - start_time) * 1000.0
 
-        response_content = self.mock_content or (
-            "Mock response. "
-            f"Verified context length: {len(prompt.context_text)} chars. "
-            f"User message was: "
-            f"'{prompt.user_prompt[-100:].strip()}'"
-        )
+        if prompt.template_version == "incident-analysis-v2":
+            response_content = json.dumps(
+                {
+                    "summary": "Automated mock incident analysis summary.",
+                    "probable_root_cause": (
+                        "The incident was caused by a simulated operational condition "
+                        "requiring investigation."
+                    ),
+                    "affected_components": [
+                        "API Gateway",
+                        "Database Cluster",
+                    ],
+                    "recommended_actions": [
+                        "Validate the affected service configuration.",
+                        "Review logs and infrastructure telemetry.",
+                    ],
+                }
+            )
+        else:
+            response_content = self.mock_content or (
+                "Mock response. "
+                f"Verified context length: {len(prompt.context_text)} chars. "
+                f"User message was: "
+                f"'{prompt.user_prompt[-100:].strip()}'"
+            )
 
         completion_tokens = max(1, len(response_content) // 4)
         prompt_tokens = max(0, prompt.estimated_tokens)
