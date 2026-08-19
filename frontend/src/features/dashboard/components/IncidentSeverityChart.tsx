@@ -23,15 +23,15 @@ export const IncidentSeverityChart: React.FC<IncidentSeverityChartProps> = ({
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <Card hoverEffect={false} className="h-[320px] flex flex-col">
-      <CardHeader className="pb-3 border-b border-subtle">
+    <Card hoverEffect={false} className="flex min-w-0 flex-col">
+      <CardHeader className="border-b border-subtle pb-3">
         <CardTitle className="text-sm font-semibold text-zinc-100">Severity Distribution</CardTitle>
         <CardDescription>Active incident queue</CardDescription>
       </CardHeader>
 
-      <CardContent className="min-h-0 flex-1 flex items-center gap-5 pt-3">
+      <CardContent className="flex min-w-0 flex-col gap-5 pt-4 sm:flex-row sm:items-center">
         <div
-          className="h-36 w-36 shrink-0"
+          className="mx-auto h-40 w-40 shrink-0 sm:mx-0 sm:h-36 sm:w-36"
           role="img"
           aria-label="Incident severity distribution pie chart"
         >
