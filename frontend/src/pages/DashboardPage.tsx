@@ -8,7 +8,6 @@ import {
   DashboardEmptyState,
   DashboardErrorState,
   DashboardSkeleton,
-  ExecutiveKpiCards,
   IncidentSeverityChart,
   IncidentTrendChart,
   RecentAiActivityFeed,
@@ -27,9 +26,7 @@ export const DashboardPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
-              Operations overview
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Command center</h1>
             <p className="mt-1 text-sm text-zinc-500">Preparing the latest security telemetry.</p>
           </div>
         </div>
@@ -47,12 +44,11 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  const criticalIncident = data.recentIncidents.find(
-    (incident) =>
-      incident.severity === 'CRITICAL' &&
-      incident.status !== 'RESOLVED' &&
-      incident.status !== 'CLOSED'
+  const activeIncidents = data.recentIncidents.filter(
+    (incident) => incident.status !== 'RESOLVED' && incident.status !== 'CLOSED'
   );
+
+  const criticalIncident = activeIncidents.find((incident) => incident.severity === 'CRITICAL');
 
   return (
     <div
@@ -70,8 +66,7 @@ export const DashboardPage: React.FC = () => {
             Command center
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-            A focused view of incident volume, response performance, system health, and recent
-            AI-assisted activity.
+            Live incident volume, infrastructure health, active response queues, and Copilot intelligence.
           </p>
         </div>
 
@@ -118,7 +113,9 @@ export const DashboardPage: React.FC = () => {
                 <h2 className="mt-1 break-words text-sm font-semibold text-zinc-100">
                   {criticalIncident.title}
                 </h2>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-500">{criticalIncident.description}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-500">
+                  {criticalIncident.description}
+                </p>
               </div>
             </div>
 
@@ -127,7 +124,6 @@ export const DashboardPage: React.FC = () => {
               size="sm"
               className="w-full shrink-0 sm:w-auto"
               onClick={() => navigate(`/incidents/${criticalIncident.id}`)}
-              aria-label={`Investigate critical incident ${criticalIncident.id}`}
             >
               Investigate
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -136,32 +132,29 @@ export const DashboardPage: React.FC = () => {
         </motion.div>
       )}
 
-      <ExecutiveKpiCards kpis={data.kpis} />
-
       {data.recentIncidents.length === 0 ? (
         <DashboardEmptyState onReportIncident={() => setCreateModalOpen(true)} />
       ) : (
-        <div className="space-y-5">
-          <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,1fr)]">
-            <div className="min-w-0">
-              <IncidentTrendChart data={data.incidentTrends} />
-            </div>
-            <div className="min-w-0">
-              <IncidentSeverityChart data={data.severityDistribution} />
-            </div>
-          </div>
+        <div className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-12">
+          <section className="min-w-0 xl:col-span-8">
+            <IncidentTrendChart data={data.incidentTrends} />
+          </section>
 
-          <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <div className="min-w-0 xl:col-span-2">
-              <RecentIncidentFeed incidents={data.recentIncidents} />
-            </div>
-            <div className="min-w-0">
-              <SystemHealthCard health={data.systemHealth} />
-            </div>
-            <div className="min-w-0">
-              <RecentAiActivityFeed activities={data.recentAiActivity} />
-            </div>
-          </div>
+          <section className="min-w-0 xl:col-span-4">
+            <IncidentSeverityChart data={data.severityDistribution} />
+          </section>
+
+          <section className="min-w-0 xl:col-span-12">
+            <SystemHealthCard health={data.systemHealth} />
+          </section>
+
+          <section className="min-w-0 xl:col-span-8">
+            <RecentIncidentFeed incidents={activeIncidents} />
+          </section>
+
+          <section className="min-w-0 xl:col-span-4">
+            <RecentAiActivityFeed activities={data.recentAiActivity} />
+          </section>
         </div>
       )}
     </div>
