@@ -18,4 +18,3 @@ def test_copilot_settings_constants():
     assert CopilotSettings.COPILOT_FALLBACK_CHARS_PER_TOKEN == 4
     assert CopilotSettings.TOKEN_COUNTER_MODEL == "cl100k_base"
     assert CopilotSettings.SUMMARY_PLACEHOLDER == "[Previous conversation summarized]"
-    

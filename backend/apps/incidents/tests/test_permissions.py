@@ -83,7 +83,7 @@ class TestRBACPermissions:
                 "description": "Incident created for administrator RBAC validation.",
                 "severity": "HIGH",
             },
-            format="json",  
+            format="json",
         )
         assert res_create.status_code == status.HTTP_201_CREATED
 
@@ -106,7 +106,7 @@ class TestRBACPermissions:
                 "description": "Incident created for analyst RBAC validation.",
                 "severity": "MEDIUM",
             },
-            format="json",  
+            format="json",
         )
         assert res_create.status_code == status.HTTP_201_CREATED
 
