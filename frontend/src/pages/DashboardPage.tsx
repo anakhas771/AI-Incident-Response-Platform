@@ -55,14 +55,18 @@ export const DashboardPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6" role="main" aria-label="Enterprise Command Center Dashboard">
-      <section className="flex flex-col justify-between gap-5 xl:flex-row xl:items-end">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+    <div
+      className="w-full min-w-0 space-y-5 sm:space-y-6"
+      role="main"
+      aria-label="Enterprise Command Center Dashboard"
+    >
+      <section className="flex min-w-0 flex-col justify-between gap-4 xl:flex-row xl:items-end">
+        <div className="min-w-0 max-w-3xl">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             Live operations
           </div>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-zinc-50 sm:text-4xl">
+          <h1 className="mt-3 break-words text-2xl font-semibold tracking-[-0.035em] text-zinc-50 sm:text-3xl lg:text-4xl">
             Command center
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
@@ -71,9 +75,9 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2.5">
-          <Link to="/ai-assistant">
-            <Button variant="ai" size="sm">
+        <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto">
+          <Link to="/ai-assistant" className="flex-1 sm:flex-none">
+            <Button variant="ai" size="sm" className="w-full sm:w-auto">
               <Sparkles className="h-3.5 w-3.5" />
               Copilot
             </Button>
@@ -81,6 +85,7 @@ export const DashboardPage: React.FC = () => {
           <Button
             variant="default"
             size="sm"
+            className="flex-1 sm:w-auto sm:flex-none"
             onClick={() => setCreateModalOpen(true)}
             aria-label="Report a new incident"
           >
@@ -94,11 +99,11 @@ export const DashboardPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-xl border border-red-500/15 bg-red-500/[0.045] px-5 py-4"
+          className="relative overflow-hidden rounded-xl border border-red-500/15 bg-red-500/[0.045] px-4 py-4 sm:px-5"
           role="alert"
           aria-label={`Critical incident alert: ${criticalIncident.title}`}
         >
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+          <div className="flex min-w-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div className="flex min-w-0 items-start gap-3">
               <div className="mt-0.5 shrink-0 rounded-lg border border-red-500/10 bg-red-500/[0.08] p-2 text-red-300">
                 <ShieldAlert className="h-4 w-4" />
@@ -108,18 +113,19 @@ export const DashboardPage: React.FC = () => {
                   <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-red-300">
                     Critical incident
                   </span>
-                  <span className="font-mono text-[11px] text-zinc-600">{criticalIncident.id}</span>
+                  <span className="break-all font-mono text-[11px] text-zinc-600">{criticalIncident.id}</span>
                 </div>
-                <h2 className="mt-1 truncate text-sm font-semibold text-zinc-100">
+                <h2 className="mt-1 break-words text-sm font-semibold text-zinc-100">
                   {criticalIncident.title}
                 </h2>
-                <p className="mt-1 line-clamp-1 text-xs text-zinc-500">{criticalIncident.description}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-500">{criticalIncident.description}</p>
               </div>
             </div>
 
             <Button
               variant="destructive"
               size="sm"
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => navigate(`/incidents/${criticalIncident.id}`)}
               aria-label={`Investigate critical incident ${criticalIncident.id}`}
             >
@@ -136,25 +142,23 @@ export const DashboardPage: React.FC = () => {
         <DashboardEmptyState onReportIncident={() => setCreateModalOpen(true)} />
       ) : (
         <div className="space-y-5">
-          {/* Analytics row: balanced chart widths, equal visual weight. */}
-          <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-5">
-            <div className="min-w-0 xl:col-span-3 [&>*]:h-full">
+          <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,1fr)]">
+            <div className="min-w-0">
               <IncidentTrendChart data={data.incidentTrends} />
             </div>
-            <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
+            <div className="min-w-0">
               <IncidentSeverityChart data={data.severityDistribution} />
             </div>
           </div>
 
-          {/* Operations row: feed gets the space it needs without creating a long side column. */}
-          <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2 xl:grid-cols-4">
-            <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
+          <div className="grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="min-w-0 xl:col-span-2">
               <RecentIncidentFeed incidents={data.recentIncidents} />
             </div>
-            <div className="min-w-0 [&>*]:h-full">
+            <div className="min-w-0">
               <SystemHealthCard health={data.systemHealth} />
             </div>
-            <div className="min-w-0 [&>*]:h-full">
+            <div className="min-w-0">
               <RecentAiActivityFeed activities={data.recentAiActivity} />
             </div>
           </div>
