@@ -6,7 +6,7 @@ risk scores, and remediation recommendations.
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from apps.ai_engine.models import AIIncidentAnalysis
 from apps.ai_engine.prompts.incident_prompts import build_incident_analysis_prompt
