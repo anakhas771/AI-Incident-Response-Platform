@@ -1,6 +1,6 @@
 import apiClient from '../../../api/client';
 import { Incident } from '../../../types';
-import { mockIncidents, mockSystemMetrics } from '../../../services/mockData';
+import { copilotApi } from '../../../api/copilotApi';
 import {
   DashboardData,
   DashboardTimeframe,
@@ -11,13 +11,7 @@ import {
   SystemHealthStatus,
   HealthStatusLevel,
 } from '../types';
-
-/**
- * Enterprise Dashboard Service
- * Handles API calls to /incidents/ and /health/ endpoints and converts responses
- * into clean, typed dashboard analytics and health structures.
- * Includes fallback adapter for seamless offline or standalone operation.
- */
+import { ChatSession } from '../../../types/chat';
 
 const SEVERITY_COLORS: Record<string, string> = {
   CRITICAL: '#ef4444',
@@ -27,9 +21,6 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 export class DashboardService {
-  /**
-   * Fetch current system operational health from /api/v1/health/
-   */
   public async fetchSystemHealth(): Promise<SystemHealthStatus> {
     try {
       const response = await apiClient.get<{
@@ -51,7 +42,7 @@ export class DashboardService {
 
       return {
         status: isHealthy ? 'healthy' : 'degraded',
-        backend: 'connected',
+        backend: isHealthy ? 'connected' : 'degraded',
         database: mapLevel(data.database),
         redis: mapLevel(data.redis),
         celery: isHealthy ? 'connected' : 'unknown',
@@ -60,101 +51,98 @@ export class DashboardService {
         lastChecked: new Date().toISOString(),
       };
     } catch (error) {
-      // Fallback adapter when backend /health is offline or unreachable
-      console.warn(
-        '[DashboardService] /health endpoint unreachable, using fallback status:',
-        error
-      );
+      console.warn('[DashboardService] /health endpoint unavailable:', error);
       return {
-        status: 'healthy',
-        backend: 'connected',
-        database: 'connected',
-        redis: 'connected',
-        celery: 'connected',
-        aiEngine: 'connected',
-        knowledgeEngine: 'connected',
+        status: 'unhealthy',
+        backend: 'unhealthy',
+        database: 'unknown',
+        redis: 'unknown',
+        celery: 'unknown',
+        aiEngine: 'unknown',
+        knowledgeEngine: 'unknown',
         lastChecked: new Date().toISOString(),
       };
     }
   }
 
-  /**
-   * Fetch and calculate executive dashboard data for the selected timeframe
-   */
   public async fetchDashboardData(timeframe: DashboardTimeframe = '24h'): Promise<DashboardData> {
-    const [incidents, systemHealth] = await Promise.all([
-      this.fetchIncidentsSafe(),
+    const [incidents, systemHealth, sessions] = await Promise.all([
+      this.fetchIncidents(),
       this.fetchSystemHealth(),
+      this.fetchCopilotSessions(),
     ]);
 
-    const kpis = this.calculateKPIs(incidents, timeframe);
-    const severityDistribution = this.calculateSeverityDistribution(incidents);
-    const incidentTrends = this.calculateTrends(incidents, timeframe);
-    const recentIncidents = this.getRecentIncidents(incidents, 6);
-    const recentAiActivity = this.generateAiActivityFeed(incidents);
-
     return {
-      kpis,
-      recentIncidents,
-      recentAiActivity,
-      severityDistribution,
-      incidentTrends,
+      kpis: this.calculateKPIs(incidents, timeframe),
+      recentIncidents: this.getRecentIncidents(incidents, 6),
+      recentAiActivity: this.generateAiActivityFeed(incidents, sessions),
+      severityDistribution: this.calculateSeverityDistribution(incidents),
+      incidentTrends: this.calculateTrends(incidents, timeframe),
       systemHealth,
     };
   }
 
-  /**
-   * Safe fetcher for incidents list with clean mock adapter fallback
-   */
-  private async fetchIncidentsSafe(): Promise<Incident[]> {
+  private async fetchIncidents(): Promise<Incident[]> {
     try {
       const response = await apiClient.get<Incident[] | { results: Incident[] }>('/incidents/');
       const data = response.data;
-      if (Array.isArray(data)) {
-        return data.length > 0 ? data : mockIncidents;
-      }
-      if (data && Array.isArray(data.results)) {
-        return data.results.length > 0 ? data.results : mockIncidents;
-      }
-      return mockIncidents;
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.results)) return data.results;
+      return [];
     } catch (error) {
-      console.warn(
-        '[DashboardService] /incidents endpoint unreachable, using fallback adapter:',
-        error
-      );
-      return mockIncidents;
+      console.warn('[DashboardService] /incidents endpoint unavailable:', error);
+      return [];
     }
   }
 
-  /**
-   * Compute KPI metrics from incident records
-   */
+  private async fetchCopilotSessions(): Promise<ChatSession[]> {
+    try {
+      return await copilotApi.getSessions(false);
+    } catch (error) {
+      console.warn('[DashboardService] Copilot sessions unavailable:', error);
+      return [];
+    }
+  }
+
   private calculateKPIs(
     incidents: Incident[],
     _timeframe: DashboardTimeframe
   ): ExecutiveKPIMetrics {
-    const total = incidents.length;
-    const open = incidents.filter((i) => i.status !== 'RESOLVED' && i.status !== 'CLOSED').length;
-    const resolved = incidents.filter(
-      (i) => i.status === 'RESOLVED' || i.status === 'CLOSED'
+    const incidentCount = incidents.length;
+    const openIncidents = incidents.filter(
+      (incident) => incident.status !== 'RESOLVED' && incident.status !== 'CLOSED'
     ).length;
+    const resolvedIncidents = incidentCount - openIncidents;
+
+    const resolvedDurations = incidents
+      .filter((incident) => incident.resolved_at || incident.closed_at)
+      .map((incident) => {
+        const completedAt = incident.resolved_at || incident.closed_at;
+        if (!completedAt) return 0;
+        return Math.max(
+          0,
+          (new Date(completedAt).getTime() - new Date(incident.created_at).getTime()) / 60000
+        );
+      })
+      .filter((minutes) => minutes > 0);
+
+    const mttrMinutes = resolvedDurations.length
+      ? resolvedDurations.reduce((sum, minutes) => sum + minutes, 0) / resolvedDurations.length
+      : 0;
 
     return {
-      incidentCount: total,
-      openIncidents: open,
-      resolvedIncidents: resolved,
-      mttrMinutes: mockSystemMetrics.mttr_minutes || 19,
-      mttrTrendPct: -14, // 14% improvement over previous period
-      mttdMinutes: mockSystemMetrics.mttd_minutes || 2.4,
-      mttdTrendPct: -8,
-      slaCompliancePct: mockSystemMetrics.sla_compliance_pct || 99.4,
-      slaTrendPct: 0.2,
+      incidentCount,
+      openIncidents,
+      resolvedIncidents,
+      mttrMinutes: Number(mttrMinutes.toFixed(1)),
+      mttrTrendPct: 0,
+      mttdMinutes: 0,
+      mttdTrendPct: 0,
+      slaCompliancePct: 0,
+      slaTrendPct: 0,
     };
   }
 
-  /**
-   * Compute severity distribution from incidents
-   */
   private calculateSeverityDistribution(incidents: Incident[]): IncidentSeverityDistributionItem[] {
     const counts: Record<string, number> = {
       CRITICAL: 0,
@@ -163,81 +151,112 @@ export class DashboardService {
       LOW: 0,
     };
 
-    incidents.forEach((i) => {
-      if (counts[i.severity] !== undefined) {
-        counts[i.severity] += 1;
-      }
+    incidents.forEach((incident) => {
+      if (counts[incident.severity] !== undefined) counts[incident.severity] += 1;
     });
 
-    return Object.entries(counts).map(([severity, count]) => ({
+    return Object.entries(counts).map(([severity, value]) => ({
       name: severity as IncidentSeverityDistributionItem['name'],
-      value: count,
+      value,
       fill: SEVERITY_COLORS[severity] || '#71717a',
     }));
   }
 
-  /**
-   * Generate time-series trend data
-   */
   private calculateTrends(
-    _incidents: Incident[],
-    _timeframe: DashboardTimeframe
+    incidents: Incident[],
+    timeframe: DashboardTimeframe
   ): IncidentTrendPoint[] {
-    return mockSystemMetrics.incident_trends.map((item) => ({
-      timestamp: item.timestamp,
-      critical: item.critical,
-      high: item.high,
-      medium: item.medium,
-      low: item.low,
-    }));
+    const now = Date.now();
+    const bucketCount = timeframe === '24h' ? 24 : timeframe === '7d' ? 7 : 30;
+    const bucketSize = timeframe === '24h' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+    const buckets = Array.from({ length: bucketCount }, (_, index) => {
+      const start = now - (bucketCount - index) * bucketSize;
+      return {
+        start,
+        timestamp:
+          timeframe === '24h'
+            ? new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : new Date(start).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        critical: 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+      };
+    });
+
+    incidents.forEach((incident) => {
+      const created = new Date(incident.created_at).getTime();
+      const bucketIndex = Math.floor((created - buckets[0].start) / bucketSize);
+      if (bucketIndex < 0 || bucketIndex >= buckets.length) return;
+      const bucket = buckets[bucketIndex];
+      const key = incident.severity.toLowerCase() as 'critical' | 'high' | 'medium' | 'low';
+      bucket[key] += 1;
+    });
+
+    return buckets.map(({ start: _start, ...bucket }) => bucket);
   }
 
-  /**
-   * Retrieve the most recent incidents sorted by timestamp descending
-   */
   private getRecentIncidents(incidents: Incident[], limit: number): Incident[] {
     return [...incidents]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, limit);
   }
 
-  /**
-   * Extract or generate recent AI analysis activities from incidents and activity logs
-   */
-  private generateAiActivityFeed(incidents: Incident[]): RecentAiActivityItem[] {
+  private generateAiActivityFeed(
+    incidents: Incident[],
+    sessions: ChatSession[]
+  ): RecentAiActivityItem[] {
     const feed: RecentAiActivityItem[] = [];
 
-    // Derive from incident AI summaries
-    incidents.forEach((inc, idx) => {
-      if (inc.ai_summary) {
-        feed.push({
-          id: `ai-rca-${inc.id}`,
-          timestamp: inc.updated_at || inc.created_at,
-          incidentId: inc.id,
-          title: inc.title,
-          type: 'RCA',
-          description: inc.ai_summary.root_cause_hypothesis,
-          confidence: inc.ai_summary.confidence,
-        });
+    sessions.forEach((session) => {
+      const preview = session.last_message_preview?.trim();
+      if (!preview) return;
 
-        if (inc.ai_summary.recommended_actions && inc.ai_summary.recommended_actions.length > 0) {
-          feed.push({
-            id: `ai-rec-${inc.id}-${idx}`,
-            timestamp: inc.updated_at || inc.created_at,
-            incidentId: inc.id,
-            title: inc.title,
-            type: 'RECOMMENDATION',
-            description: inc.ai_summary.recommended_actions[0],
-            confidence: inc.ai_summary.confidence,
-          });
-        }
+      feed.push({
+        id: `copilot-${session.id}`,
+        timestamp: session.last_message_at || session.updated_at,
+        incidentId: session.id,
+        title: session.title || 'AI Copilot Investigation',
+        type: 'SUMMARY',
+        description: preview,
+        confidence: 0,
+        source: 'copilot',
+      });
+    });
+
+    incidents.forEach((incident) => {
+      const summary = incident.ai_summary;
+      if (!summary) return;
+
+      feed.push({
+        id: `incident-ai-rca-${incident.id}`,
+        timestamp: incident.updated_at || incident.created_at,
+        incidentId: incident.id,
+        title: incident.title,
+        type: 'RCA',
+        description: summary.root_cause_hypothesis,
+        confidence: summary.confidence,
+        source: 'incident-ai',
+      });
+
+      const firstAction = summary.recommended_actions?.[0];
+      if (firstAction) {
+        feed.push({
+          id: `incident-ai-action-${incident.id}`,
+          timestamp: incident.updated_at || incident.created_at,
+          incidentId: incident.id,
+          title: incident.title,
+          type: 'RECOMMENDATION',
+          description: firstAction,
+          confidence: summary.confidence,
+          source: 'incident-ai',
+        });
       }
     });
 
-    // Sort descending by timestamp
     return feed
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 5);
+      .slice(0, 8);
   }
 }
 
