@@ -21,22 +21,22 @@ export const IncidentTrendChart: React.FC<IncidentTrendChartProps> = ({
   if (isLoading) return null;
 
   return (
-    <Card hoverEffect={false} className="h-[320px] flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-subtle">
+    <Card hoverEffect={false} className="flex min-w-0 flex-col">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-subtle pb-3">
         <div className="min-w-0">
-          <CardTitle className="text-sm font-semibold text-zinc-100">
+          <CardTitle className="break-words text-sm font-semibold text-zinc-100">
             Incident Volume & Severity Trends
           </CardTitle>
           <CardDescription>24-hour incident activity</CardDescription>
         </div>
-        <span className="hidden sm:inline text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+        <span className="hidden shrink-0 text-[10px] font-mono uppercase tracking-wider text-zinc-500 sm:inline">
           UTC
         </span>
       </CardHeader>
 
       <CardContent className="min-h-0 flex-1 pt-3">
         <div
-          className="h-full w-full"
+          className="aspect-[16/9] min-h-[220px] w-full sm:min-h-[240px] lg:min-h-[260px]"
           role="img"
           aria-label="24-hour incident volume and severity trend chart"
         >
