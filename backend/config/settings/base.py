@@ -124,7 +124,7 @@ KNOWLEDGE_RAG_CONFIG = {
 COPILOT_LLM_CONFIG = {
     "PROVIDER": os.environ.get("COPILOT_LLM_PROVIDER", "ollama").strip().lower(), "API_KEY": os.environ.get("COPILOT_LLM_API_KEY", "ollama"),
     "BASE_URL": os.environ.get("COPILOT_LLM_BASE_URL", "http://host.docker.internal:11434/v1").strip(), "MODEL": os.environ.get("COPILOT_LLM_MODEL", "qwen3:4b").strip(),
-    "TEMPERATURE": float(os.environ.get("COPILOT_LLM_TEMPERATURE", "0.2")), "MAX_TOKENS": int(os.environ.get("COPILOT_LLM_MAX_TOKENS", "1536")),
-    "TIMEOUT": int(os.environ.get("COPILOT_LLM_TIMEOUT", "180")), "MAX_RETRIES": int(os.environ.get("COPILOT_LLM_MAX_RETRIES", "1")),
-    "BASE_BACKOFF": float(os.environ.get("COPILOT_LLM_BASE_BACKOFF", "1.0")), "MAX_BACKOFF": float(os.environ.get("COPILOT_LLM_MAX_BACKOFF", "30.0")),
+    "TEMPERATURE": float(os.environ.get("COPILOT_LLM_TEMPERATURE", "0.2")), "MAX_TOKENS": int(os.environ.get("COPILOT_LLM_MAX_TOKENS", "768")),
+    "TIMEOUT": int(os.environ.get("COPILOT_LLM_TIMEOUT", "120")), "MAX_RETRIES": int(os.environ.get("COPILOT_LLM_MAX_RETRIES", "0")),
+    "BASE_BACKOFF": float(os.environ.get("COPILOT_LLM_BASE_BACKOFF", "0.5")), "MAX_BACKOFF": float(os.environ.get("COPILOT_LLM_MAX_BACKOFF", "10.0")),
 }
