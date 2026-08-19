@@ -18,13 +18,13 @@ class IncidentPermission(BasePermission):
     """
 
     ALLOWED_ROLES_PER_ACTION = {
-        "create": [Role.ADMIN, Role.ANALYST],
+        "create": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "list": [Role.ADMIN, Role.RESPONDER, Role.ANALYST, Role.VIEWER],
         "retrieve": [Role.ADMIN, Role.RESPONDER, Role.ANALYST, Role.VIEWER],
-        "update": [Role.ADMIN, Role.ANALYST],
-        "partial_update": [Role.ADMIN, Role.ANALYST],
+        "update": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
+        "partial_update": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "destroy": [Role.ADMIN],
-        "assign": [Role.ADMIN, Role.ANALYST],
+        "assign": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "status": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "change_status": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "comments": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
