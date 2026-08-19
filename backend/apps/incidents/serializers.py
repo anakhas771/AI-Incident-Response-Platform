@@ -125,6 +125,12 @@ class IncidentDetailSerializer(serializers.ModelSerializer):
 
 
 class IncidentCreateUpdateSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+        min_length=10,
+    )
     assigned_to_id = serializers.UUIDField(
         required=False, allow_null=True, write_only=True
     )
