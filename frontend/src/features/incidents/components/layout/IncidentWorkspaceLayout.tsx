@@ -43,9 +43,13 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
       manualRefresh,
     } = useIncidentWorkspace(incidentId);
 
+    const triggerAnalysis = () => {
+      void incidentWorkspaceService.triggerAIAnalyze(incidentId);
+      manualRefresh();
+    };
+
     return (
-      <div className="space-y-6">
-        {/* Header Navigation & Live Polling Status */}
+      <div className="min-w-0 space-y-4 pb-6 sm:space-y-5 lg:space-y-6">
         <WorkspaceHeader
           incident={incident}
           pollingEnabled={pollingEnabled}
@@ -55,14 +59,10 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
           isCopilotOpen={isCopilotOpen}
           onTogglePolling={togglePolling}
           onManualRefresh={manualRefresh}
-          onStartAnalysis={() => {
-            incidentWorkspaceService.triggerAIAnalyze(incidentId);
-            manualRefresh();
-          }}
-          onToggleCopilot={() => setIsCopilotOpen(!isCopilotOpen)}
+          onStartAnalysis={triggerAnalysis}
+          onToggleCopilot={() => setIsCopilotOpen((open) => !open)}
         />
 
-        {/* Tab Navigation Bar */}
         <WorkspaceTabs
           selectedTab={selectedTab}
           onSelectTab={setSelectedTab}
@@ -74,14 +74,10 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
           auditCount={auditTrail.length}
         />
 
-        {/* Multi-Panel Grid Layout with optional Copilot Drawer */}
-        <div className="relative flex overflow-hidden w-full items-start gap-6">
-          <div
-            className={`flex-1 min-w-0 transition-all duration-300 ${isCopilotOpen ? 'mr-0 lg:mr-[400px]' : ''}`}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Main Feed Content */}
-              <main className="lg:col-span-8">
+        <div className="relative flex min-w-0 w-full items-start gap-4 lg:gap-5">
+          <div className={`min-w-0 flex-1 transition-all duration-300 ${isCopilotOpen ? 'lg:mr-[400px]' : ''}`}>
+            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
+              <main className="min-w-0 lg:col-span-8">
                 <WorkspaceContent
                   selectedTab={selectedTab}
                   incident={incident}
@@ -98,15 +94,11 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
                   isLoadingIncident={loading.incident}
                   incidentError={errors.incident}
                   aiStatus={aiStatus}
-                  onRetryAnalysis={() => {
-                    incidentWorkspaceService.triggerAIAnalyze(incidentId);
-                    manualRefresh();
-                  }}
+                  onRetryAnalysis={triggerAnalysis}
                 />
               </main>
 
-              {/* SOC Telemetry & Response Controls Sidebar */}
-              <div className="lg:col-span-4">
+              <aside className="min-w-0 lg:col-span-4 lg:sticky lg:top-5">
                 <WorkspaceSidebar
                   incident={incident}
                   riskScore={riskScore}
@@ -115,21 +107,19 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
                   onUpdateStatus={updateStatus}
                   onAssignIncident={assignIncident}
                 />
-              </div>
+              </aside>
             </div>
           </div>
 
-          {/* Copilot Drawer */}
           {isCopilotOpen && (
             <>
-              {/* Mobile overlay */}
               <div
-                className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
                 onClick={() => setIsCopilotOpen(false)}
+                aria-hidden="true"
               />
-              {/* Drawer Container */}
-              <div className="fixed inset-y-0 right-0 z-50 w-full lg:w-[400px] bg-zinc-950 border-l border-zinc-800 shadow-2xl transition-transform transform translate-x-0 lg:mt-0 pt-[60px] lg:pt-0">
-                <div className="h-full w-full">
+              <div className="fixed inset-y-0 right-0 z-50 w-full max-w-full border-l border-zinc-800 bg-zinc-950 shadow-2xl sm:w-[420px] lg:mt-0 lg:w-[400px]">
+                <div className="h-full w-full pt-[60px] lg:pt-0">
                   <IncidentCopilotPanel
                     incident={incident}
                     onClose={() => setIsCopilotOpen(false)}
