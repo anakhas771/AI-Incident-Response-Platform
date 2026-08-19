@@ -49,7 +49,7 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
     };
 
     return (
-      <div className="min-w-0 space-y-4 pb-6 sm:space-y-5 lg:space-y-6">
+      <div className="w-full min-w-0 space-y-4 overflow-x-clip pb-6 sm:space-y-5 lg:space-y-6">
         <WorkspaceHeader
           incident={incident}
           pollingEnabled={pollingEnabled}
@@ -74,10 +74,10 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
           auditCount={auditTrail.length}
         />
 
-        <div className="relative flex min-w-0 w-full items-start gap-4 lg:gap-5">
-          <div className={`min-w-0 flex-1 transition-all duration-300 ${isCopilotOpen ? 'lg:mr-[400px]' : ''}`}>
-            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
-              <main className="min-w-0 lg:col-span-8">
+        <div className="relative w-full min-w-0">
+          <div className={`w-full min-w-0 transition-[padding] duration-300 ${isCopilotOpen ? 'xl:pr-[420px]' : ''}`}>
+            <div className="grid w-full min-w-0 grid-cols-1 items-start gap-4 md:gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.9fr)]">
+              <main className="min-w-0">
                 <WorkspaceContent
                   selectedTab={selectedTab}
                   incident={incident}
@@ -98,7 +98,7 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
                 />
               </main>
 
-              <aside className="min-w-0 lg:col-span-4 lg:sticky lg:top-5">
+              <aside className="min-w-0 xl:sticky xl:top-5">
                 <WorkspaceSidebar
                   incident={incident}
                   riskScore={riskScore}
@@ -118,7 +118,7 @@ export const IncidentWorkspaceLayout: React.FC<IncidentWorkspaceLayoutProps> = R
                 onClick={() => setIsCopilotOpen(false)}
                 aria-hidden="true"
               />
-              <div className="fixed inset-y-0 right-0 z-50 w-full max-w-full border-l border-zinc-800 bg-zinc-950 shadow-2xl sm:w-[420px] lg:mt-0 lg:w-[400px]">
+              <div className="fixed inset-y-0 right-0 z-50 w-full border-l border-zinc-800 bg-zinc-950 shadow-2xl sm:w-[420px] xl:w-[400px]">
                 <div className="h-full w-full pt-[60px] lg:pt-0">
                   <IncidentCopilotPanel
                     incident={incident}
