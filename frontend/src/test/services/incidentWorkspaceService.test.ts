@@ -12,7 +12,7 @@ vi.mock('../../api/client', () => ({
 
 describe('IncidentWorkspaceService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('loadAIAnalysis', () => {
@@ -70,13 +70,12 @@ describe('IncidentWorkspaceService', () => {
       expect(result.similarIncidents).toEqual([]);
     });
 
-    it('should return empty data on failure', async () => {
+    it('should propagate non-404 failures', async () => {
       vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Network error'));
-      const result = await incidentWorkspaceService.loadAIAnalysis('inc-123');
-      expect(result.status).toBe('failed');
-      expect(result.rca).toBeNull();
-      expect(result.recommendations).toEqual([]);
-      expect(result.similarIncidents).toEqual([]);
+
+      await expect(incidentWorkspaceService.loadAIAnalysis('inc-123')).rejects.toThrow(
+        'Network error'
+      );
     });
   });
 });

@@ -117,12 +117,16 @@ export const ExecutiveKpiCards: React.FC<ExecutiveKpiCardsProps> = ({
       icon: Clock,
       iconBg: 'bg-purple-950/50 text-purple-400 border-purple-800/40',
       trend: {
-        label: `${kpis.mttrTrendPct}% vs last week`,
-        isPositive: kpis.mttrTrendPct <= 0,
-        icon: kpis.mttrTrendPct <= 0 ? TrendingDown : TrendingUp,
+        label:
+          kpis.mttrTrendPct == null ? 'Data unavailable' : `${kpis.mttrTrendPct}% vs last week`,
+        isPositive: kpis.mttrTrendPct == null || kpis.mttrTrendPct <= 0,
+        icon:
+          kpis.mttrTrendPct == null ? Activity : kpis.mttrTrendPct <= 0 ? TrendingDown : TrendingUp,
       },
       subtitle: 'Mean Time to Resolve',
-      ariaLabel: `Mean time to resolution: ${kpis.mttrMinutes} minutes`,
+      ariaLabel: `Mean time to resolution: ${
+        kpis.mttrMinutes == null ? 'unavailable' : `${kpis.mttrMinutes} minutes`
+      }`,
     },
     {
       title: 'MTTD (Detection)',
@@ -132,12 +136,16 @@ export const ExecutiveKpiCards: React.FC<ExecutiveKpiCardsProps> = ({
       icon: Clock,
       iconBg: 'bg-cyan-950/50 text-cyan-400 border-cyan-800/40',
       trend: {
-        label: `${kpis.mttdTrendPct}% vs last week`,
-        isPositive: kpis.mttdTrendPct <= 0,
-        icon: kpis.mttdTrendPct <= 0 ? TrendingDown : TrendingUp,
+        label:
+          kpis.mttdTrendPct == null ? 'Data unavailable' : `${kpis.mttdTrendPct}% vs last week`,
+        isPositive: kpis.mttdTrendPct == null || kpis.mttdTrendPct <= 0,
+        icon:
+          kpis.mttdTrendPct == null ? Activity : kpis.mttdTrendPct <= 0 ? TrendingDown : TrendingUp,
       },
       subtitle: 'Mean Time to Detect',
-      ariaLabel: `Mean time to detection: ${kpis.mttdMinutes} minutes`,
+      ariaLabel: `Mean time to detection: ${
+        kpis.mttdMinutes == null ? 'unavailable' : `${kpis.mttdMinutes} minutes`
+      }`,
     },
     {
       title: 'SLA Compliance',
@@ -147,12 +155,19 @@ export const ExecutiveKpiCards: React.FC<ExecutiveKpiCardsProps> = ({
       icon: CheckCircle2,
       iconBg: 'bg-emerald-950/50 text-emerald-400 border-emerald-800/40',
       trend: {
-        label: `Target: 99.0%`,
-        isPositive: kpis.slaCompliancePct >= 99.0,
-        icon: kpis.slaCompliancePct >= 99.0 ? ShieldCheck : ShieldAlert,
+        label: kpis.slaCompliancePct == null ? 'Data unavailable' : 'Target: 99.0%',
+        isPositive: kpis.slaCompliancePct == null || kpis.slaCompliancePct >= 99.0,
+        icon:
+          kpis.slaCompliancePct == null
+            ? Activity
+            : kpis.slaCompliancePct >= 99.0
+              ? ShieldCheck
+              : ShieldAlert,
       },
       subtitle: 'SLA target met',
-      ariaLabel: `SLA compliance percentage: ${kpis.slaCompliancePct}%`,
+      ariaLabel: `SLA compliance: ${
+        kpis.slaCompliancePct == null ? 'unavailable' : `${kpis.slaCompliancePct}%`
+      }`,
     },
   ];
 
@@ -189,11 +204,15 @@ export const ExecutiveKpiCards: React.FC<ExecutiveKpiCardsProps> = ({
 
               <div className="mt-3 flex items-baseline justify-between">
                 <span className="text-2xl font-bold font-mono text-zinc-100">
-                  <AnimatedNumber
-                    value={card.value}
-                    decimals={card.decimals}
-                    suffix={card.suffix}
-                  />
+                  {card.value == null ? (
+                    <span className="text-base font-medium text-zinc-500">—</span>
+                  ) : (
+                    <AnimatedNumber
+                      value={card.value}
+                      decimals={card.decimals}
+                      suffix={card.suffix}
+                    />
+                  )}
                 </span>
                 <span
                   className={`text-xs font-mono flex items-center gap-1 ${

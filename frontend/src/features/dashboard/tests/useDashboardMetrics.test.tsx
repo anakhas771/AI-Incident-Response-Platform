@@ -48,6 +48,7 @@ describe('useDashboardMetrics and useSystemHealth Hooks', () => {
       recentAiActivity: [],
       severityDistribution: [],
       incidentTrends: [],
+      categoryDistribution: [],
       systemHealth: {
         status: 'healthy' as const,
         backend: 'connected' as const,

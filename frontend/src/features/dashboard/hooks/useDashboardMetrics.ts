@@ -15,14 +15,18 @@ export function useDashboardMetrics(timeframe: DashboardTimeframe = '24h') {
     queryKey: ['dashboard-metrics', timeframe],
     queryFn: async () => {
       setLoading(true);
+
       try {
         const result = await dashboardService.fetchDashboardData(timeframe);
         setData(result);
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to fetch dashboard metrics';
+
         setError(msg);
         throw err;
+      } finally {
+        setLoading(false);
       }
     },
     staleTime: 30000, // 30 seconds stale time
