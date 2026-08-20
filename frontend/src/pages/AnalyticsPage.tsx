@@ -411,7 +411,7 @@ export const AnalyticsPage: React.FC = () => {
               {isLoading ? (
                 <div className="skeleton h-56 w-full rounded-lg" />
               ) : (
-                <CategoryDistributionChart incidents={data?.recentIncidents || []} />
+                <CategoryDistributionChart data={data?.categoryDistribution || []} />
               )}
             </CardContent>
           </Card>
@@ -421,41 +421,29 @@ export const AnalyticsPage: React.FC = () => {
   );
 };
 
-/* ─── Category Distribution Chart ──────────────────────────────────────── */
-const CATEGORY_COLORS: Record<string, string> = {
-  Security: '#6366f1',
-  Infrastructure: '#22d3ee',
-  Application: '#f59e0b',
-  Database: '#a855f7',
-  Network: '#f97316',
-  Other: '#71717a',
-};
 
-const CategoryDistributionChart: React.FC<{ incidents: Array<{ category: string }> }> = ({
-  incidents,
-}) => {
-  if (incidents.length === 0) {
+const CategoryDistributionChart: React.FC<{
+  data: Array<{ name: string; value: number; fill: string }>;
+}> = ({ data }) => {
+  if (data.length === 0) {
     return (
       <div className="flex h-56 items-center justify-center text-xs text-zinc-600 font-mono">
         No incident data available
       </div>
     );
   }
-
-  const countMap: Record<string, number> = {};
-  incidents.forEach((inc) => {
-    countMap[inc.category] = (countMap[inc.category] || 0) + 1;
-  });
-
-  const chartData = Object.entries(countMap)
-    .map(([name, value]) => ({ name, value, fill: CATEGORY_COLORS[name] || '#71717a' }))
-    .sort((a, b) => b.value - a.value);
+  const chartData = [...data].sort((a, b) => b.value - a.value);
 
   return (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} barGap={8} layout="vertical">
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="rgba(255,255,255,0.04)"
+            horizontal={false}
+          />
+
           <XAxis
             type="number"
             stroke="#3f3f46"
@@ -465,6 +453,7 @@ const CategoryDistributionChart: React.FC<{ incidents: Array<{ category: string 
             tick={{ fill: '#52525b' }}
             allowDecimals={false}
           />
+
           <YAxis
             type="category"
             dataKey="name"
@@ -475,10 +464,19 @@ const CategoryDistributionChart: React.FC<{ incidents: Array<{ category: string 
             tick={{ fill: '#a1a1aa' }}
             width={90}
           />
-          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.025)' }} />
+
+          <Tooltip
+            contentStyle={tooltipStyle}
+            cursor={{ fill: 'rgba(255,255,255,0.025)' }}
+          />
+
           <Bar dataKey="value" name="Incidents" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={0.8} />
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.fill}
+                fillOpacity={0.8}
+              />
             ))}
           </Bar>
         </BarChart>

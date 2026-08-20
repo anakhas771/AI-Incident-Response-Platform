@@ -79,8 +79,10 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
         aiState.setRecommendations(recommendations);
         aiState.setSimilarIncidents(similarIncidents);
 
-        if (status === 'completed' || status === 'failed') {
-          if (pollingState.enabled) pollingState.togglePolling();
+        if (status === 'pending' || status === 'processing') {
+          pollingState.setEnabled(true);
+        } else if (status === 'completed' || status === 'failed') {
+          pollingState.setEnabled(false);
         }
       }
       if (auditRes.status === 'fulfilled') workspaceState.setAuditTrail(auditRes.value);
@@ -128,7 +130,7 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
 
     useIncidentWorkspaceStore.getState().resetWorkspaceData();
     useIncidentAIStore.getState().resetAIState();
-
+    useIncidentPollingStore.getState().resetPollingState();
     void loadAll(incidentId, false);
 
     const unsubscribe = manager.subscribe(async (id) => {
@@ -143,9 +145,6 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
     return () => {
       unsubscribe();
       manager.stop();
-
-      const currentPollingState = useIncidentPollingStore.getState();
-      if (currentPollingState.enabled) currentPollingState.togglePolling();
     };
   }, [incidentId, manager, loadAll]);
 

@@ -4,12 +4,12 @@ export interface ExecutiveKPIMetrics {
   incidentCount: number;
   openIncidents: number;
   resolvedIncidents: number;
-  mttrMinutes: number;
-  mttrTrendPct: number;
-  mttdMinutes: number;
-  mttdTrendPct: number;
-  slaCompliancePct: number;
-  slaTrendPct: number;
+  mttrMinutes: number | null;
+  mttrTrendPct: number | null;
+  mttdMinutes: number | null;
+  mttdTrendPct: number | null;
+  slaCompliancePct: number | null;
+  slaTrendPct: number | null;
 }
 
 export interface IncidentSeverityDistributionItem {
@@ -18,6 +18,17 @@ export interface IncidentSeverityDistributionItem {
   fill: string;
 }
 
+export interface IncidentCategoryDistributionItem {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+export interface IncidentCategoryDistributionItem {
+  name: string;
+  value: number;
+  fill: string;
+}
 export interface IncidentTrendPoint {
   timestamp: string;
   critical: number;
@@ -58,6 +69,7 @@ export interface DashboardData {
   recentIncidents: Incident[];
   recentAiActivity: RecentAiActivityItem[];
   severityDistribution: IncidentSeverityDistributionItem[];
+  categoryDistribution: IncidentCategoryDistributionItem[];
   incidentTrends: IncidentTrendPoint[];
   systemHealth: SystemHealthStatus;
 }
