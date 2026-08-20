@@ -221,7 +221,7 @@ export const AnalyticsPage: React.FC = () => {
             value={
               isLoading ? (
                 <div className="skeleton h-8 w-20 rounded" />
-              ) : data && data.kpis.mttrMinutes > 0 ? (
+              ) : data?.kpis.mttrMinutes != null && data.kpis.mttrMinutes > 0 ? (
                 <span>{formatMttr(data.kpis.mttrMinutes)}</span>
               ) : (
                 <DataUnavailable label="No data" />
@@ -230,7 +230,7 @@ export const AnalyticsPage: React.FC = () => {
             icon={<Clock3 className="h-4 w-4 text-indigo-300" />}
             iconBg="border-indigo-400/15 bg-indigo-400/[0.07]"
             note={
-              !isLoading && data && data.kpis.mttrMinutes > 0
+              !isLoading && data?.kpis.mttrMinutes != null && data.kpis.mttrMinutes > 0
                 ? 'From resolved incidents'
                 : 'Requires resolved incidents'
             }
@@ -421,7 +421,6 @@ export const AnalyticsPage: React.FC = () => {
   );
 };
 
-
 const CategoryDistributionChart: React.FC<{
   data: Array<{ name: string; value: number; fill: string }>;
 }> = ({ data }) => {
@@ -438,11 +437,7 @@ const CategoryDistributionChart: React.FC<{
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} barGap={8} layout="vertical">
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.04)"
-            horizontal={false}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
 
           <XAxis
             type="number"
@@ -465,18 +460,11 @@ const CategoryDistributionChart: React.FC<{
             width={90}
           />
 
-          <Tooltip
-            contentStyle={tooltipStyle}
-            cursor={{ fill: 'rgba(255,255,255,0.025)' }}
-          />
+          <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.025)' }} />
 
           <Bar dataKey="value" name="Incidents" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.fill}
-                fillOpacity={0.8}
-              />
+              <Cell key={`cell-${index}`} fill={entry.fill} fillOpacity={0.8} />
             ))}
           </Bar>
         </BarChart>

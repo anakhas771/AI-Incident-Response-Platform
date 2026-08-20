@@ -1,11 +1,6 @@
 import apiClient from '../../../api/client';
 import { copilotApi } from '../../../api/copilotApi';
-import {
-  DashboardData,
-  DashboardTimeframe,
-  SystemHealthStatus,
-  HealthStatusLevel,
-} from '../types';
+import { DashboardData, DashboardTimeframe, SystemHealthStatus, HealthStatusLevel } from '../types';
 import { ChatSession } from '../../../types/chat';
 
 export class DashboardService {
@@ -62,9 +57,7 @@ export class DashboardService {
     }
   }
 
-  public async fetchDashboardData(
-    timeframe: DashboardTimeframe = '24h'
-  ): Promise<DashboardData> {
+  public async fetchDashboardData(timeframe: DashboardTimeframe = '24h'): Promise<DashboardData> {
     const [analytics, systemHealth] = await Promise.all([
       this.fetchAnalytics(timeframe),
       this.fetchSystemHealth(),

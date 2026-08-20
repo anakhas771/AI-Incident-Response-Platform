@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Any
+from typing import Any, cast
 
-from django.db.models import Avg, Count, Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.incidents.models import Incident, Severity, Category
+from apps.accounts.models import User
+from apps.incidents.models import Category, Incident, Severity
 
 
 class DashboardAnalyticsView(APIView):
@@ -23,12 +24,16 @@ class DashboardAnalyticsView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    VALID_TIMEFRAMES = {"24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30)}
+    VALID_TIMEFRAMES = {
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
+        "30d": timedelta(days=30),
+    }
 
     def get(self, request: Request) -> Response:
-        user = request.user
+        user = cast(User, request.user)
 
-        if not user.organization:
+        if not getattr(user, "organization", None):
             return Response(
                 {
                     "detail": "User does not belong to an organization.",
@@ -48,9 +53,7 @@ class DashboardAnalyticsView(APIView):
         now = timezone.now()
         period_start = now - self.VALID_TIMEFRAMES[timeframe]
 
-        organization_incidents = Incident.objects.filter(
-            organization=user.organization
-        )
+        organization_incidents = Incident.objects.filter(organization=user.organization)
 
         period_incidents = organization_incidents.filter(
             created_at__gte=period_start,
@@ -81,9 +84,7 @@ class DashboardAnalyticsView(APIView):
             if not completed_at:
                 continue
 
-            duration_minutes = (
-                completed_at - incident.created_at
-            ).total_seconds() / 60
+            duration_minutes = (completed_at - incident.created_at).total_seconds() / 60
 
             if duration_minutes > 0:
                 resolved_durations.append(duration_minutes)
@@ -101,18 +102,18 @@ class DashboardAnalyticsView(APIView):
         severity_map = {item["severity"]: item["count"] for item in severity_counts}
 
         severity_colors = {
-            Severity.CRITICAL: "#ef4444",
-            Severity.HIGH: "#f97316",
-            Severity.MEDIUM: "#eab308",
-            Severity.LOW: "#3b82f6",
+            Severity.CRITICAL.value: "#ef4444",
+            Severity.HIGH.value: "#f97316",
+            Severity.MEDIUM.value: "#eab308",
+            Severity.LOW.value: "#3b82f6",
         }
         category_colors = {
-            Category.INFRASTRUCTURE: "#22d3ee",
-            Category.SECURITY: "#6366f1",
-            Category.APPLICATION: "#f59e0b",
-            Category.DATABASE: "#a855f7",
-            Category.NETWORK: "#f97316",
-            Category.OTHER: "#71717a",
+            Category.INFRASTRUCTURE.value: "#22d3ee",
+            Category.SECURITY.value: "#6366f1",
+            Category.APPLICATION.value: "#f59e0b",
+            Category.DATABASE.value: "#a855f7",
+            Category.NETWORK.value: "#f97316",
+            Category.OTHER.value: "#71717a",
         }
 
         severity_distribution = [
@@ -131,11 +132,7 @@ class DashboardAnalyticsView(APIView):
             "30d": 30,
         }[timeframe]
 
-        bucket_size = (
-            timedelta(hours=1)
-            if timeframe == "24h"
-            else timedelta(days=1)
-        )
+        bucket_size = timedelta(hours=1) if timeframe == "24h" else timedelta(days=1)
 
         trends: list[dict[str, Any]] = []
 
@@ -149,9 +146,7 @@ class DashboardAnalyticsView(APIView):
             )
 
             counts = bucket_qs.values("severity").annotate(count=Count("id"))
-            count_map = {
-                item["severity"]: item["count"] for item in counts
-            }
+            count_map = {item["severity"]: item["count"] for item in counts}
 
             if timeframe == "24h":
                 timestamp = timezone.localtime(bucket_start).strftime("%I:%M %p")
@@ -171,10 +166,7 @@ class DashboardAnalyticsView(APIView):
                 count=Count("id")
             )
 
-            category_map = {
-                item["category"]: item["count"]
-                for item in category_counts
-            }
+            category_map = {item["category"]: item["count"] for item in category_counts}
 
             category_distribution = [
                 {
@@ -187,8 +179,17 @@ class DashboardAnalyticsView(APIView):
             ]
 
         # Return a small recent list for the UI only.
-        recent_incidents = list(
-            organization_incidents.order_by("-created_at")[:6].values(
+        recent_incidents: list[dict[str, Any]] = [
+            {
+                "id": str(row["id"]),
+                "title": row["title"],
+                "severity": row["severity"],
+                "status": row["status"],
+                "category": row["category"],
+                "created_at": row["created_at"].isoformat(),
+                "updated_at": row["updated_at"].isoformat(),
+            }
+            for row in organization_incidents.order_by("-created_at")[:6].values(
                 "id",
                 "title",
                 "severity",
@@ -197,13 +198,7 @@ class DashboardAnalyticsView(APIView):
                 "created_at",
                 "updated_at",
             )
-        )
-
-        for incident in recent_incidents:
-            incident["id"] = str(incident["id"])
-            incident["created_at"] = incident["created_at"].isoformat()
-            incident["updated_at"] = incident["updated_at"].isoformat()
-
+        ]
         return Response(
             {
                 "kpis": {

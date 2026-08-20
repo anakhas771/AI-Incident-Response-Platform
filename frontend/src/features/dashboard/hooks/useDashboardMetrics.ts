@@ -14,24 +14,21 @@ export function useDashboardMetrics(timeframe: DashboardTimeframe = '24h') {
   const query = useQuery<DashboardData, Error>({
     queryKey: ['dashboard-metrics', timeframe],
     queryFn: async () => {
-    setLoading(true);
+      setLoading(true);
 
-    try {
-      const result = await dashboardService.fetchDashboardData(timeframe);
-      setData(result);
-      return result;
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Failed to fetch dashboard metrics';
+      try {
+        const result = await dashboardService.fetchDashboardData(timeframe);
+        setData(result);
+        return result;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to fetch dashboard metrics';
 
-      setError(msg);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  },
+        setError(msg);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
     staleTime: 30000, // 30 seconds stale time
     refetchInterval: 60000, // Refresh every 1 minute
   });

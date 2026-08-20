@@ -32,6 +32,7 @@ describe('useDashboardStore', () => {
       recentAiActivity: [],
       severityDistribution: [],
       incidentTrends: [],
+      categoryDistribution: [],
       systemHealth: {
         status: 'healthy',
         backend: 'connected',
