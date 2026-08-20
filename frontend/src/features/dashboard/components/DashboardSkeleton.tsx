@@ -1,86 +1,97 @@
 import React from 'react';
-import { Card } from '../../../components/ui/Card';
+
+const SkeletonBlock: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`skeleton rounded-md ${className}`} />
+);
 
 export const DashboardSkeleton: React.FC = () => {
   return (
-    <div
-      className="space-y-6 animate-pulse"
-      role="status"
-      aria-label="Loading Enterprise Dashboard"
-    >
-      {/* KPI Cards Skeleton Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {[...Array(6)].map((_, idx) => (
-          <Card key={idx} hoverEffect={false} className="h-28 flex flex-col justify-between p-4">
-            <div className="flex justify-between items-center">
-              <div className="h-3 w-20 bg-zinc-800 rounded" />
-              <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
-            </div>
-            <div className="flex justify-between items-baseline mt-3">
-              <div className="h-7 w-16 bg-zinc-800 rounded" />
-              <div className="h-3 w-12 bg-zinc-800 rounded" />
-            </div>
-            <div className="h-2.5 w-24 bg-zinc-800/60 rounded mt-1" />
-          </Card>
-        ))}
-      </div>
-
-      {/* Charts Skeleton Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card hoverEffect={false} className="h-96 p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="space-y-2">
-                <div className="h-4 w-44 bg-zinc-800 rounded" />
-                <div className="h-3 w-32 bg-zinc-800/60 rounded" />
-              </div>
-              <div className="h-3 w-16 bg-zinc-800 rounded" />
-            </div>
-            <div className="h-64 w-full bg-zinc-800/40 rounded-xl" />
-          </Card>
-        </div>
-
-        <div>
-          <Card hoverEffect={false} className="h-96 p-6 space-y-4">
+    <div className="space-y-5 animate-fade-up" aria-busy="true" aria-label="Loading dashboard">
+      {/* Charts row */}
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        {/* Trend chart skeleton */}
+        <div className="xl:col-span-8 rounded-xl border border-white/[0.06] bg-surface p-5">
+          <div className="flex items-center justify-between mb-4">
             <div className="space-y-2">
-              <div className="h-4 w-36 bg-zinc-800 rounded" />
-              <div className="h-3 w-24 bg-zinc-800/60 rounded" />
+              <SkeletonBlock className="h-4 w-48" />
+              <SkeletonBlock className="h-3 w-32" />
             </div>
-            <div className="flex items-center justify-center h-64">
-              <div className="h-40 w-40 rounded-full bg-zinc-800/60 border-8 border-zinc-800" />
+            <SkeletonBlock className="h-7 w-28 rounded-lg" />
+          </div>
+          <SkeletonBlock className="h-52 w-full rounded-lg" />
+        </div>
+
+        {/* Donut chart skeleton */}
+        <div className="xl:col-span-4 rounded-xl border border-white/[0.06] bg-surface p-5">
+          <div className="space-y-2 mb-5">
+            <SkeletonBlock className="h-4 w-40" />
+            <SkeletonBlock className="h-3 w-28" />
+          </div>
+          <div className="flex items-center justify-center py-4">
+            <div className="relative">
+              <SkeletonBlock className="h-36 w-36 rounded-full" />
+              <div className="absolute inset-6 rounded-full bg-surface" />
             </div>
-          </Card>
+          </div>
+          <div className="space-y-2 mt-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-2">
+                <SkeletonBlock className="h-2 w-2 rounded-full" />
+                <SkeletonBlock className="h-3 flex-1" />
+                <SkeletonBlock className="h-3 w-6" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Feeds Skeleton Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card hoverEffect={false} className="h-80 p-6 space-y-4">
-          <div className="h-4 w-40 bg-zinc-800 rounded" />
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 w-full bg-zinc-800/40 rounded-lg" />
+      {/* Incidents + AI feed row */}
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        {/* Incident feed skeleton */}
+        <div className="xl:col-span-8 rounded-xl border border-white/[0.06] bg-surface p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="space-y-2">
+              <SkeletonBlock className="h-4 w-44" />
+              <SkeletonBlock className="h-3 w-32" />
+            </div>
+            <SkeletonBlock className="h-6 w-14 rounded-md" />
+          </div>
+          <div className="space-y-0 divide-y divide-white/[0.04]">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-3 py-3.5">
+                <SkeletonBlock className="h-5 w-16 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5 min-w-0">
+                  <SkeletonBlock className="h-3.5 w-3/4" />
+                  <SkeletonBlock className="h-3 w-1/2" />
+                </div>
+                <SkeletonBlock className="h-5 w-20 rounded-md shrink-0" />
+              </div>
             ))}
           </div>
-        </Card>
+        </div>
 
-        <Card hoverEffect={false} className="h-80 p-6 space-y-4">
-          <div className="h-4 w-40 bg-zinc-800 rounded" />
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 w-full bg-zinc-800/40 rounded-lg" />
+        {/* AI activity skeleton */}
+        <div className="xl:col-span-4 rounded-xl border border-white/[0.06] bg-surface p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="space-y-2">
+              <SkeletonBlock className="h-4 w-40" />
+              <SkeletonBlock className="h-3 w-28" />
+            </div>
+            <SkeletonBlock className="h-5 w-10 rounded" />
+          </div>
+          <div className="space-y-0 divide-y divide-white/[0.04]">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="py-3.5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <SkeletonBlock className="h-4 w-20 rounded" />
+                  <SkeletonBlock className="h-3 w-28" />
+                </div>
+                <SkeletonBlock className="h-3 w-full" />
+                <SkeletonBlock className="h-3 w-3/4" />
+              </div>
             ))}
           </div>
-        </Card>
-
-        <Card hoverEffect={false} className="h-80 p-6 space-y-4">
-          <div className="h-4 w-40 bg-zinc-800 rounded" />
-          <div className="space-y-2">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-8 w-full bg-zinc-800/40 rounded" />
-            ))}
-          </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

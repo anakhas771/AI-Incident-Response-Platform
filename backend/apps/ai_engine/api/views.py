@@ -5,6 +5,7 @@ REST API Views for AI Engine analysis, severity prediction, and recommendation s
 import logging
 from typing import Any, cast
 
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -24,6 +25,7 @@ from apps.ai_engine.api.serializers import (
     SeverityPredictRequestSerializer,
     SeverityPredictResponseSerializer,
 )
+from apps.ai_engine.models import AnalysisStatus, IncidentAnalysis
 from apps.ai_engine.permissions import (
     CanTriggerAIAnalysis,
     IsAIIncidentOrganizationMember,
@@ -40,12 +42,6 @@ logger = logging.getLogger(__name__)
 
 
 class IncidentAnalyzeView(APIView):
-    """
-    POST /api/ai/analyze/
-    Analyze an incident payload to synthesize summary, probable root cause, affected components,
-    and recommended remediation actions.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -81,11 +77,6 @@ class IncidentAnalyzeView(APIView):
 
 
 class IncidentAnalyzeDetailView(APIView):
-    """
-    POST /api/ai/analyze/<incident_id>/
-    Trigger an AI analysis on a persistent Incident and store AIIncidentAnalysis record.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -109,8 +100,7 @@ class IncidentAnalyzeDetailView(APIView):
             analyzer = IncidentAnalyzer()
             analysis = analyzer.analyze_incident(incident)
             return Response(
-                self.serializer_class(analysis).data,
-                status=status.HTTP_200_OK,
+                self.serializer_class(analysis).data, status=status.HTTP_200_OK
             )
         except Exception as exc:
             logger.exception(
@@ -123,11 +113,6 @@ class IncidentAnalyzeDetailView(APIView):
 
 
 class IncidentAnalysisRetrieveView(APIView):
-    """
-    GET /api/ai/analysis/<incident_id>/
-    Retrieve the latest persistent AIIncidentAnalysis record for an incident.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -154,18 +139,10 @@ class IncidentAnalysisRetrieveView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response(
-            self.serializer_class(analysis).data,
-            status=status.HTTP_200_OK,
-        )
+        return Response(self.serializer_class(analysis).data, status=status.HTTP_200_OK)
 
 
 class SeverityPredictView(APIView):
-    """
-    POST /api/ai/predict-severity/
-    Predict standard incident severity level and confidence score.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -201,11 +178,6 @@ class SeverityPredictView(APIView):
 
 
 class RecommendationView(APIView):
-    """
-    POST /api/ai/recommendations/
-    Generate actionable mitigation, investigation, and prevention recommendations.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -227,10 +199,7 @@ class RecommendationView(APIView):
         try:
             engine = RecommendationEngine()
             org = getattr(request.user, "organization", None)
-            result = engine.recommend(
-                **serializer.validated_data,
-                organization=org,
-            )
+            result = engine.recommend(**serializer.validated_data, organization=org)
             response_serializer = RecommendationResponseSerializer(data=result)
             response_serializer.is_valid(raise_exception=True)
             return Response(
@@ -245,11 +214,6 @@ class RecommendationView(APIView):
 
 
 class IncidentAIAnalysisRetrieveView(APIView):
-    """
-    GET /api/ai/incidents/<id>/analysis/
-    Retrieve structured Phase 5 AI Analysis for an incident.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -282,18 +246,10 @@ class IncidentAIAnalysisRetrieveView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response(
-            self.serializer_class(analysis).data,
-            status=status.HTTP_200_OK,
-        )
+        return Response(self.serializer_class(analysis).data, status=status.HTTP_200_OK)
 
 
 class IncidentAIAnalyzeTriggerView(APIView):
-    """
-    POST /api/ai/incidents/<id>/analyze/
-    Manually trigger asynchronous AI analysis for an incident using Celery.
-    """
-
     permission_classes = [
         IsAuthenticated,
         IsAIIncidentOrganizationMember,
@@ -305,7 +261,7 @@ class IncidentAIAnalyzeTriggerView(APIView):
         operation_id="trigger_async_incident_ai_analysis",
         responses={202: IncidentAIAnalyzeTriggerSerializer},
         summary="Trigger asynchronous AI analysis",
-        description="Dispatches analyze_incident_task to Celery for an incident without blocking.",
+        description="Dispatches analyze_incident_task to Celery without blocking.",
     )
     def post(
         self,
@@ -320,13 +276,22 @@ class IncidentAIAnalyzeTriggerView(APIView):
         self.check_object_permissions(request, incident)
 
         try:
+            with transaction.atomic():
+                analysis = IncidentAnalysis.objects.filter(incident=incident).first()
+                if analysis and analysis.status == AnalysisStatus.COMPLETED:
+                    analysis.status = AnalysisStatus.PENDING
+                    analysis.save(update_fields=["status", "updated_at"])
+
             analyze_incident_task.delay(str(incident.id))
-            payload = {
-                "message": "AI analysis triggered.",
-                "incident_id": str(incident.id),
-                "status": "pending",
-            }
-            return Response(payload, status=status.HTTP_202_ACCEPTED)
+
+            return Response(
+                {
+                    "message": "AI analysis triggered.",
+                    "incident_id": str(incident.id),
+                    "status": "pending",
+                },
+                status=status.HTTP_202_ACCEPTED,
+            )
         except Exception as exc:
             logger.exception(
                 "Failed to dispatch AI analysis task for incident_id=%s: %s",

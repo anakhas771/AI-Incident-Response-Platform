@@ -38,3 +38,13 @@ if (
 
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Tests must be deterministic and must not depend on a host-local Ollama service.
+COPILOT_LLM_CONFIG = {
+    **COPILOT_LLM_CONFIG,
+    "PROVIDER": "mock",
+    "API_KEY": "mock",
+    "BASE_URL": "",
+    "MODEL": "mock-incident-model",
+    "MAX_RETRIES": 0,
+}

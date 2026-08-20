@@ -10,6 +10,7 @@ from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -23,6 +24,7 @@ from .models import (
     Organization,
     OrganizationInvitation,
     PasswordResetToken,
+    Role,
     User,
 )
 from .permissions import IsAdmin, IsResponder, IsSameOrganization
@@ -43,7 +45,6 @@ from .token_utils import hash_lifecycle_token
 @extend_schema(
     tags=["Authentication"],
     summary="Register a new user account",
-    description="Registers a new enterprise user with email, password, role, and optional organization.",
     responses={
         201: UserDetailSerializer,
         400: OpenApiResponse(description="Validation error"),
@@ -58,32 +59,23 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(UserDetailSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(
+            UserDetailSerializer(user, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="User Login (Obtain JWT token pair)",
-    description="Authenticates user using email and password, returning JWT access & refresh tokens alongside user info.",
-)
+@extend_schema(tags=["Authentication"], summary="User Login (Obtain JWT token pair)")
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class: Any = CustomTokenObtainPairSerializer
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Refresh JWT access token",
-    description="Takes a valid refresh token and returns a new access token.",
-)
+@extend_schema(tags=["Authentication"], summary="Refresh JWT access token")
 class CustomTokenRefreshView(TokenRefreshView):
     pass
 
 
-@extend_schema(
-    tags=["Users"],
-    summary="Retrieve or update user profile",
-    description="Returns profile information for the currently authenticated user.",
-)
+@extend_schema(tags=["Users"], summary="Retrieve or update user profile")
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserDetailSerializer
     permission_classes = [IsAuthenticated]
@@ -93,14 +85,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema(
-    tags=["Users"],
-    summary="Change user password",
-    description="Allows authenticated user to update their account password.",
-    request=ChangePasswordSerializer,
-    responses={
-        200: OpenApiResponse(description="Password changed successfully."),
-        400: OpenApiResponse(description="Invalid password input."),
-    },
+    tags=["Users"], summary="Change user password", request=ChangePasswordSerializer
 )
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -120,8 +105,33 @@ class ChangePasswordView(APIView):
 
 @extend_schema(
     tags=["Organizations"],
-    summary="Retrieve or update current organization",
-    description="Returns organization details for the authenticated user's organization.",
+    summary="Create a new organization",
+    request=OrganizationSerializer,
+    responses={201: OrganizationSerializer},
+)
+class OrganizationCreateView(generics.CreateAPIView):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @transaction.atomic
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
+        user = cast(User, self.request.user)
+        organization = serializer.save()
+        user.organization = organization
+        user.role = Role.ADMIN
+        user.save(update_fields=["organization", "role", "updated_at"])
+        AuditLogger.log_event(
+            action=AuditAction.USER_ADDED_TO_ORGANIZATION,
+            user=user,
+            organization=organization,
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+            metadata={"organization_name": organization.name, "created": True},
+        )
+
+
+@extend_schema(
+    tags=["Organizations"], summary="Retrieve or update current organization"
 )
 class OrganizationDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = OrganizationSerializer
@@ -138,12 +148,7 @@ class OrganizationDetailView(generics.RetrieveUpdateAPIView):
         return cast(Organization, org)
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Request Password Reset",
-    description="Generates a password reset token and emails a one-time link to the user. Always returns success to prevent email enumeration.",
-    responses={200: OpenApiResponse(description="Reset link sent if account exists.")},
-)
+@extend_schema(tags=["Authentication"], summary="Request Password Reset")
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -188,12 +193,7 @@ class PasswordResetRequestView(APIView):
         )
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Confirm Password Reset",
-    description="Resets the password using a valid one-time token.",
-    responses={200: OpenApiResponse(description="Password changed successfully.")},
-)
+@extend_schema(tags=["Authentication"], summary="Confirm Password Reset")
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -238,6 +238,11 @@ class OrganizationInvitationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"].lower()
         org = user.organization
+        if not org:
+            return Response(
+                {"detail": "User does not belong to an organization."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if User.objects.filter(email=email, organization=org).exists():
             return Response(
                 {"detail": "User is already in the organization."},
@@ -291,12 +296,7 @@ class OrganizationInvitationViewSet(viewsets.ModelViewSet):
         )
 
 
-@extend_schema(
-    tags=["Authentication"],
-    summary="Accept Organization Invitation",
-    description="Validates an invitation token and updates the user's organization and role.",
-    responses={200: OpenApiResponse(description="Invitation accepted.")},
-)
+@extend_schema(tags=["Authentication"], summary="Accept Organization Invitation")
 class InvitationAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 

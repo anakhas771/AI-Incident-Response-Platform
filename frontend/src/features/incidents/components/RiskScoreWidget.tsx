@@ -9,106 +9,108 @@ export interface RiskScoreWidgetProps {
 export const RiskScoreWidget: React.FC<RiskScoreWidgetProps> = React.memo(({ metrics }) => {
   if (!metrics) {
     return (
-      <div className="bg-surface border border-subtle rounded-xl p-5 space-y-2">
-        <div className="h-4 bg-zinc-800 rounded animate-pulse w-1/3" />
-        <div className="h-10 bg-zinc-900 rounded animate-pulse" />
-      </div>
+      <section className="rounded-xl border border-subtle p-4 sm:p-5 animate-pulse">
+        <div className="h-3 w-36 rounded bg-zinc-800" />
+        <div className="mt-4 h-10 w-24 rounded bg-zinc-900" />
+      </section>
     );
   }
 
   const colorStyles = {
     red: {
       text: 'text-red-400',
-      bg: 'bg-red-950/80',
-      border: 'border-red-800',
-      bar: 'bg-red-500',
+      bar: 'bg-red-400',
+      label: 'High exposure',
     },
     amber: {
       text: 'text-amber-400',
-      bg: 'bg-amber-950/80',
-      border: 'border-amber-800',
-      bar: 'bg-amber-500',
+      bar: 'bg-amber-400',
+      label: 'Elevated exposure',
     },
     yellow: {
       text: 'text-yellow-400',
-      bg: 'bg-yellow-950/80',
-      border: 'border-yellow-800',
-      bar: 'bg-yellow-500',
+      bar: 'bg-yellow-400',
+      label: 'Moderate exposure',
     },
     green: {
       text: 'text-emerald-400',
-      bg: 'bg-emerald-950/80',
-      border: 'border-emerald-800',
-      bar: 'bg-emerald-500',
+      bar: 'bg-emerald-400',
+      label: 'Controlled exposure',
     },
   }[metrics.color_indicator];
 
+  const TrendIcon =
+    metrics.trend === 'UP' ? TrendingUp : metrics.trend === 'DOWN' ? TrendingDown : Activity;
+
+  const hasConfidence = Number(metrics.ai_confidence) > 0;
+
   return (
-    <div className="bg-surface border border-subtle rounded-xl p-5 space-y-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-          <ShieldAlert className="w-4 h-4 text-red-400" /> Enterprise Risk Exposure
-        </h3>
-        <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-900/50 px-2 py-0.5 rounded">
-          {metrics.ai_confidence}% AI Confidence
+    <section className="rounded-xl border border-subtle bg-surface/60 p-4 sm:p-5 shadow-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-zinc-500" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">
+              Risk assessment
+            </p>
+          </div>
+          <p className="mt-2 text-xs text-zinc-500">Current exposure across affected systems</p>
+        </div>
+        <span className="text-[10px] font-mono text-zinc-600">
+          {hasConfidence ? `${metrics.ai_confidence}% confidence` : 'Model confidence unavailable'}
         </span>
       </div>
 
-      {/* Main Score Dial */}
-      <div
-        className={`p-4 rounded-xl border ${colorStyles.bg} ${colorStyles.border} flex items-center justify-between`}
-      >
+      <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
-            Risk Assessment Index
-          </div>
-          <div className={`text-3xl font-black ${colorStyles.text} tracking-tight font-mono`}>
+          <div className={`font-mono text-4xl font-semibold tracking-tight ${colorStyles.text}`}>
             {metrics.overall_score}
-            <span className="text-xs text-zinc-500">/100</span>
+            <span className="ml-1 text-sm font-normal text-zinc-600">/100</span>
           </div>
+          <p className="mt-1 text-xs text-zinc-500">{colorStyles.label}</p>
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-1 text-xs font-mono font-bold">
-            {metrics.trend === 'UP' ? (
-              <span className="flex items-center text-red-400">
-                <TrendingUp className="w-4 h-4 mr-0.5" /> Escalating
-              </span>
-            ) : metrics.trend === 'DOWN' ? (
-              <span className="flex items-center text-emerald-400">
-                <TrendingDown className="w-4 h-4 mr-0.5" /> De-escalating
-              </span>
-            ) : (
-              <span className="flex items-center text-yellow-400">
-                <Activity className="w-4 h-4 mr-0.5" /> Stable
-              </span>
-            )}
+        <div className="text-left sm:text-right">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 sm:justify-end">
+            <TrendIcon
+              className={`h-3.5 w-3.5 ${metrics.trend === 'UP' ? 'text-red-400' : metrics.trend === 'DOWN' ? 'text-emerald-400' : 'text-zinc-500'}`}
+            />
+            {metrics.trend === 'UP'
+              ? 'Escalating'
+              : metrics.trend === 'DOWN'
+                ? 'De-escalating'
+                : 'Stable'}
           </div>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase">
-            {metrics.severity} Threat Level
-          </span>
+          <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-zinc-600">
+            {metrics.severity} threat level
+          </p>
         </div>
       </div>
 
-      {/* Multi-Factor Breakdown Bars */}
-      <div className="space-y-2.5 pt-1">
-        <div className="text-[11px] font-mono text-zinc-400 uppercase">Impact Metric Breakdown</div>
-        {metrics.breakdown.map((item, idx) => (
-          <div key={idx} className="space-y-1">
-            <div className="flex items-center justify-between text-[11px] font-mono">
-              <span className="text-zinc-300">{item.label}</span>
-              <span className="text-zinc-400 font-bold">{item.score}%</span>
+      <div className="mt-6 space-y-3">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">Exposure factors</p>
+        {metrics.breakdown.length === 0 ? (
+          <p className="rounded-lg border border-subtle bg-black/10 p-3 text-xs text-zinc-500">
+            No exposure factors were returned by the analysis.
+          </p>
+        ) : (
+          metrics.breakdown.map((item, idx) => (
+            <div key={idx}>
+              <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                <span className="min-w-0 truncate text-zinc-400">{item.label}</span>
+                <span className="shrink-0 font-mono text-zinc-500">{item.score}%</span>
+              </div>
+              <div className="h-1 overflow-hidden rounded-full bg-zinc-900">
+                <div
+                  className={`h-full ${colorStyles.bar} transition-all duration-500`}
+                  style={{ width: `${Math.max(0, Math.min(100, item.score))}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-zinc-900 rounded-full h-1.5 overflow-hidden border border-zinc-800">
-              <div
-                className={`h-full ${colorStyles.bar} transition-all duration-500`}
-                style={{ width: `${item.score}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
-    </div>
+    </section>
   );
 });
 

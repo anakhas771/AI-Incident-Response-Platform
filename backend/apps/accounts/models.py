@@ -10,9 +10,7 @@ from apps.common.models import TimeStampedUUIDModel
 
 
 class Organization(TimeStampedUUIDModel):
-    """
-    Enterprise organization model for multi-tenant incident response.
-    """
+    """Enterprise organization model for multi-tenant incident response."""
 
     name: models.CharField = models.CharField(max_length=255)
     slug: models.SlugField = models.SlugField(
@@ -38,10 +36,7 @@ class Role(models.TextChoices):
 
 
 class UserManager(BaseUserManager["User"]):
-    """
-    Custom user model manager where email is the unique identifier
-    for authentication instead of usernames.
-    """
+    """Custom user manager using email as the authentication identifier."""
 
     def create_user(
         self, email: str, password: str | None = None, **extra_fields: Any
@@ -50,8 +45,6 @@ class UserManager(BaseUserManager["User"]):
             raise ValueError(_("The Email field must be set"))
         email = self.normalize_email(email).strip()
         if "username" not in extra_fields or not extra_fields["username"]:
-            import uuid
-
             extra_fields["username"] = str(uuid.uuid4())
         user = self.model(email=email, **extra_fields)
         if password:
@@ -78,10 +71,7 @@ class UserManager(BaseUserManager["User"]):
 
 
 class User(AbstractUser):
-    """
-    Custom enterprise user model with email authentication, organization,
-    and role-based access control (RBAC).
-    """
+    """Custom enterprise user model with email auth, organization and RBAC."""
 
     id: models.UUIDField = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
@@ -105,6 +95,9 @@ class User(AbstractUser):
     organization_id: Any
     phone_number: models.CharField = models.CharField(
         max_length=20, blank=True, default=""
+    )
+    avatar: models.FileField = models.FileField(
+        upload_to="avatars/", blank=True, null=True
     )
 
     created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)

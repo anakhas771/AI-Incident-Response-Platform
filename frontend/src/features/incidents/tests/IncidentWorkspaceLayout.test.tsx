@@ -12,6 +12,6 @@ describe('IncidentWorkspaceLayout', () => {
     );
 
     expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getByText('Back to Incidents Queue')).toBeInTheDocument();
+    expect(screen.getByText('Back to incidents')).toBeInTheDocument();
   });
 });

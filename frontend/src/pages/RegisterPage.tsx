@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowRight, Mail, Lock, Building, User as UserIcon } from 'lucide-react';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -17,6 +17,8 @@ export const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const invitationToken = searchParams.get('invitation_token') || '';
 
   const { register: registerAuth } = useAuthStore();
   const navigate = useNavigate();
@@ -26,7 +28,6 @@ export const RegisterPage: React.FC = () => {
     setError('');
     setFieldErrors({});
 
-    // Client-side confirmation check
     if (!confirmPassword) {
       setError('Confirm password is required.');
       setFieldErrors({ password_confirm: 'password_confirm required' });
@@ -47,8 +48,9 @@ export const RegisterPage: React.FC = () => {
       password_confirm: confirmPassword,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      organization_name: orgName.trim() || undefined,
+      organization_name: invitationToken ? undefined : orgName.trim() || undefined,
       role: role as Role,
+      invitation_token: invitationToken || undefined,
     });
 
     setIsLoading(false);
@@ -61,10 +63,11 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
-    // Redirect to login page with success notification state
     navigate('/login', {
       state: {
-        registeredMessage: 'Account created successfully! Please sign in with your credentials.',
+        registeredMessage: invitationToken
+          ? 'Account created successfully. Your organization invitation has been applied. Please sign in.'
+          : 'Account created successfully! Please sign in with your credentials.',
       },
     });
   };
@@ -90,10 +93,21 @@ export const RegisterPage: React.FC = () => {
             <ShieldAlert className="w-6 h-6" />
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">
-            Create Enterprise Workspace
+            {invitationToken ? 'Join Your Organization' : 'Create Enterprise Workspace'}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">Deploy Multi-Tenant AI Security Command</p>
+          <p className="text-xs text-zinc-400 mt-1">
+            {invitationToken
+              ? 'Complete your account setup to join the invited organization.'
+              : 'Deploy Multi-Tenant AI Security Command'}
+          </p>
         </div>
+
+        {invitationToken && (
+          <div className="mb-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-xs text-indigo-200">
+            You are registering through an organization invitation. Use the exact email address that
+            received the invitation.
+          </div>
+        )}
 
         {error && (
           <div
@@ -159,30 +173,32 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
-              Organization Name
-            </label>
-            <div className="relative">
-              <Building className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
-              <input
-                type="text"
-                value={orgName}
-                onChange={(e) => setOrgName(e.target.value)}
-                className={`w-full bg-zinc-950 border rounded-lg pl-10 pr-3.5 py-2 text-sm text-zinc-100 focus:outline-none ${
-                  getFieldErrorText('organization_name')
-                    ? 'border-rose-500 focus:border-rose-500'
-                    : 'border-zinc-800 focus:border-indigo-500'
-                }`}
-                placeholder="Acme Global Defense"
-              />
+          {!invitationToken && (
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
+                Organization Name
+              </label>
+              <div className="relative">
+                <Building className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  className={`w-full bg-zinc-950 border rounded-lg pl-10 pr-3.5 py-2 text-sm text-zinc-100 focus:outline-none ${
+                    getFieldErrorText('organization_name')
+                      ? 'border-rose-500 focus:border-rose-500'
+                      : 'border-zinc-800 focus:border-indigo-500'
+                  }`}
+                  placeholder="Acme Global Defense"
+                />
+              </div>
+              {getFieldErrorText('organization_name') && (
+                <p className="text-[11px] text-rose-400 mt-1 font-mono">
+                  {getFieldErrorText('organization_name')}
+                </p>
+              )}
             </div>
-            {getFieldErrorText('organization_name') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">
-                {getFieldErrorText('organization_name')}
-              </p>
-            )}
-          </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1">
@@ -288,7 +304,7 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           <Button type="submit" variant="ai" className="w-full py-2.5 mt-2" isLoading={isLoading}>
-            <span>Initialize Organization</span>
+            <span>{invitationToken ? 'Join Organization' : 'Initialize Organization'}</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </form>

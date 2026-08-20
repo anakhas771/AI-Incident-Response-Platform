@@ -67,7 +67,7 @@ describe('CopilotSidebar', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('New Investigation'));
+    fireEvent.click(screen.getByRole('button', { name: /create new conversation/i }));
     expect(onCreateSession).toHaveBeenCalledTimes(1);
   });
 });

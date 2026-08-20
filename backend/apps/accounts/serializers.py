@@ -3,6 +3,7 @@ from typing import Any, Dict, cast
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -24,8 +25,6 @@ UserModel = get_user_model()
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
-    """Serializer for Enterprise Organization management."""
-
     class Meta:
         model = Organization
         fields = [
@@ -52,10 +51,10 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    """Detailed serializer for User profile viewing and management."""
-
     organization = OrganizationSerializer(read_only=True)
     full_name = serializers.CharField(read_only=True)
+    avatar = serializers.FileField(required=False, allow_null=True)
+    avatar_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -68,6 +67,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "role",
             "organization",
             "phone_number",
+            "avatar",
+            "avatar_url",
             "is_active",
             "date_joined",
             "created_at",
@@ -77,15 +78,28 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "role",
+            "avatar_url",
             "date_joined",
             "created_at",
             "updated_at",
         ]
 
+    def get_avatar_url(self, obj: User) -> str | None:
+        if not obj.avatar:
+            return None
+        request = self.context.get("request")
+        url = obj.avatar.url
+        return request.build_absolute_uri(url) if request else url
+
+    def to_representation(self, instance: User) -> Dict[str, Any]:
+        data = super().to_representation(instance)
+        avatar_url = self.get_avatar_url(instance)
+        data["avatar"] = avatar_url
+        data["avatar_url"] = avatar_url
+        return data
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Serializer for public user registration with email and password validation."""
-
     password = serializers.CharField(
         write_only=True, required=True, style={"input_type": "password"}
     )
@@ -128,20 +142,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         password = attrs.get("password")
-        password_confirm = attrs.get("password_confirm")
-        if not password_confirm:
+        if not attrs.get("password_confirm"):
             raise serializers.ValidationError(
                 {"password_confirm": ["password_confirm required"]}
             )
-        if password != password_confirm:
+        if password != attrs.get("password_confirm"):
             raise serializers.ValidationError(
                 {"password_confirm": ["Passwords do not match."]}
             )
-
         role = attrs.get("role")
-        org_name = attrs.get("organization_name")
-        inv_token = attrs.get("invitation_token")
-        if role == Role.ADMIN and not org_name and not inv_token:
+        if (
+            role == Role.ADMIN
+            and not attrs.get("organization_name")
+            and not attrs.get("invitation_token")
+        ):
             raise serializers.ValidationError(
                 {
                     "role": [
@@ -149,7 +163,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                     ]
                 }
             )
-
         user_temp = User(
             email=attrs.get("email"),
             first_name=attrs.get("first_name", ""),
@@ -161,6 +174,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": list(err.messages)}) from err
         return attrs
 
+    @transaction.atomic
     def create(self, validated_data: Dict[str, Any]) -> User:
         validated_data.pop("password_confirm", None)
         password = validated_data.pop("password")
@@ -168,11 +182,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         org_id = validated_data.pop("organization_id", None)
         inv_token = validated_data.pop("invitation_token", None)
         organization = None
-        role = validated_data.get("role")
+        invitation = None
 
         if inv_token:
             try:
-                invitation = OrganizationInvitation.objects.get(
+                invitation = OrganizationInvitation.objects.select_for_update().get(
                     token=hash_lifecycle_token(inv_token),
                     status=InvitationStatus.PENDING,
                 )
@@ -185,8 +199,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                         {"email": "Email does not match invitation."}
                     )
                 organization = invitation.organization
-                role = invitation.role
-                validated_data["role"] = role
+                validated_data["role"] = invitation.role
             except OrganizationInvitation.DoesNotExist as err:
                 raise serializers.ValidationError(
                     {"invitation_token": "Invalid or expired invitation token."}
@@ -207,14 +220,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 counter += 1
             organization = Organization.objects.create(name=org_name, slug=slug)
 
-        return User.objects.create_user(
+        user = User.objects.create_user(
             password=password, organization=organization, **validated_data
         )
 
+        if invitation is not None:
+            invitation.status = InvitationStatus.ACCEPTED
+            invitation.accepted_at = timezone.now()
+            invitation.save(update_fields=["status", "accepted_at", "updated_at"])
+
+        return user
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    """Custom SimpleJWT serializer with enterprise user metadata."""
-
     username_field = User.USERNAME_FIELD
     default_error_messages = {"no_active_account": _("Invalid email or password")}
 
@@ -238,13 +256,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             data = super().validate(attrs)
         except AuthenticationFailed as err:
             raise AuthenticationFailed(_("Invalid email or password")) from err
-        except Exception as err:
-            from rest_framework.exceptions import ValidationError
-
-            if isinstance(err, ValidationError):
-                raise err
-            raise AuthenticationFailed(_("Invalid email or password")) from err
-        data["user"] = cast(Any, UserDetailSerializer(self.user).data)
+        data["user"] = cast(
+            Any, UserDetailSerializer(self.user, context=self.context).data
+        )
         return data
 
 
@@ -254,16 +268,25 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password_confirm = serializers.CharField(required=True, write_only=True)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        if attrs["new_password"] != attrs["new_password_confirm"]:
-            raise serializers.ValidationError(
-                {"new_password_confirm": "New passwords do not match."}
-            )
         user = self.context["request"].user
+
         if not user.check_password(attrs["old_password"]):
             raise serializers.ValidationError(
                 {"old_password": "Old password is incorrect."}
             )
-        validate_password(attrs["new_password"], user=user)
+
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Passwords do not match."}
+            )
+
+        try:
+            validate_password(attrs["new_password"], user=user)
+        except DjangoValidationError as err:
+            raise serializers.ValidationError(
+                {"new_password": list(err.messages)}
+            ) from err
+
         return attrs
 
 

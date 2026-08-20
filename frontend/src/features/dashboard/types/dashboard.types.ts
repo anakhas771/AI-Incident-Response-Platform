@@ -27,6 +27,7 @@ export interface IncidentTrendPoint {
 }
 
 export type AiActivityType = 'RCA' | 'RECOMMENDATION' | 'SUMMARY' | 'TRIAGE';
+export type AiActivitySource = 'incident-ai' | 'copilot';
 
 export interface RecentAiActivityItem {
   id: string;
@@ -36,6 +37,7 @@ export interface RecentAiActivityItem {
   type: AiActivityType;
   description: string;
   confidence: number;
+  source?: AiActivitySource;
 }
 
 export type HealthStatusLevel = 'connected' | 'degraded' | 'unhealthy' | 'unknown';

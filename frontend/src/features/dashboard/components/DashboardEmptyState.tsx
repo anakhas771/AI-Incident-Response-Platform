@@ -1,6 +1,6 @@
 import React from 'react';
-import { ShieldCheck, Plus } from 'lucide-react';
-import { Card } from '../../../components/ui/Card';
+import { Shield, Plus } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 
 interface DashboardEmptyStateProps {
   onReportIncident?: () => void;
@@ -8,32 +8,40 @@ interface DashboardEmptyStateProps {
 
 export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = ({ onReportIncident }) => {
   return (
-    <Card hoverEffect={false} className="p-16 text-center max-w-2xl mx-auto my-12">
-      <div className="w-16 h-16 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 flex items-center justify-center mx-auto mb-6">
-        <ShieldCheck className="w-8 h-8" />
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      {/* Icon container */}
+      <div className="relative mb-6">
+        <div className="absolute inset-0 rounded-full bg-emerald-500/[0.08] blur-2xl scale-150" />
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07]">
+          <Shield className="h-7 w-7 text-emerald-400" />
+        </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-zinc-100 mb-2">
-        All Systems Normal — Zero Active Incidents
-      </h3>
+      {/* Status badge */}
+      <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-1 text-[11px] font-medium text-emerald-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-live-blink" />
+        All systems operational
+      </div>
 
-      <p className="text-xs text-zinc-400 font-mono mb-8 max-w-md mx-auto leading-relaxed">
-        No incidents have been logged in this queue. Telemetry monitors are actively scanning API
-        gateways, databases, and cluster health.
+      <h2 className="text-lg font-semibold text-zinc-100 tracking-tight">No active incidents</h2>
+      <p className="mt-2 max-w-sm text-sm text-zinc-500 leading-relaxed">
+        Your organization is operating normally. Security posture is healthy across all monitored
+        systems.
       </p>
 
       {onReportIncident && (
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onReportIncident}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-lg shadow-indigo-600/20"
+          className="mt-6"
           aria-label="Report a new incident"
         >
-          <Plus className="w-4 h-4" />
-          <span>Report Incident</span>
-        </button>
+          <Plus className="h-3.5 w-3.5" />
+          Report an incident
+        </Button>
       )}
-    </Card>
+    </div>
   );
 };
 

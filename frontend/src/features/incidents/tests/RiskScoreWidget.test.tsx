@@ -20,7 +20,7 @@ describe('RiskScoreWidget', () => {
   it('renders overall risk index score and trend metrics', () => {
     render(<RiskScoreWidget metrics={mockRisk} />);
 
-    expect(screen.getByText('Enterprise Risk Exposure')).toBeInTheDocument();
+    expect(screen.getByText('Risk assessment')).toBeInTheDocument();
     expect(screen.getByText('94')).toBeInTheDocument();
     expect(screen.getByText('Escalating')).toBeInTheDocument();
     expect(screen.getByText('Blast Radius')).toBeInTheDocument();

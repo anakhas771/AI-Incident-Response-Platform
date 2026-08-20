@@ -12,6 +12,18 @@ export interface UseIncidentWorkspaceOptions {
   refreshManager?: RefreshManager;
 }
 
+function formatIncidentLoadError(reason: unknown): string {
+  const error = reason as { response?: { status?: number }; message?: string };
+  const status = error?.response?.status;
+
+  if (status === 401) return 'Your session has expired. Please sign in again.';
+  if (status === 403) return 'You do not have access to this organization incident.';
+  if (status === 404)
+    return 'This incident does not exist in your organization or has been removed.';
+  if (typeof error?.message === 'string' && error.message.trim()) return error.message;
+  return 'Unable to load incident details. Please refresh and try again.';
+}
+
 export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWorkspaceOptions) {
   const manager = options?.refreshManager || defaultRefreshManager;
 
@@ -67,11 +79,8 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
         aiState.setRecommendations(recommendations);
         aiState.setSimilarIncidents(similarIncidents);
 
-        // Auto-stop polling if AI is completed or failed
         if (status === 'completed' || status === 'failed') {
-          if (pollingState.enabled) {
-            pollingState.togglePolling(); // This turns it off
-          }
+          if (pollingState.enabled) pollingState.togglePolling();
         }
       }
       if (auditRes.status === 'fulfilled') workspaceState.setAuditTrail(auditRes.value);
@@ -81,16 +90,17 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
       if (sysRes.status === 'fulfilled') workspaceState.setSystemMetadata(sysRes.value);
 
       uiState.setError({
-        incident: incidentRes.status === 'rejected' ? 'Failed to load incident details' : null,
-        timeline: timelineRes.status === 'rejected' ? 'Failed to load timeline' : null,
-        recommendations: aiRes.status === 'rejected' ? 'Failed to load recommendations' : null,
-        rca: aiRes.status === 'rejected' ? 'Failed to load RCA' : null,
-        similar: aiRes.status === 'rejected' ? 'Failed to load similar incidents' : null,
-        audit: auditRes.status === 'rejected' ? 'Failed to load audit trail' : null,
-        attachments: attRes.status === 'rejected' ? 'Failed to load attachments' : null,
-        comments: commentsRes.status === 'rejected' ? 'Failed to load comments' : null,
-        riskScore: riskRes.status === 'rejected' ? 'Failed to load risk score' : null,
-        systemMetadata: sysRes.status === 'rejected' ? 'Failed to load system metadata' : null,
+        incident:
+          incidentRes.status === 'rejected' ? formatIncidentLoadError(incidentRes.reason) : null,
+        timeline: timelineRes.status === 'rejected' ? 'Failed to load incident timeline.' : null,
+        recommendations: aiRes.status === 'rejected' ? 'Failed to load AI recommendations.' : null,
+        rca: aiRes.status === 'rejected' ? 'Failed to load AI root-cause analysis.' : null,
+        similar: aiRes.status === 'rejected' ? 'Failed to load similar incidents.' : null,
+        audit: auditRes.status === 'rejected' ? 'Failed to load audit trail.' : null,
+        attachments: attRes.status === 'rejected' ? 'Failed to load incident attachments.' : null,
+        comments: commentsRes.status === 'rejected' ? 'Failed to load incident comments.' : null,
+        riskScore: riskRes.status === 'rejected' ? 'Failed to load risk score.' : null,
+        systemMetadata: sysRes.status === 'rejected' ? 'Failed to load system telemetry.' : null,
       });
 
       pollingState.setLastUpdated(new Date().toLocaleTimeString());
@@ -113,15 +123,13 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
     }
   }, []);
 
-  // Sync background polling with RefreshManager
   useEffect(() => {
     if (!incidentId) return;
 
-    // Clear old state before loading new incident
     useIncidentWorkspaceStore.getState().resetWorkspaceData();
     useIncidentAIStore.getState().resetAIState();
 
-    loadAll(incidentId, false);
+    void loadAll(incidentId, false);
 
     const unsubscribe = manager.subscribe(async (id) => {
       await loadAll(id, true);
@@ -129,21 +137,15 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
 
     const pollingState = useIncidentPollingStore.getState();
 
-    if (pollingState.enabled) {
-      manager.start(incidentId, pollingState.intervalMs);
-    } else {
-      manager.stop();
-    }
+    if (pollingState.enabled) manager.start(incidentId, pollingState.intervalMs);
+    else manager.stop();
 
     return () => {
       unsubscribe();
       manager.stop();
 
       const currentPollingState = useIncidentPollingStore.getState();
-
-      if (currentPollingState.enabled) {
-        currentPollingState.togglePolling();
-      }
+      if (currentPollingState.enabled) currentPollingState.togglePolling();
     };
   }, [incidentId, manager, loadAll]);
 
@@ -152,13 +154,10 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
   }, []);
 
   const manualRefresh = useCallback(() => {
-    if (incidentId) {
-      loadAll(incidentId, false);
-    }
+    if (incidentId) void loadAll(incidentId, false);
   }, [incidentId, loadAll]);
 
   return {
-    // Stores
     incident: workspaceStore.currentIncident,
     timeline: workspaceStore.timeline,
     comments: workspaceStore.comments,
@@ -166,23 +165,18 @@ export function useIncidentWorkspace(incidentId: string, options?: UseIncidentWo
     auditTrail: workspaceStore.auditTrail,
     riskScore: workspaceStore.riskScore,
     systemMetadata: workspaceStore.systemMetadata,
-
     rootCause: aiStore.rootCause,
     recommendations: aiStore.recommendations,
     similarIncidents: aiStore.similarIncidents,
     aiStatus: aiStore.status,
     aiSummary: aiStore.summary,
-
     selectedTab: uiStore.selectedTab,
     filters: uiStore.filters,
     loading: uiStore.loading,
     errors: uiStore.errors,
-
     pollingEnabled: pollingStore.enabled,
     isRefreshing: pollingStore.isRefreshing,
     lastUpdated: pollingStore.lastUpdated,
-
-    // Actions
     setSelectedTab: uiStore.setSelectedTab,
     setFilters: uiStore.setFilters,
     addComment: workspaceStore.addComment,

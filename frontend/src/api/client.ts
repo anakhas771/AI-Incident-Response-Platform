@@ -1,18 +1,12 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../stores/useAuthStore';
 
-// Extended Axios config type with retry flag
 interface CustomRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-// Standard API Error Response
 export interface ApiErrorResponse {
-  error?: {
-    code?: string;
-    message?: string;
-    details?: unknown;
-  };
+  error?: { code?: string; message?: string; details?: unknown };
   detail?: string;
   [key: string]: unknown;
 }
@@ -22,19 +16,17 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 export const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 });
 
-// Request Interceptor (Inject correlation ID and JWT Authorization header)
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Attach request ID tracing
     config.headers['X-Client-Request-Time'] = new Date().toISOString();
 
-    // Attach Authorization header only if a real JWT access token exists
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const token = useAuthStore.getState().token || localStorage.getItem('access');
     if (token && !token.startsWith('mock-') && !token.includes('mock-jwt')) {
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -42,12 +34,9 @@ apiClient.interceptors.request.use(
 
     return config;
   },
-  (error: AxiosError) => {
-    return Promise.reject(error);
-  }
+  (error: AxiosError) => Promise.reject(error)
 );
 
-// Response Interceptor (JWT Automatic Token Refresh and Error handling)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorResponse>) => {
@@ -71,15 +60,12 @@ apiClient.interceptors.response.use(
             { refresh: refreshToken },
             { headers: { 'Content-Type': 'application/json' } }
           );
-
           const newAccess = refreshResponse.data.access;
           localStorage.setItem('access', newAccess);
           useAuthStore.setState({ token: newAccess, isAuthenticated: true });
-
           originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
           return apiClient(originalRequest);
         } catch (refreshErr) {
-          // Token refresh failed - log out user
           localStorage.removeItem('access');
           localStorage.removeItem('refresh');
           useAuthStore.getState().logout();

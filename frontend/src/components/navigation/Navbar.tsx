@@ -1,79 +1,122 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Keyboard, Sparkles, Menu } from 'lucide-react';
+import { Bell, Keyboard, Menu, Sparkles, Radio } from 'lucide-react';
 import { useCommandStore } from '../../stores/useCommandStore';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
+import { useIncidentStore } from '../../stores/useIncidentStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar: React.FC = () => {
   const { setShortcutsOpen, toggleSidebar } = useCommandStore();
+  const incidents = useIncidentStore((state) => state.incidents);
+  const loadIncidents = useIncidentStore((state) => state.loadIncidents);
+
+  useEffect(() => {
+    void loadIncidents();
+  }, [loadIncidents]);
+
+  const activeAlertCount = useMemo(
+    () =>
+      incidents.filter(
+        (incident) =>
+          (incident.severity === 'CRITICAL' || incident.severity === 'HIGH') &&
+          !['RESOLVED', 'CLOSED'].includes(incident.status)
+      ).length,
+    [incidents]
+  );
+
+  const hasCritical = useMemo(
+    () =>
+      incidents.some(
+        (inc) => inc.severity === 'CRITICAL' && !['RESOLVED', 'CLOSED'].includes(inc.status)
+      ),
+    [incidents]
+  );
 
   return (
-    <header className="sticky top-0 h-14 bg-surface/90 backdrop-blur-md border-b border-subtle flex items-center justify-between px-4 sm:px-6 z-20 shrink-0">
-      {/* Left: Mobile Menu Button & SearchBar */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
+    <header
+      className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#07080c]/95 px-4 backdrop-blur-xl sm:px-6"
+      role="banner"
+    >
+      {/* Left: mobile menu + search */}
+      <div className="flex min-w-0 max-w-xl flex-1 items-center gap-2">
         <button
           type="button"
           onClick={toggleSidebar}
-          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors lg:hidden"
-          title="Open Menu (⌘B)"
+          className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-white/[0.05] hover:text-zinc-100 lg:hidden"
+          title="Open menu"
           aria-label="Toggle navigation menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="h-4.5 w-4.5" />
         </button>
 
-        <div className="w-full">
+        <div className="w-full max-w-md">
           <SearchBar />
         </div>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Real-time System Status Indicator */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 text-xs font-mono font-medium">
-          <span className="w-2 h-2 rounded-full bg-red-500 critical-pulse" />
-          <span>1 Critical Incident Active</span>
+      {/* Right: status + actions */}
+      <div className="ml-3 flex shrink-0 items-center gap-1">
+        {/* Systems status */}
+        <div className="hidden items-center gap-1.5 rounded-full border border-emerald-500/15 bg-emerald-500/[0.06] px-2.5 py-1 text-[10px] font-medium text-emerald-400 xl:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-live-blink" />
+          <span>Systems operational</span>
         </div>
 
-        {/* AI Copilot Quick Launcher */}
+        {/* Copilot shortcut */}
         <Link
           to="/ai-assistant"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-950/60 border border-indigo-800/50 text-indigo-300 hover:text-indigo-200 text-xs font-medium transition-all shadow-sm hover:shadow-indigo-500/10"
+          className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition-all hover:bg-white/[0.05] hover:text-white sm:flex"
           title="Open AI Copilot"
         >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="hidden sm:inline">AI Copilot</span>
+          <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+          <span>Copilot</span>
         </Link>
 
-        {/* Keyboard Shortcuts Trigger */}
+        {/* Keyboard shortcuts */}
         <button
           type="button"
           onClick={() => setShortcutsOpen(true)}
-          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-          title="Keyboard Shortcuts (?)"
+          className="rounded-lg p-1.5 text-zinc-600 transition-colors hover:bg-white/[0.05] hover:text-zinc-300"
+          title="Keyboard shortcuts"
           aria-label="Keyboard shortcuts"
         >
-          <Keyboard className="w-4 h-4" />
+          <Keyboard className="h-4 w-4" />
         </button>
 
-        {/* Notifications Icon */}
+        {/* Alerts bell */}
         <Link
           to="/alerts"
-          className="relative p-2 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-          title="Alerts Queue"
-          aria-label="Alerts queue"
+          className="relative rounded-lg p-1.5 text-zinc-600 transition-colors hover:bg-white/[0.05] hover:text-zinc-200"
+          title={
+            activeAlertCount
+              ? `${activeAlertCount} active alert${activeAlertCount === 1 ? '' : 's'}`
+              : 'Alerts queue'
+          }
+          aria-label={activeAlertCount ? `${activeAlertCount} active alerts` : 'Alerts queue'}
         >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-500" />
+          {hasCritical ? <Radio className="h-4 w-4 text-red-400" /> : <Bell className="h-4 w-4" />}
+
+          <AnimatePresence>
+            {activeAlertCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                className="absolute -right-0.5 -top-0.5 flex min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white shadow-critical"
+              >
+                {activeAlertCount > 9 ? '9+' : activeAlertCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
 
-        {/* Theme Toggle Button */}
         <ThemeToggle />
 
-        <div className="h-4 w-[1px] bg-zinc-800 mx-0.5 sm:mx-1" />
+        <div className="mx-1 h-4 w-px bg-white/[0.07]" />
 
-        {/* User Menu Dropdown */}
         <UserMenu />
       </div>
     </header>

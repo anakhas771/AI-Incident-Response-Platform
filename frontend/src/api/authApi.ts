@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { User, Role } from '../types';
+import { Organization, User, Role } from '../types';
 
 export interface LoginPayload {
   email: string;
@@ -30,6 +30,13 @@ export interface RefreshTokenResponse {
   refresh?: string;
 }
 
+export interface InvitationPreview {
+  email: string;
+  organization_name: string;
+  role: Role;
+  expires_at: string;
+}
+
 export const authApi = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/auth/login/', payload);
@@ -51,6 +58,16 @@ export const authApi = {
     return response.data;
   },
 
+  getOrganizationMembers: async (): Promise<User[]> => {
+    const response = await apiClient.get<User[]>('/auth/organization/members/');
+    return response.data;
+  },
+
+  updateProfile: async (payload: FormData | Partial<User>): Promise<User> => {
+    const response = await apiClient.patch<User>('/auth/me/', payload);
+    return response.data;
+  },
+
   requestPasswordReset: async (email: string): Promise<{ detail: string }> => {
     const response = await apiClient.post<{ detail: string }>('/auth/password-reset/', { email });
     return response.data;
@@ -68,6 +85,13 @@ export const authApi = {
     return response.data;
   },
 
+  previewInvitation: async (token: string): Promise<InvitationPreview> => {
+    const response = await apiClient.get<InvitationPreview>('/auth/invitations/preview/', {
+      params: { token },
+    });
+    return response.data;
+  },
+
   acceptInvitation: async (token: string): Promise<{ detail: string }> => {
     const response = await apiClient.post<{ detail: string }>('/auth/invitations/accept/', {
       token,
@@ -77,6 +101,14 @@ export const authApi = {
 
   sendInvitation: async (payload: { email: string; role: Role }): Promise<unknown> => {
     const response = await apiClient.post('/auth/invitations/', payload);
+    return response.data;
+  },
+
+  createOrganization: async (payload: {
+    name: string;
+    description?: string;
+  }): Promise<Organization> => {
+    const response = await apiClient.post<Organization>('/auth/organizations/', payload);
     return response.data;
   },
 };
