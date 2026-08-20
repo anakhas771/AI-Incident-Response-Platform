@@ -2,20 +2,24 @@
 REST API views for Enterprise AI Copilot conversation sessions and chat messages.
 """
 
+import asyncio
 import json
 import logging
-from typing import Any, Iterator, cast
+from typing import Any, AsyncIterator, Iterator, cast
 
+from asgiref.sync import sync_to_async
 from django.db.models import QuerySet
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.accounts.models import User
+from apps.common.renderers import ServerSentEventRenderer
 from apps.knowledge.models import ChatMessage, ChatSession
 from apps.knowledge.permissions import (
     IsCopilotSessionOwner,
@@ -31,7 +35,7 @@ from apps.knowledge.serializers import (
     CopilotResponseSerializer,
 )
 from apps.knowledge.services.dtos import StreamEventDTO
-from apps.knowledge.services.exceptions import ValidationException
+from apps.knowledge.services.exceptions import LLMException, ValidationException
 from apps.knowledge.services.orchestration.copilot_orchestrator import (
     CopilotOrchestrator,
 )
@@ -193,7 +197,7 @@ class ChatMessageListView(generics.ListCreateAPIView):
 
         session_id = self.kwargs.get("id")
         session = get_object_or_404(
-            ChatSession,
+            ChatSession.objects.select_related("organization", "user"),
             id=session_id,
             organization=user.organization,
             user=user,
@@ -204,7 +208,7 @@ class ChatMessageListView(generics.ListCreateAPIView):
         user = cast(User, request.user)
         session_id = self.kwargs.get("id")
         session = get_object_or_404(
-            ChatSession,
+            ChatSession.objects.select_related("organization", "user"),
             id=session_id,
             organization=user.organization,
             user=user,
@@ -263,7 +267,7 @@ class CopilotChatView(generics.GenericAPIView):
 
         user = cast(User, request.user)
         session = get_object_or_404(
-            ChatSession,
+            ChatSession.objects.select_related("organization", "user"),
             id=session_id,
             organization=user.organization,
             user=user,
@@ -273,16 +277,35 @@ class CopilotChatView(generics.GenericAPIView):
         orchestrator = CopilotOrchestrator()
         try:
             response_dto = orchestrator.execute(session=session, message=message)
-        except ValidationException as exc:
+        except (ValidationException, LLMException) as exc:
             return Response(exc.to_dict(), status=exc.status_code)
 
         output_serializer = CopilotResponseSerializer(response_dto)
         return Response(output_serializer.data, status=status.HTTP_200_OK)
 
 
+_STREAM_END = object()
+
+
+def _next_stream_event(iterator: Iterator[StreamEventDTO]) -> object:
+    """
+    Advance a synchronous orchestrator stream by one event.
+
+    StopIteration is converted into a sentinel because asyncio futures
+    cannot propagate StopIteration directly.
+    """
+    try:
+        return next(iterator)
+    except StopIteration:
+        return _STREAM_END
+
+
 @extend_schema(
     summary="Stream Copilot chat turn via SSE",
-    description="Submit a prompt message to an existing conversation session and stream AI response via Server-Sent Events.",
+    description=(
+        "Submit a prompt message to an existing conversation session "
+        "and stream AI response via Server-Sent Events."
+    ),
     request=CopilotChatRequestSerializer,
     responses={200: str},
 )
@@ -298,45 +321,83 @@ class CopilotStreamView(generics.GenericAPIView):
         IsCopilotSessionOwner,
     ]
     serializer_class = CopilotChatRequestSerializer
+    renderer_classes = [ServerSentEventRenderer, JSONRenderer]
 
     def post(
         self, request: Request, *args: Any, **kwargs: Any
     ) -> StreamingHttpResponse:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         session_id = serializer.validated_data["session_id"]
         message = serializer.validated_data["message"]
 
         user = cast(User, request.user)
+
         session = get_object_or_404(
-            ChatSession,
+            ChatSession.objects.select_related("organization", "user"),
             id=session_id,
             organization=user.organization,
             user=user,
         )
+
         self.check_object_permissions(request, session)
 
-        def event_stream() -> Iterator[str]:
+        async def event_stream() -> AsyncIterator[str]:
+            """
+            Adapt the synchronous CopilotOrchestrator stream to an async iterator
+            suitable for Django's ASGI/Uvicorn streaming response.
+            """
             orchestrator = CopilotOrchestrator()
+            stream_iterator: Iterator[StreamEventDTO] = orchestrator.stream(
+                session=session,
+                message=message,
+            )
+
             try:
-                for event_dto in orchestrator.stream(session=session, message=message):
+                while True:
+                    event_dto = await sync_to_async(
+                        _next_stream_event,
+                        thread_sensitive=True,
+                    )(stream_iterator)
+
+                    if event_dto is _STREAM_END:
+                        break
+
+                    if not isinstance(event_dto, StreamEventDTO):
+                        raise TypeError(
+                            f"Unexpected SSE event type: {type(event_dto).__name__}"
+                        )
+
                     yield format_sse_event(event_dto)
-            except GeneratorExit:
-                logger.warning("SSE stream disconnected by client.")
+
+            except asyncio.CancelledError:
+                logger.warning("SSE stream cancelled by client.")
                 raise
+
             except Exception as exc:
+                logger.exception("Copilot SSE stream failed")
+
                 if hasattr(exc, "to_dict"):
                     err_payload = exc.to_dict()
                 else:
                     err_payload = {
                         "error": str(exc),
-                        "code": getattr(exc, "code", "INTERNAL_SERVER_ERROR"),
+                        "code": getattr(
+                            exc,
+                            "code",
+                            "INTERNAL_SERVER_ERROR",
+                        ),
                     }
+
                 yield f"id: 0\nevent: error\ndata: {json.dumps(err_payload)}\n\n"
 
         response = StreamingHttpResponse(
-            event_stream(), content_type="text/event-stream"
+            event_stream(),
+            content_type="text/event-stream",
         )
+
         response["Cache-Control"] = "no-cache"
         response["X-Accel-Buffering"] = "no"
+
         return response

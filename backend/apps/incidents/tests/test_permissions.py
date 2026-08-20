@@ -78,7 +78,11 @@ class TestRBACPermissions:
         # Create
         res_create = api_client.post(
             reverse("incident-list"),
-            {"title": "Admin Created Incident", "severity": "HIGH"},
+            {
+                "title": "Admin Created Incident",
+                "description": "Incident created for administrator RBAC validation.",
+                "severity": "HIGH",
+            },
             format="json",
         )
         assert res_create.status_code == status.HTTP_201_CREATED
@@ -97,7 +101,11 @@ class TestRBACPermissions:
         # Create allowed
         res_create = api_client.post(
             reverse("incident-list"),
-            {"title": "Analyst Incident", "severity": "MEDIUM"},
+            {
+                "title": "Analyst Incident",
+                "description": "Incident created for analyst RBAC validation.",
+                "severity": "MEDIUM",
+            },
             format="json",
         )
         assert res_create.status_code == status.HTTP_201_CREATED
@@ -140,7 +148,11 @@ class TestRBACPermissions:
         # Create rejected (403)
         res_create = api_client.post(
             reverse("incident-list"),
-            {"title": "Responder Created", "severity": "LOW"},
+            {
+                "title": "Responder Created",
+                "description": "Incident creation attempt for responder RBAC validation.",
+                "severity": "LOW",
+            },
             format="json",
         )
         assert res_create.status_code == status.HTTP_403_FORBIDDEN

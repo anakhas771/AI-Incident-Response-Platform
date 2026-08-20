@@ -11,6 +11,7 @@ import {
   KnowledgeChatRequest,
   KnowledgeChatResponse,
   DocumentStatusResponse,
+  DocumentChunk,
 } from '../types/knowledge';
 
 // Initial default RAG Knowledge Base mock documents for demonstration
@@ -269,4 +270,24 @@ export async function getKnowledgeDocumentStatus(id: string): Promise<DocumentSt
       updated_at: new Date().toISOString(),
     };
   }
+}
+
+export async function getKnowledgeDocumentChunks(id: string): Promise<DocumentChunk[]> {
+  try {
+    const response = await apiClient.get<DocumentChunk[]>(`/knowledge/${id}/chunks/`);
+    return response.data;
+  } catch {
+    // Return empty if fallback
+    return [];
+  }
+}
+
+export async function retryKnowledgeDocument(id: string): Promise<{ status: string }> {
+  const response = await apiClient.post<{ status: string }>(`/knowledge/${id}/retry/`);
+  return response.data;
+}
+
+export async function reindexKnowledgeDocument(id: string): Promise<{ status: string }> {
+  const response = await apiClient.post<{ status: string }>(`/knowledge/${id}/reindex/`);
+  return response.data;
 }

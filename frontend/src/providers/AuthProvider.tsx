@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useMemo, useCallback } from 'react';
-import { useAuthStore, RegisterPayload } from '../stores/useAuthStore';
+import React, { createContext, useContext, useMemo, useCallback, useEffect } from 'react';
+import { useAuthStore } from '../stores/useAuthStore';
+import { RegisterPayload } from '../api/authApi';
 import { User, Organization } from '../types';
 
 export interface AuthContextType {
@@ -8,8 +9,8 @@ export interface AuthContextType {
   organization: Organization | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (email: string, pass: string) => Promise<boolean>;
-  register: (data: RegisterPayload) => Promise<boolean>;
+  login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: RegisterPayload) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   switchOrganization: (org: Organization) => void;
 }
@@ -25,8 +26,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login: storeLogin,
     register: storeRegister,
     logout: storeLogout,
+    restoreSession,
     switchOrganization: storeSwitchOrganization,
   } = useAuthStore();
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
 
   const login = useCallback(
     async (email: string, pass: string) => {

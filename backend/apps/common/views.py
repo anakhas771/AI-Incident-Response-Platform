@@ -6,6 +6,80 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.metrics import metrics
+
+
+class LivenessCheckView(APIView):
+    """
+    Lightweight liveness probe.
+
+    This endpoint intentionally avoids external dependencies so that it can
+    distinguish an alive application process from a dependency failure.
+    """
+
+    permission_classes = [AllowAny]
+    throttle_classes = []
+
+    @extend_schema(
+        summary="Application Liveness Check",
+        description="Returns 200 when the application process is alive.",
+        responses={200: dict},
+    )
+    def get(self, request, *args, **kwargs):
+        return Response(
+            {"status": "alive"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ReadinessCheckView(APIView):
+    """
+    Dependency-aware readiness probe.
+
+    Returns 200 only when both the database and Redis are reachable.
+    """
+
+    permission_classes = [AllowAny]
+    throttle_classes = []
+
+    @extend_schema(
+        summary="Application Readiness Check",
+        description="Returns 200 only when PostgreSQL and Redis are available.",
+        responses={
+            200: dict,
+            503: dict,
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        database_ready = False
+        redis_ready = False
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1;")
+            database_ready = True
+        except Exception:
+            database_ready = False
+
+        try:
+            cache.set("readiness_check_ping", "pong", 10)
+            redis_ready = cache.get("readiness_check_ping") == "pong"
+        except Exception:
+            redis_ready = False
+
+        ready = database_ready and redis_ready
+
+        return Response(
+            {
+                "status": "ready" if ready else "not_ready",
+                "database": "connected" if database_ready else "unavailable",
+                "redis": "connected" if redis_ready else "unavailable",
+            },
+            status=(
+                status.HTTP_200_OK if ready else status.HTTP_503_SERVICE_UNAVAILABLE
+            ),
+        )
+
 
 class HealthCheckView(APIView):
     """
@@ -13,6 +87,7 @@ class HealthCheckView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = []
 
     @extend_schema(
         summary="System Health Check",
@@ -54,3 +129,21 @@ class HealthCheckView(APIView):
         )
 
         return Response(health_status, status=http_status)
+
+
+class MetricsView(APIView):
+    """
+    Read-only operational metrics endpoint.
+
+    Metrics are intentionally restricted to authenticated callers and contain
+    aggregate operational data only. No request bodies, prompts, completions,
+    tokens, or other sensitive payloads are exposed.
+    """
+
+    @extend_schema(
+        summary="Application Metrics",
+        description="Returns aggregate application and Celery metrics.",
+        responses={200: dict},
+    )
+    def get(self, request, *args, **kwargs):
+        return Response(metrics.get_snapshot(), status=status.HTTP_200_OK)

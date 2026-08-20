@@ -34,6 +34,17 @@ class SeverityPredictor:
         Predict severity classification (CRITICAL, HIGH, MEDIUM, LOW) and return
         confidence score between 0.0 and 1.0.
         """
+        if not category or not isinstance(category, str) or not category.strip():
+            raise ValueError("Incident category must be a non-empty string.")
+        if (
+            not description
+            or not isinstance(description, str)
+            or not description.strip()
+        ):
+            raise ValueError("Incident description must be a non-empty string.")
+        if affected_users < 0:
+            raise ValueError("Affected users count cannot be negative.")
+
         logger.info(
             "Predicting severity category=%s affected_users=%s",
             category,
@@ -50,6 +61,7 @@ class SeverityPredictor:
         result = self.llm_client.generate_json(
             prompt=prompt,
             system_prompt=SEVERITY_PREDICTOR_SYSTEM_PROMPT,
+            expected_keys=["predicted_severity", "confidence_score"],
         )
 
         predicted_severity = (

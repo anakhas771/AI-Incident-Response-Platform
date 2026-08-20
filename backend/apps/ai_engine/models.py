@@ -112,6 +112,18 @@ class IncidentAnalysis(TimeStampedUUIDModel):
     confidence_score: models.FloatField = models.FloatField(
         default=0.0,
     )
+    similar_incidents: models.JSONField = models.JSONField(
+        default=list,
+        blank=True,
+    )
+    previous_resolutions: models.JSONField = models.JSONField(
+        default=list,
+        blank=True,
+    )
+    knowledge_citations: models.JSONField = models.JSONField(
+        default=list,
+        blank=True,
+    )
 
     # Backward compatibility helper attributes
     summary: models.TextField = models.TextField(

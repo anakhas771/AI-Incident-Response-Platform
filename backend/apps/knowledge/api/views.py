@@ -16,9 +16,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
+from apps.accounts.permissions import IsResponder
 from apps.knowledge.models import DocumentStatus, DocumentTag, KnowledgeDocument
-from apps.knowledge.permissions import IsKnowledgeOrganizationMember
+from apps.knowledge.permissions import (
+    IsKnowledgeOrganizationMember,
+    IsKnowledgeUser,
+    IsKnowledgeViewer,
+)
 from apps.knowledge.serializers import (
+    DocumentChunkSerializer,
     DocumentStatusSerializer,
     KnowledgeChatRequestSerializer,
     KnowledgeChatResponseSerializer,
@@ -31,7 +37,10 @@ from apps.knowledge.serializers import (
 from apps.knowledge.services.file_hash_service import FileHashService
 from apps.knowledge.services.knowledge_chat_service import KnowledgeChatService
 from apps.knowledge.services.vector_search_service import VectorSearchService
-from apps.knowledge.tasks import process_document_task
+from apps.knowledge.tasks import (
+    process_document_task,
+    reindex_document_task,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +57,7 @@ class KnowledgeDocumentUploadView(APIView):
     permission_classes = [
         IsAuthenticated,
         IsKnowledgeOrganizationMember,
+        IsResponder,
     ]
 
     parser_classes = [
@@ -134,7 +144,11 @@ class KnowledgeDocumentListView(generics.ListAPIView):
     List all knowledge documents within the authenticated user's organization.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = KnowledgeDocumentListSerializer
 
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
@@ -164,9 +178,20 @@ class KnowledgeDocumentDetailView(generics.RetrieveDestroyAPIView):
     Retrieve or delete a specific knowledge document in the organization.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = KnowledgeDocumentDetailSerializer
     lookup_field = "pk"
+
+    def delete(self, request, *args, **kwargs):
+        if not IsResponder().has_permission(request, self):
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied("You do not have permission to delete documents.")
+        return super().delete(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[KnowledgeDocument]:
         if getattr(self, "swagger_fake_view", False):
@@ -182,7 +207,11 @@ class KnowledgeSearchView(APIView):
     Perform Top-K semantic similarity search across the organization's knowledge base.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeUser,
+    ]
 
     @extend_schema(
         request=KnowledgeSearchRequestSerializer,
@@ -227,7 +256,11 @@ class KnowledgeChatView(APIView):
     Execute enterprise RAG AI chat answering user questions with citations and evidence.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeUser,
+    ]
 
     @extend_schema(
         request=KnowledgeChatRequestSerializer,
@@ -265,7 +298,11 @@ class KnowledgeDocumentStatusView(generics.RetrieveAPIView):
     Retrieve document processing status, chunk count, and embedding count.
     """
 
-    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember]
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
     serializer_class = DocumentStatusSerializer
     lookup_field = "pk"
 
@@ -274,3 +311,90 @@ class KnowledgeDocumentStatusView(generics.RetrieveAPIView):
             return KnowledgeDocument.objects.none()
         user = cast(User, self.request.user)
         return KnowledgeDocument.objects.filter(organization=user.organization)
+
+
+class KnowledgeDocumentChunksView(generics.ListAPIView):
+    """
+    Retrieve document chunks for a given document with organization isolation.
+    """
+
+    permission_classes = [
+        IsAuthenticated,
+        IsKnowledgeOrganizationMember,
+        IsKnowledgeViewer,
+    ]
+    serializer_class = DocumentChunkSerializer
+    pagination_class = None
+
+    def get_queryset(self) -> QuerySet:
+        if getattr(self, "swagger_fake_view", False):
+            return KnowledgeDocument.objects.none()
+
+        user = cast(User, self.request.user)
+        document_id = self.kwargs.get("pk")
+
+        # Verify organization ownership of the document
+        try:
+            doc = KnowledgeDocument.objects.get(
+                id=document_id, organization=user.organization
+            )
+        except KnowledgeDocument.DoesNotExist:
+            return KnowledgeDocument.objects.none()
+
+        return doc.chunks.all().order_by("chunk_index")
+
+
+class KnowledgeDocumentRetryView(APIView):
+    """
+    Trigger retry of processing for a failed document.
+    """
+
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember, IsResponder]
+
+    def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
+        try:
+            doc = KnowledgeDocument.objects.get(id=pk, organization=user.organization)
+        except KnowledgeDocument.DoesNotExist:
+            return Response(
+                {"error": "Document not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if doc.status != DocumentStatus.FAILED:
+            return Response(
+                {"error": "Only failed documents can be retried."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        doc.status = DocumentStatus.PROCESSING
+        doc.processing_error = ""
+        doc.save(update_fields=["status", "processing_error", "updated_at"])
+
+        process_document_task.delay(str(doc.id))
+
+        return Response({"status": "Retry task queued."}, status=status.HTTP_200_OK)
+
+
+class KnowledgeDocumentReindexView(APIView):
+    """
+    Trigger full re-indexing of a document.
+    """
+
+    permission_classes = [IsAuthenticated, IsKnowledgeOrganizationMember, IsResponder]
+
+    def post(self, request: Request, pk: str, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
+        try:
+            doc = KnowledgeDocument.objects.get(id=pk, organization=user.organization)
+        except KnowledgeDocument.DoesNotExist:
+            return Response(
+                {"error": "Document not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        doc.status = DocumentStatus.PROCESSING
+        doc.processing_error = ""
+        doc.save(update_fields=["status", "processing_error", "updated_at"])
+
+        reindex_document_task.delay(str(doc.id))
+
+        return Response({"status": "Re-index task queued."}, status=status.HTTP_200_OK)

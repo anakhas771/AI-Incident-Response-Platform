@@ -11,23 +11,23 @@ class IncidentPermission(BasePermission):
     """
     Role-Based Access Control (RBAC) permission policy for Incident Management:
 
-    - ADMIN: Full access (create, list, retrieve, update, delete, assign, status, comment).
-    - ANALYST: Create, list, retrieve, update, assign, status, comment. (No deletion).
-    - RESPONDER: List, retrieve, status update, add comments.
+    - ADMIN: Full access.
+    - RESPONDER (Manager tier): Create, list, retrieve, update, delete, assign, status, comment.
+    - ANALYST: Create, list, retrieve, update, assign, status, comment.
     - VIEWER: Read-only access (list, retrieve, view timeline, view comments).
     """
 
     ALLOWED_ROLES_PER_ACTION = {
         "create": [Role.ADMIN, Role.ANALYST],
-        "list": [Role.ADMIN, Role.ANALYST, Role.RESPONDER, Role.VIEWER],
-        "retrieve": [Role.ADMIN, Role.ANALYST, Role.RESPONDER, Role.VIEWER],
-        "update": [Role.ADMIN, Role.ANALYST],
-        "partial_update": [Role.ADMIN, Role.ANALYST],
+        "list": [Role.ADMIN, Role.RESPONDER, Role.ANALYST, Role.VIEWER],
+        "retrieve": [Role.ADMIN, Role.RESPONDER, Role.ANALYST, Role.VIEWER],
+        "update": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
+        "partial_update": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
         "destroy": [Role.ADMIN],
-        "assign": [Role.ADMIN, Role.ANALYST],
-        "status": [Role.ADMIN, Role.ANALYST, Role.RESPONDER],
-        "change_status": [Role.ADMIN, Role.ANALYST, Role.RESPONDER],
-        "comments": [Role.ADMIN, Role.ANALYST, Role.RESPONDER],
+        "assign": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
+        "status": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
+        "change_status": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
+        "comments": [Role.ADMIN, Role.RESPONDER, Role.ANALYST],
     }
 
     def has_permission(self, request: Request, view: APIView) -> bool:

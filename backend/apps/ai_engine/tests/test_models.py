@@ -59,3 +59,21 @@ class TestAIIncidentAnalysisModel:
             second_analysis,
             first_analysis,
         ]
+
+
+@pytest.mark.django_db
+class TestIncidentAnalysisModel:
+    def test_create_incident_analysis(self, test_incident):
+        from apps.ai_engine.models import AnalysisStatus, IncidentAnalysis
+
+        analysis = IncidentAnalysis.objects.get(incident=test_incident)
+        analysis.status = AnalysisStatus.COMPLETED
+        analysis.summary = "Test summary"
+        analysis.similar_incidents = [{"id": "1", "title": "Test 1"}]
+        analysis.previous_resolutions = ["Resolution 1"]
+        analysis.knowledge_citations = [{"doc": "Runbook", "page": 1}]
+        analysis.save()
+        assert analysis.id is not None
+        assert analysis.similar_incidents[0]["title"] == "Test 1"
+        assert analysis.previous_resolutions[0] == "Resolution 1"
+        assert analysis.knowledge_citations[0]["doc"] == "Runbook"

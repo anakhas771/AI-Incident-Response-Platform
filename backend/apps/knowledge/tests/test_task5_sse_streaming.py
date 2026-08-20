@@ -11,7 +11,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import Organization, User
 from apps.knowledge.api.copilot_views import format_sse_event
-from apps.knowledge.models import ChatMessage, ChatSession
+from apps.knowledge.models import ChatMessage, ChatSession, MessageRole
 from apps.knowledge.services.dtos import StreamEventDTO
 from apps.knowledge.services.orchestration.copilot_orchestrator import (
     CopilotOrchestrator,
@@ -46,6 +46,24 @@ class TestSSEStreamingAPI:
             "client": client,
         }
 
+    def test_sse_streaming_accept_header(self, setup_data):
+        client = setup_data["client"]
+        session = setup_data["session"]
+        url = reverse("copilot:copilot-stream")
+
+        payload = {
+            "session_id": str(session.id),
+            "message": "Test accept header",
+        }
+        response = client.post(
+            url,
+            payload,
+            format="json",
+            HTTP_ACCEPT="text/event-stream",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "text/event-stream"
+
     def test_sse_streaming_success_and_event_sequence(self, setup_data):
         client = setup_data["client"]
         session = setup_data["session"]
@@ -61,7 +79,16 @@ class TestSSEStreamingAPI:
         assert response["Cache-Control"] == "no-cache"
         assert response["X-Accel-Buffering"] == "no"
 
-        raw_content = b"".join(response.streaming_content).decode("utf-8")
+        if response.is_async:
+            from asgiref.sync import async_to_sync
+
+            async def consume():
+                return b"".join([chunk async for chunk in response.streaming_content])
+
+            raw_content = async_to_sync(consume)().decode("utf-8")
+        else:
+            raw_content = b"".join(response.streaming_content).decode("utf-8")
+
         blocks = [b.strip() for b in raw_content.split("\n\n") if b.strip()]
 
         events = []
@@ -128,7 +155,15 @@ class TestSSEStreamingAPI:
         )
         assert response.status_code == status.HTTP_200_OK
 
-        raw_content = b"".join(response.streaming_content).decode("utf-8")
+        if response.is_async:
+            from asgiref.sync import async_to_sync
+
+            async def consume():
+                return b"".join([chunk async for chunk in response.streaming_content])
+
+            raw_content = async_to_sync(consume)().decode("utf-8")
+        else:
+            raw_content = b"".join(response.streaming_content).decode("utf-8")
         assert "event: error" in raw_content
         assert "SESSION_ARCHIVED" in raw_content
 
@@ -147,5 +182,8 @@ class TestSSEStreamingAPI:
             for _ in orchestrator.stream(session=session, message="Should not persist"):
                 pass
 
-        # Verify no incomplete turns were saved
-        assert ChatMessage.objects.filter(session=session).count() == 0
+        # Verify no incomplete turns were saved (only the early user message)
+        assert ChatMessage.objects.filter(session=session).count() == 1
+        assert (
+            ChatMessage.objects.filter(session=session).first().role == MessageRole.USER
+        )

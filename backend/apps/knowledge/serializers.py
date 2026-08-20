@@ -310,6 +310,7 @@ class ChatSessionSerializer(serializers.ModelSerializer):
             "last_message_preview",
             "last_message_at",
             "token_count",
+            "is_pinned",
             "is_archived",
             "created_at",
             "updated_at",
@@ -333,7 +334,7 @@ class ChatSessionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatSession
-        fields = ["title"]
+        fields = ["title", "is_pinned"]
         extra_kwargs = {
             "title": {"required": False, "default": "New Chat"},
         }
@@ -346,7 +347,7 @@ class ChatSessionUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatSession
-        fields = ["title", "is_archived"]
+        fields = ["title", "is_pinned", "is_archived"]
         extra_kwargs = {
             "title": {"required": False},
             "is_archived": {"required": False},

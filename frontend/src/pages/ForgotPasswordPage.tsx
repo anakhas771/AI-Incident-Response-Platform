@@ -2,15 +2,28 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import authApi from '../api/authApi';
 import { Button } from '../components/ui/Button';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError('');
+    try {
+      await authApi.requestPasswordReset(email);
+      setSubmitted(true);
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,9 +80,11 @@ export const ForgotPasswordPage: React.FC = () => {
               </div>
             </div>
 
-            <Button type="submit" variant="ai" className="w-full py-2.5">
-              Send Reset Link
+            <Button type="submit" variant="ai" className="w-full py-2.5" disabled={loading}>
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </Button>
+
+            {error && <div className="text-center text-red-500 text-xs mt-2">{error}</div>}
 
             <div className="pt-2 text-center">
               <Link

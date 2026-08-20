@@ -17,16 +17,16 @@ class BaseLLMGateway(ABC):
     @abstractmethod
     def generate(self, prompt: PromptContextDTO) -> LLMResponseDTO:
         """
-        Generate text completion based on a PromptContextDTO.
+        Generate text completion from a prompt context.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def stream(self, prompt: PromptContextDTO) -> Iterator[str]:
         """
-        Stream text completion based on a PromptContextDTO.
+        Stream generated text chunks.
         """
-        pass
+        raise NotImplementedError
 
     def calculate_cost(
         self,
@@ -36,18 +36,28 @@ class BaseLLMGateway(ABC):
         cached_tokens: int = 0,
     ) -> float:
         """
-        Estimate USD cost for a query based on token usage and cache discounts.
+        Generic fallback cost estimator.
+
+        Provider-specific gateways should override this when
+        provider pricing is known.
         """
+        prompt_tokens = max(0, prompt_tokens)
+        completion_tokens = max(0, completion_tokens)
+        embedding_tokens = max(0, embedding_tokens)
+        cached_tokens = max(0, min(cached_tokens, prompt_tokens))
+
         prompt_rate = 0.003 / 1000.0
         completion_rate = 0.015 / 1000.0
         embedding_rate = 0.0001 / 1000.0
         cached_discount = 0.5
 
-        effective_prompt_tokens = max(0, prompt_tokens - cached_tokens)
+        uncached_prompt_tokens = prompt_tokens - cached_tokens
+
         cost = (
-            (effective_prompt_tokens * prompt_rate)
-            + (cached_tokens * prompt_rate * cached_discount)
-            + (completion_tokens * completion_rate)
-            + (embedding_tokens * embedding_rate)
+            uncached_prompt_tokens * prompt_rate
+            + cached_tokens * prompt_rate * cached_discount
+            + completion_tokens * completion_rate
+            + embedding_tokens * embedding_rate
         )
+
         return round(cost, 6)

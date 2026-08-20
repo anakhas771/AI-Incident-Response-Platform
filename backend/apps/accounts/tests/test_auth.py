@@ -142,6 +142,7 @@ class TestAuthenticationAPI:
             "new_password_confirm": "BrandNewPassword123!",
         }
         response = api_client.post(url, payload, format="json")
+        print("CHANGE PASSWORD RESPONSE:", response.status_code, response.data)
         assert response.status_code == status.HTTP_200_OK
 
         # Verify old password no longer works

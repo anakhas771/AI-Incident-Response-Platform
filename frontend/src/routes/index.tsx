@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '../layouts/AppLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
@@ -10,6 +10,8 @@ const SplashPage = lazy(() => import('../pages/SplashPage'));
 const LoginPage = lazy(() => import('../pages/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
+const AcceptInvitationPage = lazy(() => import('../pages/AcceptInvitationPage'));
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const IncidentsPage = lazy(() => import('../pages/IncidentsPage'));
 const IncidentDetailPage = lazy(() => import('../pages/IncidentDetailPage'));
@@ -29,6 +31,12 @@ const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 const ActivityLogPage = lazy(() => import('../pages/ActivityLogPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-200">
+    Loading...
+  </div>
+);
 
 const router = createBrowserRouter([
   {
@@ -56,8 +64,22 @@ const router = createBrowserRouter([
             element: <ForgotPasswordPage />,
           },
           {
+            path: 'reset-password',
+            element: <ResetPasswordPage />,
+          },
+          {
             path: 'splash',
             element: <SplashPage />,
+          },
+        ],
+      },
+      // Unrestricted Auth Routes (can be logged in or not)
+      {
+        element: <AuthLayout />,
+        children: [
+          {
+            path: 'invite/accept',
+            element: <AcceptInvitationPage />,
           },
         ],
       },
@@ -136,7 +158,11 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRoutes: React.FC = () => {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 };
 
 export default AppRoutes;

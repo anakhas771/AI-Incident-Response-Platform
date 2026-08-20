@@ -27,6 +27,7 @@ class IsAnalyst(BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
+
         user = cast(User, request.user)
         return bool(user.role in [Role.ADMIN, Role.ANALYST] or user.is_superuser)
 
@@ -39,7 +40,9 @@ class IsResponder(BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not (request.user and request.user.is_authenticated):
             return False
+
         user = cast(User, request.user)
+
         return bool(
             user.role in [Role.ADMIN, Role.ANALYST, Role.RESPONDER] or user.is_superuser
         )

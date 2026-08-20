@@ -1,5 +1,6 @@
 /**
- * TypeScript definitions for Enterprise RAG Knowledge Base documents, chunks, search, and AI chat.
+ * TypeScript definitions for Enterprise RAG Knowledge Base documents,
+ * chunks, search, and AI chat.
  */
 
 export type DocumentType = 'PDF' | 'DOCX' | 'TXT' | 'MD';
@@ -23,13 +24,21 @@ export interface KnowledgeDocument {
   updated_at: string;
 }
 
+export interface DocumentChunkMetadata {
+  page_number?: number;
+  page?: number;
+  section?: string;
+  source?: string;
+  [key: string]: unknown;
+}
+
 export interface DocumentChunk {
   id: string;
   document: string;
   chunk_index: number;
   content: string;
   token_count: number;
-  metadata: Record<string, unknown>;
+  metadata: DocumentChunkMetadata;
   created_at: string;
 }
 
@@ -49,7 +58,7 @@ export interface KnowledgeSearchResponseItem {
   content: string;
   similarity_score: number;
   page_number: number;
-  metadata: Record<string, unknown>;
+  metadata: DocumentChunkMetadata;
 }
 
 export interface KnowledgeSearchResponse {

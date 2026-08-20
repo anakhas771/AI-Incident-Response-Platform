@@ -1,409 +1,230 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowUpRight, Plus, ShieldAlert, Sparkles, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import {
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  ShieldAlert,
-  Sparkles,
-  TrendingUp,
-  ArrowUpRight,
-  Activity,
-  Plus,
-  ChevronRight,
-  Server,
-} from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
-import { useIncidentStore } from '../stores/useIncidentStore';
-import { useCommandStore } from '../stores/useCommandStore';
-import { mockSystemMetrics, mockActivityLogs } from '../services/mockData';
-import { SeverityBadge, StatusBadge } from '../components/ui/Badge';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { useCommandStore } from '../stores/useCommandStore';
+import {
+  DashboardEmptyState,
+  DashboardErrorState,
+  DashboardSkeleton,
+  IncidentSeverityChart,
+  IncidentTrendChart,
+  RecentAiActivityFeed,
+  RecentIncidentFeed,
+  useDashboardMetrics,
+} from '../features/dashboard';
+import { DashboardTimeframe } from '../features/dashboard/types';
+
+function useElapsedTime(createdAt: string): string {
+  const now = Date.now();
+  const diff = now - new Date(createdAt).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m elapsed`;
+  const hr = Math.floor(min / 60);
+  return `${hr}h ${min % 60}m elapsed`;
+}
 
 export const DashboardPage: React.FC = () => {
-  const { incidents, setSelectedIncident } = useIncidentStore();
+  const [timeframe, setTimeframe] = useState<DashboardTimeframe>('24h');
+  const { data, isLoading, isError, error, refetch } = useDashboardMetrics(timeframe);
   const { setCreateModalOpen } = useCommandStore();
   const navigate = useNavigate();
 
-  const activeIncidents = incidents.filter((i) => i.status !== 'CLOSED' && i.status !== 'RESOLVED');
-  const criticalIncident =
-    activeIncidents.find((i) => i.severity === 'CRITICAL') || activeIncidents[0];
+  if (isLoading || !data) {
+    return (
+      <div className="space-y-5">
+        <PageHeader onCreateIncident={() => setCreateModalOpen(true)} />
+        <DashboardSkeleton />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <DashboardErrorState
+        error={error?.message || 'Failed to load dashboard metrics'}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
+
+  const activeIncidents = data.recentIncidents.filter(
+    (incident) => incident.status !== 'RESOLVED' && incident.status !== 'CLOSED'
+  );
+
+  const criticalIncident = activeIncidents.find((incident) => incident.severity === 'CRITICAL');
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
-            Command Center Overview
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
-              LIVE TELEMETRY
-            </span>
-          </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Real-time AI threat monitoring, automated MTTR tracking, and incident queue
-          </p>
-        </div>
+    <div
+      className="w-full min-w-0 space-y-5"
+      role="main"
+      aria-label="Enterprise Security Command Center"
+    >
+      <PageHeader onCreateIncident={() => setCreateModalOpen(true)} />
 
-        <div className="flex items-center gap-3">
-          <Link to="/ai-assistant">
-            <Button variant="ai" size="sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Launch AI Copilot</span>
-            </Button>
-          </Link>
-          <Button variant="default" size="sm" onClick={() => setCreateModalOpen(true)}>
-            <Plus className="w-3.5 h-3.5" />
-            <span>Report Incident</span>
+      {/* ─── Critical Alert Banner ──────────────────────────────────────── */}
+      {criticalIncident && (
+        <CriticalAlertBanner
+          incident={criticalIncident}
+          onInvestigate={() => navigate(`/incidents/${criticalIncident.id}`)}
+        />
+      )}
+
+      {/* ─── Main Dashboard Content ─────────────────────────────────────── */}
+      {data.recentIncidents.length === 0 ? (
+        <DashboardEmptyState onReportIncident={() => setCreateModalOpen(true)} />
+      ) : (
+        <div className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-12">
+          {/* Trend Chart */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.4, ease: 'easeOut' }}
+            className="min-w-0 xl:col-span-8"
+          >
+            <IncidentTrendChart
+              data={data.incidentTrends}
+              activeTimeframe={timeframe}
+              onTimeframeChange={(tf) => setTimeframe(tf)}
+            />
+          </motion.section>
+
+          {/* Severity Distribution */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+            className="min-w-0 xl:col-span-4"
+          >
+            <IncidentSeverityChart data={data.severityDistribution} />
+          </motion.section>
+
+          {/* Active Incident Queue */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.4, ease: 'easeOut' }}
+            className="min-w-0 xl:col-span-8"
+          >
+            <RecentIncidentFeed incidents={activeIncidents} />
+          </motion.section>
+
+          {/* AI Copilot Intelligence */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
+            className="min-w-0 xl:col-span-4"
+          >
+            <RecentAiActivityFeed activities={data.recentAiActivity} />
+          </motion.section>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─── Page Header ────────────────────────────────────────────────────── */
+const PageHeader: React.FC<{ onCreateIncident: () => void }> = ({ onCreateIncident }) => (
+  <motion.section
+    initial={{ opacity: 0, y: -6 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.35, ease: 'easeOut' }}
+    className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end"
+  >
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-600">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-live-blink" />
+        Live operations
+      </div>
+      <h1 className="mt-2 break-words text-2xl font-semibold tracking-[-0.03em] text-zinc-50 sm:text-3xl">
+        Command Center
+      </h1>
+      <p className="mt-1.5 max-w-xl text-sm leading-6 text-zinc-500">
+        Live incident volume, response trends, active investigations, and Copilot intelligence.
+      </p>
+    </div>
+
+    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
+      <Link to="/ai-assistant" className="flex-1 sm:flex-none">
+        <Button variant="ai" size="sm" className="w-full sm:w-auto">
+          <Sparkles className="h-3.5 w-3.5" />
+          Copilot
+        </Button>
+      </Link>
+      <Button
+        variant="default"
+        size="sm"
+        className="flex-1 sm:w-auto sm:flex-none"
+        onClick={onCreateIncident}
+        aria-label="Report a new incident"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Report incident
+      </Button>
+    </div>
+  </motion.section>
+);
+
+/* ─── Critical Alert Banner ──────────────────────────────────────────── */
+const CriticalAlertBanner: React.FC<{
+  incident: { id: string; title: string; description: string; created_at: string };
+  onInvestigate: () => void;
+}> = ({ incident, onInvestigate }) => {
+  const elapsed = useElapsedTime(incident.created_at);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="relative overflow-hidden rounded-xl border border-red-500/20 bg-red-500/[0.05] critical-glow"
+      role="alert"
+      aria-label={`Critical incident alert: ${incident.title}`}
+    >
+      {/* Subtle red glow edge */}
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500/60 rounded-r-full" />
+
+      <div className="px-5 py-4 pl-6">
+        <div className="flex min-w-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="mt-0.5 shrink-0 rounded-lg border border-red-500/15 bg-red-500/[0.09] p-2">
+              <ShieldAlert className="h-4 w-4 text-red-400" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-400">
+                  Critical incident
+                </span>
+                <span className="font-mono text-[10px] text-zinc-700">{incident.id}</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono text-zinc-600">
+                  <Clock className="h-2.5 w-2.5" />
+                  {elapsed}
+                </span>
+              </div>
+              <h2 className="mt-1 break-words text-sm font-semibold text-zinc-100">
+                {incident.title}
+              </h2>
+              <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-zinc-500">
+                {incident.description}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="destructive"
+            size="sm"
+            className="w-full shrink-0 lg:w-auto"
+            onClick={onInvestigate}
+          >
+            Investigate
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
-
-      {criticalIncident && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-r from-red-950/70 via-surface to-surface border border-red-800/60 shadow-lg"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-red-900/40 text-red-400 border border-red-700/50 shrink-0 mt-0.5">
-                <ShieldAlert className="w-5 h-5 critical-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider">
-                    CRITICAL THREAT REQUIRING IMMEDIATE RESPONSE
-                  </span>
-                  <span className="text-xs text-zinc-400 font-mono">• {criticalIncident.id}</span>
-                </div>
-                <h2 className="text-sm font-semibold text-zinc-100 mt-0.5">
-                  {criticalIncident.title}
-                </h2>
-                <p className="text-xs text-zinc-400 line-clamp-1 mt-1">
-                  {criticalIncident.description}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  setSelectedIncident(criticalIncident);
-                  navigate(`/incidents/${criticalIncident.id}`);
-                }}
-              >
-                <span>Investigate Incident</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card hoverEffect className="relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Active Incidents
-            </span>
-            <div className="p-2 rounded-lg bg-red-950/50 text-red-400 border border-red-800/40">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">
-              {activeIncidents.length}
-            </span>
-            <span className="text-xs font-mono text-red-400 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +1 new
-            </span>
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">1 Critical • 1 High • 1 Medium</p>
-        </Card>
-
-        <Card hoverEffect className="relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              MTTR (Mean Time)
-            </span>
-            <div className="p-2 rounded-lg bg-indigo-950/50 text-indigo-400 border border-indigo-800/40">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">
-              {mockSystemMetrics.mttr_minutes}m
-            </span>
-            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
-              -14% vs last week
-            </span>
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">
-            MTTD: {mockSystemMetrics.mttd_minutes}m (Detection Time)
-          </p>
-        </Card>
-
-        <Card hoverEffect className="relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              SLA Compliance
-            </span>
-            <div className="p-2 rounded-lg bg-emerald-950/50 text-emerald-400 border border-emerald-800/40">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">
-              {mockSystemMetrics.sla_compliance_pct}%
-            </span>
-            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
-              Target: 99.0%
-            </span>
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">0 SLA breaches in past 30 days</p>
-        </Card>
-
-        <Card aiGlow hoverEffect className="relative overflow-hidden border-indigo-900/50">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> AI Insights
-            </span>
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-800">
-              ACTIVE
-            </span>
-          </div>
-          <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-zinc-100">92%</span>
-            <span className="text-xs font-mono text-indigo-300">RCA Confidence</span>
-          </div>
-          <p className="text-[11px] text-zinc-400 mt-1">3 Auto-remediations suggested</p>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card hoverEffect={false}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100">
-                  Incident Volume & Severity Trends
-                </CardTitle>
-                <CardDescription>24-hour continuous monitoring telemetry</CardDescription>
-              </div>
-              <span className="text-xs font-mono text-zinc-400">UTC Timeline</span>
-            </CardHeader>
-            <CardContent className="h-64 pt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockSystemMetrics.incident_trends}>
-                  <defs>
-                    <linearGradient id="colorCritical" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorHigh" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="timestamp" stroke="#52525b" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#18181b',
-                      borderColor: '#27272a',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="critical"
-                    stroke="#ef4444"
-                    fillOpacity={1}
-                    fill="url(#colorCritical)"
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="high"
-                    stroke="#f97316"
-                    fillOpacity={1}
-                    fill="url(#colorHigh)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card hoverEffect={false}>
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-subtle">
-              <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100">
-                  Live Active Incidents Queue
-                </CardTitle>
-                <CardDescription>Prioritized by severity & response SLA</CardDescription>
-              </div>
-              <Link
-                to="/incidents"
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
-              >
-                View All <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </CardHeader>
-            <div className="divide-y divide-subtle">
-              {incidents.slice(0, 4).map((inc) => (
-                <div
-                  key={inc.id}
-                  onClick={() => {
-                    setSelectedIncident(inc);
-                    navigate(`/incidents/${inc.id}`);
-                  }}
-                  className="p-4 flex items-center justify-between gap-4 hover:bg-surface-elevated/60 transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-start gap-3 truncate">
-                    <SeverityBadge severity={inc.severity} />
-                    <div className="truncate">
-                      <h4 className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors truncate">
-                        {inc.title}
-                      </h4>
-                      <div className="flex items-center gap-3 text-[11px] text-zinc-400 mt-1 font-mono">
-                        <span>{inc.id}</span>
-                        <span>•</span>
-                        <span>{inc.category}</span>
-                        <span>•</span>
-                        <span>
-                          Assignee: {inc.assigned_to ? inc.assigned_to.full_name : 'Unassigned'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <StatusBadge status={inc.status} />
-                    <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-200 transition-colors" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card hoverEffect={false}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold text-zinc-100">
-                Severity Distribution
-              </CardTitle>
-              <CardDescription>Breakdown across active platform queue</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between">
-              <div className="w-36 h-36">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={mockSystemMetrics.severity_distribution}
-                      innerRadius={40}
-                      outerRadius={60}
-                      dataKey="value"
-                    >
-                      {mockSystemMetrics.severity_distribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="space-y-2 text-xs font-mono">
-                {mockSystemMetrics.severity_distribution.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between gap-4">
-                    <span className="flex items-center gap-1.5">
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: item.fill }}
-                      />
-                      <span className="text-zinc-300">{item.name}</span>
-                    </span>
-                    <span className="font-bold text-zinc-100">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card hoverEffect={false} className="bg-surface-elevated">
-            <CardHeader className="pb-3 border-b border-subtle">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Server className="w-4 h-4 text-indigo-400" /> Infrastructure Health
-                </CardTitle>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
-                  HEALTHY
-                </span>
-              </div>
-            </CardHeader>
-            <div className="p-4 space-y-3 text-xs font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Kubernetes EKS Cluster</span>
-                <span className="text-emerald-400">99.98% uptime</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-400">PostgreSQL RDS Primary</span>
-                <span className="text-emerald-400">12ms latency</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Redis Cache Invalidation</span>
-                <span className="text-emerald-400">Operational</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card hoverEffect={false}>
-            <CardHeader className="pb-3 border-b border-subtle">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-cyan-400" /> Recent Activity Log
-                </CardTitle>
-                <Link to="/activity-log" className="text-xs text-indigo-400 hover:text-indigo-300">
-                  All Logs
-                </Link>
-              </div>
-            </CardHeader>
-            <div className="p-4 space-y-3">
-              {mockActivityLogs.slice(0, 4).map((log) => (
-                <div key={log.id} className="text-xs space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-zinc-300 font-semibold">{log.user.full_name}</span>
-                    <span className="text-zinc-400">
-                      {new Date(log.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-zinc-400 truncate">{log.action}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
