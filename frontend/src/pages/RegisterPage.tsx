@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldAlert, ArrowRight, Mail, Lock, Building, User as UserIcon } from 'lucide-react';
+import { ArrowRight, Mail, Lock, Building, User as UserIcon, ShieldAlert } from 'lucide-react';
+
 import { useAuthStore } from '../stores/useAuthStore';
 import { Role } from '../types';
 import { Button } from '../components/ui/Button';
+import transactLogo from '../assets/brand/transact-logo.svg';
 
 export const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -94,8 +96,8 @@ export const RegisterPage: React.FC = () => {
         className="w-full max-w-2xl bg-surface border border-zinc-800 rounded-2xl p-5 sm:p-7 md:p-8 shadow-2xl z-10 relative my-auto"
       >
         <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white shadow-xl shadow-indigo-500/25 mb-3">
-            <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-zinc-900/80 border border-white/[0.08] flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10 mb-3">
+            <img src={transactLogo} alt="OpsMind logo" className="w-8 h-8 object-contain" />
           </div>
           <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
             {invitationToken ? 'Join Your Organization' : 'Create Enterprise Workspace'}
@@ -127,154 +129,73 @@ export const RegisterPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                First Name
-              </label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">First Name</label>
               <div className="relative">
                 <UserIcon className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  autoComplete="given-name"
-                  className={fieldClass('first_name', 'pl-10')}
-                  placeholder="Jane"
-                />
+                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required autoComplete="given-name" className={fieldClass('first_name', 'pl-10')} placeholder="Jane" />
               </div>
-              {getFieldErrorText('first_name') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('first_name')}</p>
-              )}
+              {getFieldErrorText('first_name') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('first_name')}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Last Name
-              </label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Last Name</label>
               <div className="relative">
                 <UserIcon className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  autoComplete="family-name"
-                  className={fieldClass('last_name', 'pl-10')}
-                  placeholder="Doe"
-                />
+                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required autoComplete="family-name" className={fieldClass('last_name', 'pl-10')} placeholder="Doe" />
               </div>
-              {getFieldErrorText('last_name') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('last_name')}</p>
-              )}
+              {getFieldErrorText('last_name') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('last_name')}</p>}
             </div>
           </div>
 
           {!invitationToken && (
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Organization Name
-              </label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Organization Name</label>
               <div className="relative">
                 <Building className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                  autoComplete="organization"
-                  className={fieldClass('organization_name', 'pl-10')}
-                  placeholder="Acme Global Defense"
-                />
+                <input type="text" value={orgName} onChange={(e) => setOrgName(e.target.value)} autoComplete="organization" className={fieldClass('organization_name', 'pl-10')} placeholder="Acme Global Defense" />
               </div>
-              {getFieldErrorText('organization_name') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('organization_name')}</p>
-              )}
+              {getFieldErrorText('organization_name') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('organization_name')}</p>}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-              Work Email Address
-            </label>
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Work Email Address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className={fieldClass('email', 'pl-10')}
-                placeholder="jane.doe@company.com"
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={fieldClass('email', 'pl-10')} placeholder="jane.doe@company.com" />
             </div>
-            {getFieldErrorText('email') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('email')}</p>
-            )}
+            {getFieldErrorText('email') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('email')}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Password
-              </label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Password</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  className={fieldClass('password', 'pl-10 font-mono')}
-                  placeholder="••••••••••••"
-                />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" className={fieldClass('password', 'pl-10 font-mono')} placeholder="••••••••••••" />
               </div>
-              {getFieldErrorText('password') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('password')}</p>
-              )}
+              {getFieldErrorText('password') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('password')}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-                Confirm Password
-              </label>
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Confirm Password</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  className={fieldClass('password_confirm', 'pl-10 font-mono')}
-                  placeholder="Repeat password"
-                />
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required autoComplete="new-password" className={fieldClass('password_confirm', 'pl-10 font-mono')} placeholder="Repeat password" />
               </div>
-              {getFieldErrorText('password_confirm') && (
-                <p className="text-[11px] text-rose-400 mt-1 font-mono">
-                  {getFieldErrorText('password_confirm')}
-                </p>
-              )}
+              {getFieldErrorText('password_confirm') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('password_confirm')}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
-              Primary Role
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
-              className={fieldClass('role')}
-            >
+            <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">Primary Role</label>
+            <select value={role} onChange={(e) => setRole(e.target.value as Role)} className={fieldClass('role')}>
               <option value="ADMIN">ADMIN - Full Platform Management</option>
               <option value="ANALYST">ANALYST - Security Analyst & Triage</option>
               <option value="RESPONDER">RESPONDER - Incident Responder</option>
               <option value="VIEWER">VIEWER - Executive Read-Only</option>
             </select>
-            {getFieldErrorText('role') && (
-              <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('role')}</p>
-            )}
+            {getFieldErrorText('role') && <p className="text-[11px] text-rose-400 mt-1 font-mono">{getFieldErrorText('role')}</p>}
           </div>
 
           <Button type="submit" variant="ai" className="w-full min-h-11 py-2.5 mt-2" isLoading={isLoading}>
@@ -285,9 +206,7 @@ export const RegisterPage: React.FC = () => {
 
         <div className="mt-5 sm:mt-6 pt-4 border-t border-zinc-800/80 text-center text-xs text-zinc-400 leading-relaxed">
           Already registered?{' '}
-          <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
-            Sign In
-          </Link>
+          <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">Sign In</Link>
         </div>
       </motion.div>
     </div>
