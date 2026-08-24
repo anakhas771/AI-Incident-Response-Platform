@@ -57,7 +57,7 @@ services:
     environment:
       - DEBUG=True
       - ENVIRONMENT=development
-      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver
+      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver,backend
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
       - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
       - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
@@ -105,7 +105,7 @@ services:
     environment:
       - DEBUG=True
       - ENVIRONMENT=development
-      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver
+      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver,backend
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
       - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
       - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
@@ -153,7 +153,7 @@ services:
     environment:
       - DEBUG=True
       - ENVIRONMENT=development
-      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver
+      - ALLOWED_HOSTS=localhost,127.0.0.1,testserver,backend
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
       - POSTGRES_DB=${POSTGRES_DB:-incident_platform_db}
       - POSTGRES_USER=${POSTGRES_USER:-postgres_user}
