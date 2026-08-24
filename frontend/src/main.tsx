@@ -4,7 +4,8 @@ import App from './App';
 import './styles/index.css';
 import transactLogo from './assets/brand/transact-logo.svg';
 
-const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]') ?? document.createElement('link');
+const favicon =
+  document.querySelector<HTMLLinkElement>('link[rel="icon"]') ?? document.createElement('link');
 favicon.rel = 'icon';
 favicon.type = 'image/svg+xml';
 favicon.href = transactLogo;
