@@ -25,7 +25,9 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // Inside Docker, localhost points to the frontend container itself.
+        // Use the Compose service name for container-to-container routing.
+        target: process.env.VITE_PROXY_TARGET || 'http://backend:8000',
         changeOrigin: true,
         secure: false,
       },
