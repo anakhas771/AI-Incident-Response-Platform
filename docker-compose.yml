@@ -194,7 +194,8 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      # Use the same-origin API path locally. Vite proxies /api to the backend.
+      - VITE_API_BASE_URL=/api/v1
     depends_on:
       - backend
     networks:
