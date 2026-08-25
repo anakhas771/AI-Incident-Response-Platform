@@ -1,61 +1,105 @@
 
-# 🚀 AI Incident Response Platform
+# 🚨 AI Incident Response Platform
 
-> An enterprise-grade AI-powered incident management platform that helps DevOps, SRE, Security, and IT Operations teams detect, analyze, prioritize, and resolve incidents faster using Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), and intelligent automation.
+> An AI-powered incident response platform that helps engineering teams investigate production incidents using AI-assisted analysis, Retrieval-Augmented Generation (RAG), semantic knowledge retrieval, and intelligent remediation workflows.
 
 <p align="center">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=python,django,react,typescript,postgresql,redis,docker,aws" />
+  <img
+    src="https://skillicons.dev/icons?i=python,django,react,typescript,postgresql,redis,docker,aws"
+    alt="Technology Stack"
+  />
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=xQhmwhoRec4">
+    <img
+      src="https://img.youtube.com/vi/xQhmwhoRec4/maxresdefault.jpg"
+      alt="AI Incident Response Platform Demo"
+    />
   </a>
 </p>
 
+<p align="center">
+  <strong>▶️ <a href="https://www.youtube.com/watch?v=xQhmwhoRec4">Watch the Full Product Demo</a></strong>
+</p>
 
 ---
 
-# 📖 Table of Contents
+# 📌 Table of Contents
 
-- Overview
-- Problem Statement
-- Solution
-- Features
-- Technology Stack
-- Architecture
-- Project Structure
-- Getting Started
-- Docker Setup
-- Environment Variables
-- Running the Application
-- API Documentation
-- AI Pipeline
-- Testing
-- Code Quality
-- Security
-- Performance
-- Roadmap
-- Contributing
-- License
+- [Overview](#-overview)
+- [Project Motivation](#-project-motivation)
+- [Problem Statement](#-problem-statement)
+- [Solution](#-solution)
+- [Core Workflow](#-core-workflow)
+- [Key Features](#-key-features)
+- [System Architecture](#️-system-architecture)
+- [AI Architecture](#-ai-architecture)
+- [AI Incident Analysis Pipeline](#-ai-incident-analysis-pipeline)
+- [Technology Stack](#️-technology-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Docker Setup](#-docker-setup)
+- [Environment Variables](#️-environment-variables)
+- [Database Commands](#️-database-commands)
+- [API Modules](#-api-modules)
+- [Testing](#-testing)
+- [Code Quality](#-code-quality)
+- [Security](#-security)
+- [Performance](#-performance--scalability)
+- [Roadmap](#️-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Author](#-author)
 
 ---
 
 # 📚 Overview
 
-Organizations generate thousands of alerts every day from monitoring systems, cloud infrastructure, APIs, databases, Kubernetes clusters, and applications.
+The **AI Incident Response Platform** is designed to assist engineering teams throughout the production incident lifecycle.
 
-Engineers spend significant time:
+Modern applications can generate large volumes of alerts and operational data from:
 
-- Reading lengthy incident descriptions
-- Searching documentation
-- Identifying root causes
-- Finding similar incidents
-- Writing postmortems
-- Coordinating incident response
+- Cloud infrastructure
+- Kubernetes clusters
+- APIs
+- Databases
+- Applications
+- Monitoring systems
+- Logs
+- Internal documentation
+- Historical incidents
 
-The **AI Incident Response Platform** automates these tasks using modern AI technologies including Large Language Models (LLMs), semantic search, and Retrieval-Augmented Generation (RAG).
+Investigating these incidents often requires engineers to manually correlate information across multiple systems.
 
-The platform intelligently analyzes incidents, retrieves relevant organizational knowledge, recommends resolutions, predicts root causes, and significantly reduces Mean Time To Resolution (MTTR).
+This project explores how **AI, Retrieval-Augmented Generation (RAG), semantic search, vector retrieval, and asynchronous processing** can be combined to support incident investigation and response in a unified platform.
 
 ---
 
+# 🎯 Project Motivation
+
+The project was built around a simple question:
+
+> **Can AI help engineers move from incident detection to resolution faster by understanding incident context and retrieving relevant operational knowledge?**
+
+Rather than building another generic AI chatbot, this platform focuses on an engineering workflow:
+
+```text
+Detect
+   ↓
+Investigate
+   ↓
+Understand
+   ↓
+Retrieve Knowledge
+   ↓
+Analyze Root Cause
+   ↓
+Recommend Remediation
+   ↓
+Resolve
+---
+```
 # 🎯 Problem Statement
 
 Traditional incident management systems only store incidents.
@@ -208,35 +252,75 @@ Ask natural language questions such as:
 # 🏗 System Architecture
 
 ```
-                     +-----------------------+
-                     |     React Frontend    |
-                     +-----------+-----------+
-                                 |
-                          REST API (HTTPS)
-                                 |
-                     +-----------v-----------+
-                     | Django REST Framework |
-                     +-----------+-----------+
-                                 |
-             +-------------------+-------------------+
-             |                                       |
-     PostgreSQL Database                      Redis Cache
-             |                                       |
-             +-------------------+-------------------+
-                                 |
-                          Celery Workers
-                                 |
-                +----------------+----------------+
-                |                                 |
-          AI Analysis                     Knowledge Engine
-                |                                 |
-                +----------------+----------------+
-                                 |
-                    OpenAI / Ollama / LangChain
-                                 |
-                         Vector Database (FAISS)
+                     ┌───────────────────────┐
+                     │     React Frontend    │
+                     └───────────┬───────────┘
+                                 │
+                          REST API / HTTPS
+                                 │
+                     ┌───────────▼───────────┐
+                     │ Django REST Framework │
+                     └───────────┬───────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+              ▼                  ▼                  ▼
+       ┌─────────────┐    ┌─────────────┐    ┌───────────────┐
+       │ PostgreSQL  │    │    Redis    │    │ Celery Workers│
+       └─────────────┘    └─────────────┘    └───────┬───────┘
+                                                     │
+                                      ┌──────────────┴──────────────┐
+                                      │                             │
+                                      ▼                             ▼
+                               ┌──────────────┐             ┌───────────────┐
+                               │ AI Analysis  │             │   Knowledge   │
+                               │    Engine    │             │     Engine    │
+                               └──────┬───────┘             └───────┬───────┘
+                                      │                             │
+                                      └──────────────┬──────────────┘
+                                                     │
+                                                     ▼
+                                          ┌───────────────────┐
+                                          │   LLM / RAG Layer │
+                                          └─────────┬─────────┘
+                                                    │
+                                  ┌─────────────────┴─────────────────┐
+                                  │                                   │
+                                  ▼                                   ▼
+                               LLMs                         Vector / Search Layer
 ```
 
+---
+# 🧠 AI Architecture
+```
+┌───────────────────────────────┐
+│        Incident Context       │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│       AI Analysis Engine      │
+└───────────────┬───────────────┘
+                │
+        ┌───────┴────────┐
+        │                │
+        ▼                ▼
+  LLM Processing   Knowledge Retrieval
+        │                │
+        │                ▼
+        │         Vector / Semantic Search
+        │                │
+        └───────┬────────┘
+                ▼
+┌───────────────────────────────┐
+│       Context Enrichment      │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│      AI Response / Insight    │
+└───────────────────────────────┘
+```
 ---
 
 # 🛠 Technology Stack
@@ -494,26 +578,32 @@ npm run lint
 
 ```
 Incident Created
-        │
-        ▼
-Background Celery Task
-        │
-        ▼
+       │
+       ▼
+Incident Context
+       │
+       ▼
+Background Processing
+       │
+       ▼
 AI Summary Generation
-        │
-        ▼
-Knowledge Base Retrieval
-        │
-        ▼
+       │
+       ▼
+Knowledge Retrieval
+       │
+       ▼
 Vector Similarity Search
-        │
-        ▼
+       │
+       ▼
+Context Enrichment
+       │
+       ▼
 Root Cause Analysis
-        │
-        ▼
+       │
+       ▼
 Resolution Recommendation
-        │
-        ▼
+       │
+       ▼
 Incident Updated
 ```
 
